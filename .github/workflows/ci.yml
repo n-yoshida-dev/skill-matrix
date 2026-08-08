@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# 同じブランチで新しい push があったら、走っている古いジョブを止める
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # frontend/ backend/ がまだ無い段階でも CI が赤くならないよう、存在を見てから走らせる
+  detect:
+    name: 対象の検出
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.check.outputs.frontend }}
+      backend: ${{ steps.check.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: check
+        run: |
+          if [ -f frontend/package.json ]; then
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "frontend=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -f backend/go.mod ]; then
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "backend=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  frontend:
+    name: frontend (lint / typecheck / test / build)
+    needs: detect
+    if: needs.detect.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 依存をインストール
+        run: npm ci
+
+      - name: フォーマット崩れがないか
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: 型チェック
+        run: npm run typecheck
+
+      - name: 単体テスト
+        run: npm run test
+
+      - name: ビルド
+        run: npm run build
+
+  backend:
+    name: backend (vet / test / build)
+    needs: detect
+    if: needs.detect.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: フォーマット崩れがないか
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: テスト
+        run: go test ./...
+
+      - name: ビルド
+        run: go build ./...
+
+  no-secrets:
+    name: 秘密情報が混入していないか
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 追跡対象に秘密情報が含まれていないことを確認
+        run: |
+          # .gitignore は git add -f で貫通できるため、CI でも独立して検査する
+          HITS=$(git ls-files \
+            | grep -E '(^|/)(PRIVATE\.md|CLAUDE\.local\.md|\.env(\..+)?)$|\.local\.(json|md)$|(^|/)(secrets|data/private)/|(^|/)credentials\.json$|\.(pem|key|p12|keystore)$' \
+            | grep -v '\.env\.example$' || true)
+          if [ -n "$HITS" ]; then
+            echo "::error::秘密情報がリポジトリに含まれています"
+            echo "$HITS"
+            exit 1
+          fi
+          echo "秘密情報の混入なし"

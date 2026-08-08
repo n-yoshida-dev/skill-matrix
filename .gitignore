@@ -1,0 +1,34 @@
+# 依存関係
+node_modules/
+
+# ビルド成果物
+dist/
+build/
+bin/
+
+# 環境変数
+.env
+.env.*
+!.env.example
+
+# 個人の実データ（絶対にコミットしない）
+PRIVATE.md
+*.local.json
+*.local.md
+data/private/
+secrets/
+
+# Claude Code：個人環境ぶんだけ除外する
+# .claude/settings.json / rules / skills / agents / hooks はコミット対象
+.claude/settings.local.json
+.claude/agent-memory-local/
+CLAUDE.local.md
+
+# エディタ・OS
+.DS_Store
+.vscode/
+.idea/
+
+# ログ・一時ファイル
+*.log
+coverage/
