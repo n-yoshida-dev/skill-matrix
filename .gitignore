@@ -5,6 +5,8 @@ node_modules/
 dist/
 build/
 bin/
+# go build ./... がパッケージ名でバイナリを吐くため
+backend/server
 
 # 環境変数
 .env
