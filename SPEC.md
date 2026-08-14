@@ -117,6 +117,8 @@
 - `dependsOn` は同一ロードマップ内の `item.key` のみ参照可。**循環参照はインポート時に弾く**
 - `levels` は 1〜5 を必ず全て含む。`criteria` は**そのまま LLM のプロンプトに埋め込まれる**ため、判定基準の正本はここ1か所
 - 上限：domains 50、1 domain あたり items 100、1 ロードマップあたり items 500
+- **定義にないフィールドはエラーにして弾く。** `dependsOn` を `dependOn` と打ち間違えたときに、黙って依存関係が消えて学習パスの並び順だけが静かに狂う、という壊れ方を避けるため
+- **検査は1件目で打ち切らず、問題を全部集めて返す。** エラー（インポート中止）と警告（インポートは通す）を分け、`domains[0].items[2].key` の形で場所を添える。実装は `backend/internal/roadmap/`
 
 `origin` による出典の扱い：
 
@@ -179,7 +181,8 @@ roadmaps                          -- template と personal を同一テーブル
   description           text
   origin                text not null default 'manual'  -- 'manual'|'external'|'builtin'（§2）
   source                text             -- 出典 URL（origin='external' なら必須）
-  checked_at            date             -- 出典の確認日（origin='external' なら必須）
+  checked_at            date             -- 出典の確認日（origin='external'/'builtin' なら必須）
+  levels                jsonb not null   -- レベル1〜5の定義（§2）。5件必須。criteria は LLM プロンプトの正本
   visibility            text not null    -- 'private' | 'public'（template のみ public 可）
   version               int not null default 1
   forked_from_id        uuid fk roadmaps -- fork 元（null なら新規）
@@ -284,6 +287,7 @@ judgment_quotas                    -- レート制限
 - **fork は行の複製。** テンプレートの `roadmaps` / `domains` / `items` をコピーして `kind='personal'` の新しい木を作り、`forked_from_id` と `forked_from_version` を記録する。上流が更新されても進捗は無傷
 - **publish は逆向きの複製。** personal から `kind='template'`, `visibility='public'` の木を作る（v2）
 - `stars_count` は集計キャッシュ。正は `stars` テーブル
+- **`levels` はロードマップごとに持ち、jsonb に丸ごと入れる。** レベルの意味は分野によって書き分けたくなる（Go の実装と英語学習では「ガイド付き実装」が同じ意味にならない）ためアプリ共通の固定値にしない。常に1〜5の5件セットでしか読み書きしないので、行に割っても JOIN が増えるだけで得がない
 - **セッションはトークンそのものを保存しない。** Cookie に入れるのは32バイトの乱数で、DB に置くのはその SHA-256 だけ。DB が漏れても、その値をそのまま Cookie に入れてログインすることはできない。ログアウトは行の削除なので即座に効く。ユーザー削除で cascade する（§9 の退会時削除）
 
 ---

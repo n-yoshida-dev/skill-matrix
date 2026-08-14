@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "name": "サンプル学習ロードマップ（ダミー）",
+  "description": "テストと開発用のダミーデータ。実在の学習計画ではない",
+  "origin": "external",
+  "source": "https://roadmap.sh/golang",
+  "checkedAt": "2026-08-14",
+  "levels": [
+    { "level": 1, "name": "基礎理解を確認", "criteria": "確認質問・ドリル・自分の言葉での説明で基礎理解を確認できた" },
+    { "level": 2, "name": "自分で説明可能", "criteria": "他人（または AI）に自分の言葉で説明できる" },
+    { "level": 3, "name": "ガイド付き実装", "criteria": "AI や資料の助けを借りれば実装できる" },
+    { "level": 4, "name": "自力実装・レビュー", "criteria": "独力で実装でき、他者のコードをレビューできる" },
+    { "level": 5, "name": "別文脈へ応用", "criteria": "学んだ文脈と異なる場面で使える" }
+  ],
+  "domains": [
+    {
+      "key": "go",
+      "name": "Go",
+      "goal": "Go で Web API を設計・実装・テストできる",
+      "items": [
+        {
+          "key": "go-01",
+          "name": "基本構文（変数・型・関数・struct・slice/map）",
+          "description": "ゼロ値とポインタの扱いを含む",
+          "outcome": "Go のコードを読んで型と値の流れを追える",
+          "dependsOn": [],
+          "verifyBy": "公式 Tour の Basics を終えてからドリルに答える"
+        },
+        {
+          "key": "go-02",
+          "name": "メソッド・インターフェース・埋め込み",
+          "outcome": "型に振る舞いを持たせ、インターフェースで実装を差し替えられる",
+          "dependsOn": ["go-01"],
+          "verifyBy": "既存の処理をインターフェース越しに差し替えて書き直す"
+        },
+        {
+          "key": "go-03",
+          "name": "エラーハンドリング（error のラップと判別）",
+          "outcome": "エラーを握りつぶさず、呼び出し側が判断できる形で返せる",
+          "dependsOn": ["go-02"],
+          "verifyBy": "errors.Is / errors.As を使い分けるテストを書く"
+        },
+        {
+          "key": "go-04",
+          "name": "標準ライブラリでの HTTP サーバ",
+          "outcome": "ルーティングとミドルウェアを自分で組み立てられる",
+          "dependsOn": ["go-02", "go-03"],
+          "verifyBy": "認証ミドルウェアを1つ自作してテストする"
+        },
+        {
+          "key": "go-05",
+          "name": "テスト（table driven test）",
+          "outcome": "境界値を並べたテストを自分で設計できる",
+          "dependsOn": ["go-01"],
+          "verifyBy": "純粋関数1つに対して境界値のテストを書く"
+        }
+      ]
+    },
+    {
+      "key": "react",
+      "name": "React",
+      "goal": "型安全な React アプリを設計し、サーバ状態を適切に扱える",
+      "items": [
+        {
+          "key": "react-01",
+          "name": "コンポーネントと props / state",
+          "outcome": "状態をどこに置くべきかを説明できる",
+          "dependsOn": [],
+          "verifyBy": "状態の持ち上げが必要な画面を1つ書く"
+        },
+        {
+          "key": "react-02",
+          "name": "副作用と useEffect の使いどころ",
+          "outcome": "useEffect が不要な場面を見分けられる",
+          "dependsOn": ["react-01"],
+          "verifyBy": "useEffect を使った処理を1つ、使わない形に書き換える"
+        },
+        {
+          "key": "react-03",
+          "name": "サーバ状態の管理（TanStack Query）",
+          "outcome": "サーバ状態とクライアント状態を分けて設計できる",
+          "dependsOn": ["react-02"],
+          "verifyBy": "一覧と詳細のキャッシュ更新を自分で設計する"
+        },
+        {
+          "key": "react-04",
+          "name": "フォームとバリデーション（React Hook Form + Zod）",
+          "outcome": "入力値の検証をフロントとバックエンドで二重に持てる",
+          "dependsOn": ["react-01"],
+          "verifyBy": "サーバのエラー応答をフォームに反映させる"
+        }
+      ]
+    },
+    {
+      "key": "infra",
+      "name": "インフラ・CI",
+      "goal": "自分のアプリをコンテナで動かし、CI で品質を守れる",
+      "items": [
+        {
+          "key": "infra-01",
+          "name": "Docker と Docker Compose",
+          "outcome": "開発環境をコンテナで再現できる",
+          "dependsOn": [],
+          "verifyBy": "DB 付きの開発環境を Compose で1つ立てる"
+        },
+        {
+          "key": "infra-02",
+          "name": "GitHub Actions で lint / test を回す",
+          "outcome": "壊れた変更が main に入らない状態を作れる",
+          "dependsOn": ["infra-01"],
+          "verifyBy": "失敗するテストを含む PR で CI が赤くなることを確認する"
+        }
+      ]
+    }
+  ]
+}
