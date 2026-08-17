@@ -40,13 +40,14 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 
 - [x] `internal/roadmap` にマスタ JSON のスキーマ検証を実装する（key 重複・循環参照・上限・`origin` 別の必須項目）
 - [x] `backend/testdata/` にダミーのロードマップとダミー学習ログを用意する
-- [ ] インポート API と、自分のロードマップの CRUD を実装する（`outcome` 欠落は警告に留める）
+- [ ] `internal/store` にインポートの永続化を実装する（`roadmaps` / `domains` / `items` を1トランザクションで作る。`levels` は jsonb でそのまま入れる）
+- [ ] インポート API と、自分のロードマップの CRUD を実装する（`outcome` 欠落は警告として応答に載せ、インポート自体は通す）
 - [ ] インポート時のリクエストボディのサイズ制限と、1フィールドの長さ上限を入れる（KNOWLEDGE.md 2026-08-14）
 
 ### 2-4. AI 判定
 
 - [ ] `internal/llm` にインタフェースと **stub プロバイダ**を実装する（`LLM_PROVIDER=stub`。開発中の課金ゼロ＋テストの決定性）
-- [ ] `internal/llm` に Claude API クライアントとプロンプト組み立てを実装する（共通部を先頭に固める）
+- [ ] `internal/llm` に Claude API クライアントとプロンプト組み立てを実装する（共通部を先頭に固める。判定基準は `roadmaps.levels` の `criteria` を使い、コードに書かない）
 - [ ] 判定ジョブのキューとワーカーを実装する（`FOR UPDATE SKIP LOCKED`・リトライ・失敗記録）
 - [ ] レート制限（月次クォータ）を実装する
 - [ ] ログ投稿 API（202 + jobId）とジョブ状態 API を実装する

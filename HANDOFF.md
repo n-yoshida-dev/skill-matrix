@@ -18,30 +18,33 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 
 ## 1. 現在地
 
-**フェーズ2「2-1 土台」完了。認証まで通り、次は 2-3 ロードマップ（JSON 検証とインポート）。**
+**純粋関数の層が完結した（`domain` → `roadmap`）。次は 2-3 の残り＝インポートの永続化と API。
+ここから作業の性質が「純粋関数」から「DB・HTTP」に変わる。**
 
-- `SPEC.md` — 実装が参照する正本。9節すべて記入済み。`sessions` テーブルと `APP_ENV` /
-  `FRONTEND_ORIGIN` を追記済み
+- `SPEC.md` — 実装が参照する正本。9節すべて記入済み
 - `docs/spec-guide.md` — **人間向けの解説。本人はこちらを読む。** SPEC.md と同じ事実を二重に書かない
 - `backend/internal/domain/` — 理解度モデルの純粋関数。テスト62件・カバレッジ96.6%
+- `backend/internal/roadmap/` — **マスタ JSON の検査と `domain.Roadmap` への変換。
+  テスト66件・カバレッジ95.6%**
 - `backend/internal/config/` — 環境変数の読み込みと検証。カバレッジ94.3%
 - `backend/internal/store/` — PostgreSQL アクセス（users / sessions）。**DB テスト未着手**
 - `backend/internal/httpapi/` — chi ルータ、CORS、GitHub OAuth、セッション。カバレッジ39.1%
   （DB を使う経路が未検査。低いのはそのため）
-- `backend/migrations/` — 12テーブル。`up` → `down -all` → `up` の往復を実機で確認済み
+- `backend/migrations/` — 12テーブル ＋ `roadmaps.levels`。`up` → `down -all` → `up` を実機確認済み
+- `backend/testdata/` — ダミーのロードマップ2種とダミー学習ログ6件。**実データは置かない**
 
 ## 2. 直近でやったこと
 
-- `internal/config` — 環境変数の読み込み。不備は1件目で打ち切らず**全部集めて報告**する。
-  `String()` が秘密情報を伏せるのでログにそのまま出せる
-- `.env.example` を SPEC.md §8.3 に合わせて全面更新（**読めなかった原因は §4 参照**）
-- `migrations/000002_sessions` — セッションテーブル
-- `internal/store` — `Open` / `UpsertUserByGitHub` / セッションの CRUD
-- `internal/httpapi` — `/health`・`/api/auth/github`・`/api/auth/github/callback`・
-  `/api/auth/logout`・`/api/me`、CORS、`requireAuth` ミドルウェア
-- `cmd/server/main.go` — DB 接続と graceful shutdown を配線
-- 実機で起動確認済み（`/health` 200 / 未認証 `/api/me` 401 / `/api/auth/github` が
-  GitHub へ 302 / CORS プリフライト 204）
+- **`internal/roadmap`** — マスタ JSON の検査。詳細は KNOWLEDGE.md 2026-08-14 の3件。要点だけ：
+  - **問題を全部集めて返す**（1件目で打ち切らない）。エラー＝インポート中止、警告＝通す
+  - 未知のフィールドはエラー（`dependsOn` の打ち間違いを黙って通さない）
+  - 循環参照を DFS で検出し、経路をメッセージに出す
+  - 問題の場所を `domains[0].items[2]` の形の経路で返し、フロントが該当箇所を指せる
+- **`migrations/000003_roadmap_levels`** — `roadmaps.levels`（jsonb）。SPEC に保存先が
+  抜けていたのを埋めた。**このマイグレーションは `roadmaps` が0行である前提**
+- `backend/testdata/` — ダミーのロードマップ（正常・壊れたもの）とダミー学習ログ
+- `.env.example` をコミット（**前セッションから未コミットだった。原因は §4-5**）
+- `.mcp.json`（context7）をリポジトリに追加
 
 ## 3. 確定している決定事項
 
@@ -54,6 +57,9 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 - **ロードマップ共有は star（参照）と fork（スナップショット複製）を分ける**
 - **`outcome`（到達状態）は必須にしない。** `origin` 別に扱いを変え、AI 下書きを用意する
 - **判定は v1 から非同期ジョブ**（`llm_jobs` + ワーカー + ポーリング）
+- **レベル定義（`levels`）はロードマップごとに `roadmaps.levels`（jsonb）で持つ。**
+  アプリ共通の固定値にしない。`criteria` が LLM プロンプトの判定基準の正本
+- **インポート JSON の未知フィールドはエラーにして弾く。** 前方互換より打ち間違いの検知を取る
 - **セッションは DB に持つ。** Cookie には32バイトの乱数、DB にはその SHA-256 だけ
 - **GitHub OAuth は標準ライブラリで実装。scope は空。アクセストークンは保存しない**
 - `~/workspace/study/learner-profile/skill-map.md` は**今まで通り手動運用。移行しない**
@@ -65,18 +71,26 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 2. `DefaultWeights()` の重みは仮置き。v1 が動いてから調整する（本人合意済み）
 3. デプロイ先（Cloud Run / Render）— v1 がローカルで動いてから決める
 4. 1,000人規模になったときの LLM コスト対策（BYOK / 課金 / モデル切り替え）
-5. **`.env.example` の読み書きは解決済み。** 原因は `guard-secrets.sh` ではなく
-   `~/.claude/settings.json` の `Read(**/.env.*)`。個別指定に置き換えた。
-   **副作用として `.env.secret` のような未登録の名前は deny されない**（KNOWLEDGE.md 参照）
+5. **`.env.example` の読み書き・コミットは両方とも解決済み。** 別の場所にある別の原因が2つあった。
+   読み取りは `~/.claude/settings.json` の `Read(**/.env.*)`、コミットは
+   `~/.claude/hooks/staged-secrets-guard.sh` のバグ2件（KNOWLEDGE.md 2026-08-12 と 2026-08-17）。
+   **副作用として `.env.secret` のような未登録の名前は deny されない。**
+   なおフック自体の編集は自動承認の分類器に拒否されるので、直すときは本人の手で当ててもらう
 
 ## 5. 次セッションのタスク
 
-`TODO.md` の未完タスクを上から。**次は 2-3（ロードマップ）から。**
+`TODO.md` の未完タスクを上から。**次は 2-3 の残り（インポートの永続化と API）から。**
 
-1. **`internal/roadmap` にマスタ JSON のスキーマ検証を実装する**
-   （key 重複・循環参照・上限・`origin` 別の必須項目）
-2. インポート API と、自分のロードマップの CRUD
-3. `backend/testdata/` にダミーのロードマップとダミー学習ログ
+1. **`internal/store` にインポートの永続化を実装する。**
+   `roadmaps` / `domains` / `items` を1トランザクションで作る。`levels` は jsonb でそのまま入れる。
+   `items.depends_on_keys` は `text[]`（key のまま。項目 ID には解決しない）
+2. **インポート API（`POST /api/roadmaps/import`）。**
+   `roadmap.ParseAndValidate` の結果をそのまま使う。**エラーは 400、警告は 201 の応答に載せる**
+   （`outcome` 欠落でインポートを止めない）。`Result` の JSON 形はテストで固定してある
+3. **リクエストボディのサイズ制限と1フィールドの長さ上限。**
+   `criteria` / `outcome` は LLM のプロンプトに載るのでコストに直結する。件数の上限は入れたが
+   長さは未着手（KNOWLEDGE.md 2026-08-14）
+4. 自分のロードマップの CRUD（一覧・取得・名前と目標日の更新・削除）
 
 **本人にやってもらう必要があること（AI 側ではできない）**：
 GitHub OAuth App を作り（<https://github.com/settings/developers>）、
@@ -90,6 +104,9 @@ Authorization callback URL は `http://localhost:8080/api/auth/github/callback`�
 ```bash
 # 純粋関数のテスト（DB 不要）
 go -C backend test ./internal/... -cover
+
+# マスタ JSON の検査だけを詳しく見る
+go -C backend test ./internal/roadmap/ -v
 
 # DB を起動してマイグレーション適用
 docker compose up -d postgres
