@@ -1,0 +1,45 @@
+# ローカル開発用。本番の構成ではない。
+#
+# ここに書いてあるパスワードは開発専用の固定値。本番の値は .env で与える。
+# backend / worker / frontend のサービスは、それぞれのコードと Dockerfile ができてから追加する。
+#
+# 使い方:
+#   docker compose up -d postgres   # DB だけ起動
+#   docker compose run --rm migrate # マイグレーション適用
+#   docker compose down -v          # データごと破棄してやり直す
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: skillmatrix
+      POSTGRES_PASSWORD: skillmatrix
+      POSTGRES_DB: skillmatrix
+      # 日本語を含むログを扱うので照合順序を明示しておく
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # migrate が「DB がまだ起動していない」で失敗しないように待つ
+      test: ["CMD-SHELL", "pg_isready -U skillmatrix -d skillmatrix"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # マイグレーション適用用。常駐しないので run --rm で使う。
+  migrate:
+    image: migrate/migrate:v4.18.1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/migrations:/migrations:ro
+    command:
+      - "-path=/migrations"
+      - "-database=postgres://skillmatrix:skillmatrix@postgres:5432/skillmatrix?sslmode=disable"
+      - "up"
+
+volumes:
+  postgres-data:

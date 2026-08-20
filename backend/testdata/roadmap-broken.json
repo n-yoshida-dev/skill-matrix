@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "name": "",
+  "origin": "external",
+  "levels": [
+    { "level": 1, "name": "基礎理解を確認", "criteria": "確認質問に答えられた" },
+    { "level": 2, "name": "自分で説明可能", "criteria": "自分の言葉で説明できる" },
+    { "level": 3, "name": "ガイド付き実装", "criteria": "" },
+    { "level": 4, "name": "自力実装・レビュー", "criteria": "独力で実装できる" },
+    { "level": 9, "name": "範囲外", "criteria": "レベルの取りうる範囲の外" }
+  ],
+  "domains": [
+    {
+      "key": "Go Basics",
+      "name": "不正な key を持つ分野",
+      "items": [
+        {
+          "key": "x-01",
+          "name": "実在しない項目に依存している",
+          "dependsOn": ["nope-99"]
+        },
+        {
+          "key": "x-01",
+          "name": "key が重複している",
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "key": "cycle",
+      "name": "循環参照を含む分野",
+      "items": [
+        { "key": "c-01", "name": "循環の入口", "dependsOn": ["c-03"] },
+        { "key": "c-02", "name": "循環の途中", "dependsOn": ["c-01"] },
+        { "key": "c-03", "name": "循環の出口", "dependsOn": ["c-02"] },
+        { "key": "c-04", "name": "自分自身に依存", "dependsOn": ["c-04"] }
+      ]
+    },
+    {
+      "key": "empty",
+      "name": "項目が空の分野",
+      "items": []
+    }
+  ]
+}
