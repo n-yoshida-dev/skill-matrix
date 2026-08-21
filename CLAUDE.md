@@ -7,7 +7,7 @@
 1. **`HANDOFF.md` を読む** — 現在地・決定事項・次のタスクがすべてここにある
 
 未完タスクは SessionStart フックが `TODO.md` から自動で提示する。
-セッションの区切りには `/handoff` を実行して引き継ぎを書く。
+セッションの区切りには `/apps-workflow:handoff` を実行して引き継ぎを書く。
 
 ## ドキュメントの役割
 
@@ -37,14 +37,18 @@
 
 ## Claude Code の設定
 
-| 種別 | 中身 |
-|---|---|
-| `/handoff` | HANDOFF / TODO / KNOWLEDGE を更新して次のセッションへ渡す |
-| `guard-secrets.sh` | 秘密情報・ローカル専用ファイルのコミットを阻止（PreToolUse） |
-| `check-edited.sh` | frontend の typecheck / lint、backend の go vet（PostToolUse） |
-| `session-briefing.sh` | TODO.md の未完タスクを起動時に提示（SessionStart） |
+共通のフック3種と `/apps-workflow:handoff` `/apps-workflow:pr-check` は [apps-workflow プラグイン](https://github.com/n-yoshida-dev/claude-plugins)から来る（`.claude/settings.json` の `enabledPlugins`）。
+マシンごとに初回だけ `claude plugin install apps-workflow@n-yoshida-dev` が要る。
 
-固有のルールが増えたら `.claude/rules/` に切り出し、CLAUDE.md からはリンクだけにする。
+| 種別 | 中身 | 出どころ |
+|---|---|---|
+| `/apps-workflow:handoff` | HANDOFF / TODO / KNOWLEDGE を更新して次のセッションへ渡す | プラグイン |
+| `/apps-workflow:pr-check` | CI と同じ検査をローカルでまとめて実行する（コミット・PR の前） | プラグイン |
+| `guard-secrets.sh` | 秘密情報・ローカル専用ファイルのコミットを阻止（PreToolUse） | プラグイン |
+| `check-edited.sh` | frontend の typecheck / lint、backend の go vet（PostToolUse） | プラグイン |
+| `session-briefing.sh` | TODO.md の未完タスクを起動時に提示（SessionStart） | プラグイン |
+
+このアプリ固有のフック・スキルは `.claude/` に置く。固有のルールが増えたら `.claude/rules/` に切り出し、CLAUDE.md からはリンクだけにする。
 
 ## 共通ルール
 

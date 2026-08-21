@@ -386,3 +386,11 @@ SPEC.md §2.1 の「`external` で `outcome` が無いのは警告に留める�
 
 **フック自体の編集は自動承認の分類器に拒否される。** セキュリティガードを書き換える操作なので妥当。
 直すときは本人の手で当ててもらうこと。
+
+### 2026-08-21：共通の Claude Code 設定を `apps-workflow` プラグインに切り出した
+
+フック3種と `/handoff` は app-template 由来のコピーで、4リポジトリに同じものがあった。
+`n-yoshida-dev/claude-plugins` の `apps-workflow` プラグインに移し、`.claude/settings.json` の
+`extraKnownMarketplaces` + `enabledPlugins` で読み込む形にした。スキル名は `/apps-workflow:handoff` /
+`/apps-workflow:pr-check` になる。マシンごとに初回だけ `claude plugin install apps-workflow@n-yoshida-dev` が要る。
+判断の詳細は babyfood-check の KNOWLEDGE.md 2026-08-21。
