@@ -484,3 +484,12 @@ CHECK / UNIQUE / NOT NULL の制約違反、トランザクションの巻き戻
 
 `ImportRoadmap` 自体は**検査済みの Document を信用する**。重複 key などが来れば DB の制約で落ちて
 巻き戻る（テストで確認済み）が、利用者向けのエラーにはならない。検査は必ず API 側で通すこと。
+
+### 2026-08-22：feat のコミットが chore ブランチに積まれ、PR #8 のタイトルで main に入った
+
+別セッションで `chore/security-guidance` をチェックアウトしたまま、store 永続化のコミット（`feat: ロードマップのインポートを store に永続化…`）を積んでしまった。
+PR #8（chore）がスカッシュマージされた時点でその feat も一緒に main に入り、本来の PR #7（`feat/roadmap-store`）は重複になった。
+
+- **main の履歴では、store 永続化の変更は `c03f598`（#8「chore: security-guidance…」）に含まれている。** `git log` で feat を探しても見つからないので注意
+- PR #7 はクローズ（マージではない）。中身は #8 で取り込み済み
+- 再発防止：コミット前に `git status -sb` の先頭行でブランチ名を確認する。`/apps-workflow:pr-check` にブランチ名の表示を足す案は `claude-plugins` 側の課題
