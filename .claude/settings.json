@@ -16,7 +16,14 @@
       "Bash(go mod tidy)",
       "Bash(go fmt *)",
       "Bash(node --version)",
-      "Bash(npm --version)"
+      "Bash(npm --version)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh run list *)",
+      "Bash(gh run view *)",
+      "Bash(git switch main)",
+      "Bash(git pull)"
     ],
     "deny": [
       "Bash(git add -f *)",
