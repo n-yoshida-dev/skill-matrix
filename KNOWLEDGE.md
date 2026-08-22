@@ -455,3 +455,32 @@ PR #2 のあと `claude plugin install apps-workflow@n-yoshida-dev` を実行し
 TODO の未完タスクが表示されるか。** 表示されればプラグイン側の `session-briefing.sh` が動いている。
 
 この誤った案内は4リポジトリ＋テンプレート＋プラグインの README に横断で入っていたので、まとめて直した。
+
+### 2026-08-22：store の DB テストは、テストごとに専用スキーマを作って本番と同じマイグレーションを流す
+
+`internal/store` は純粋関数と違い、**本物の PostgreSQL が無いと検査できない**。SQL の綴り、
+CHECK / UNIQUE / NOT NULL の制約違反、トランザクションの巻き戻しは、モックでは確かめられない。
+`ImportRoadmap`（3テーブルを1トランザクションで作る）の実装と同時に土台を作った。
+
+| 決めたこと | 理由 |
+|---|---|
+| `TEST_DATABASE_URL` が無ければ `t.Skip` | `go test ./...` を DB 無しでも赤くしない。代わりに CI では必ず設定し、スキップされたままにしない |
+| テストごとに `test_xxxx` スキーマを作り、終わったら `DROP SCHEMA ... CASCADE` | `docker compose run migrate` 済みかどうかや、手元に入っているデータに左右されない。テスト同士も干渉しない |
+| `migrations/*.up.sql` をそのまま流す | テスト専用のスキーマ定義を別に持つと、本番とずれたまま通ってしまう |
+| CI の backend ジョブに `services: postgres` を足す | `docker-compose.yml` と同じイメージ・同じ認証情報。ローカルと CI で差が出ない |
+
+実装上の要点が2つ。
+
+**1. `search_path` は接続文字列ではなく `stdlib.RegisterConnConfig` で向ける。**
+`pgx.ParseConfig` で設定を作り `RuntimeParams["search_path"] = schema` を入れて登録すると、
+`sql.Open("pgx", 登録名)` で使える名前が返る。`store.Open` は接続文字列を受け取る関数なので、
+この名前をそのまま渡せば本体のコードを一切変えずに専用スキーマへ向けられる。
+
+**2. `database/sql` は `text[]` を `[]string` に Scan できない。**
+書き込み（`[]string` → `text[]`）は pgx が面倒を見るので素通りするが、読み出しで
+`unsupported Scan, storing driver.Value type string into type *[]string` になる。
+`pgtype.NewMap().SQLScanner(&deps)` で包むと読める。CRUD（`GetRoadmap`）で `depends_on_keys` を
+読むときにも同じ手が要るので、そのとき store 本体に helper を移す。
+
+`ImportRoadmap` 自体は**検査済みの Document を信用する**。重複 key などが来れば DB の制約で落ちて
+巻き戻る（テストで確認済み）が、利用者向けのエラーにはならない。検査は必ず API 側で通すこと。

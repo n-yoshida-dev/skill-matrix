@@ -18,10 +18,10 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 
 ## 1. 現在地
 
-**純粋関数の層が完結した（`domain` → `roadmap`）。次は 2-3 の残り＝インポートの永続化と API。
-ここから作業の性質が「純粋関数」から「DB・HTTP」に変わる。**
+**インポートの永続化（`store.ImportRoadmap`）と DB テストの土台まで完了。
+次は 2-3 の残り＝インポート API（`POST /api/roadmaps/import`）。**
 
-ここまでの成果は **PR #1 で `main` にマージ済み**。CI（gofmt / vet / test / build、
+`internal/roadmap` までは **PR #1 で `main` にマージ済み**。`ImportRoadmap` は `feat/roadmap-store` の PR。CI（gofmt / vet / test / build、
 フロントの lint / typecheck / test / build、秘密情報スキャン）は `main` と全 PR で走る。
 
 - `SPEC.md` — 実装が参照する正本。9節すべて記入済み
@@ -30,7 +30,8 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 - `backend/internal/roadmap/` — **マスタ JSON の検査と `domain.Roadmap` への変換。
   テスト66件・カバレッジ95.6%**
 - `backend/internal/config/` — 環境変数の読み込みと検証。カバレッジ94.3%
-- `backend/internal/store/` — PostgreSQL アクセス（users / sessions）。**DB テスト未着手**
+- `backend/internal/store/` — PostgreSQL アクセス（users / sessions / roadmaps）。
+  **`ImportRoadmap` は DB テスト5件。`sessions` の DB テストは未着手**（土台は `store_test.go` にある）
 - `backend/internal/httpapi/` — chi ルータ、CORS、GitHub OAuth、セッション。カバレッジ39.1%
   （DB を使う経路が未検査。低いのはそのため）。**ログインは実機で通し確認済み（2026-08-20）**
 - `backend/migrations/` — 12テーブル ＋ `roadmaps.levels`。`up` → `down -all` → `up` を実機確認済み
@@ -38,6 +39,12 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 
 ## 2. 直近でやったこと
 
+- **`store.ImportRoadmap`** — 検査済みの `roadmap.Document` から `roadmaps` / `domains` / `items` を
+  1トランザクションで作る。`levels` は jsonb に丸ごと、`depends_on_keys` は key のまま `text[]`、
+  `outcome` があれば `outcome_source='authored'`。戻り値は `roadmaps.id`
+- **DB テストの土台**（`store_test.go`）— `TEST_DATABASE_URL` が無ければスキップ。あればテストごとに
+  専用スキーマを作り `migrations/*.up.sql` を流す。CI の backend ジョブに postgres サービスを追加。
+  要点は KNOWLEDGE.md 2026-08-22
 - **`internal/roadmap`** — マスタ JSON の検査。詳細は KNOWLEDGE.md 2026-08-14 の3件。要点だけ：
   - **問題を全部集めて返す**（1件目で打ち切らない）。エラー＝インポート中止、警告＝通す
   - 未知のフィールドはエラー（`dependsOn` の打ち間違いを黙って通さない）
@@ -82,18 +89,18 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 
 ## 5. 次セッションのタスク
 
-`TODO.md` の未完タスクを上から。**次は 2-3 の残り（インポートの永続化と API）から。**
+`TODO.md` の未完タスクを上から。**次は 2-3 の残り（インポート API）から。**
 
-1. **`internal/store` にインポートの永続化を実装する。**
-   `roadmaps` / `domains` / `items` を1トランザクションで作る。`levels` は jsonb でそのまま入れる。
-   `items.depends_on_keys` は `text[]`（key のまま。項目 ID には解決しない）
-2. **インポート API（`POST /api/roadmaps/import`）。**
-   `roadmap.ParseAndValidate` の結果をそのまま使う。**エラーは 400、警告は 201 の応答に載せる**
-   （`outcome` 欠落でインポートを止めない）。`Result` の JSON 形はテストで固定してある
-3. **リクエストボディのサイズ制限と1フィールドの長さ上限。**
+1. **インポート API（`POST /api/roadmaps/import`）。**
+   `roadmap.ParseAndValidate` → `store.ImportRoadmap(ctx, user.ID, store.RoadmapKindPersonal, doc)`。
+   **エラーは 400、警告は 201 の応答に載せる**（`outcome` 欠落でインポートを止めない）。
+   `Result` の JSON 形はテストで固定してある
+2. **リクエストボディのサイズ制限と1フィールドの長さ上限。**
    `criteria` / `outcome` は LLM のプロンプトに載るのでコストに直結する。件数の上限は入れたが
    長さは未着手（KNOWLEDGE.md 2026-08-14）
-4. 自分のロードマップの CRUD（一覧・取得・名前と目標日の更新・削除）
+3. 自分のロードマップの CRUD（一覧・取得・名前と目標日の更新・削除）。
+   `depends_on_keys` の読み出しは `pgtype.NewMap().SQLScanner` が要る（KNOWLEDGE.md 2026-08-22）
+4. `internal/store` の `sessions` の DB テスト（期限切れ・cascade 削除）
 
 **本人にやってもらう必要があること：現時点で無し。**
 GitHub OAuth App は作成済みで、2026-08-20 に認可 → トークン交換 → セッション発行 →
@@ -112,6 +119,11 @@ go -C backend test ./internal/... -cover
 
 # マスタ JSON の検査だけを詳しく見る
 go -C backend test ./internal/roadmap/ -v
+
+# DB を使うテスト（store）。postgres を起動してから。未設定ならスキップされる
+docker compose up -d postgres
+TEST_DATABASE_URL='postgres://skillmatrix:skillmatrix@localhost:5432/skillmatrix?sslmode=disable' \
+  go -C backend test ./internal/store/ -v
 
 # DB を起動してマイグレーション適用
 docker compose up -d postgres

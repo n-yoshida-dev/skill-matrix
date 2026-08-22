@@ -81,6 +81,22 @@ jobs:
       run:
         working-directory: backend
 
+    # internal/store の DB テスト用。docker-compose.yml の postgres と同じ設定にしてある
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: skillmatrix
+          POSTGRES_PASSWORD: skillmatrix
+          POSTGRES_DB: skillmatrix
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U skillmatrix -d skillmatrix"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+
     steps:
       - uses: actions/checkout@v5
 
@@ -96,6 +112,9 @@ jobs:
         run: go vet ./...
 
       - name: テスト
+        env:
+          # 未設定だと DB テストはスキップされる。CI では必ず走らせる
+          TEST_DATABASE_URL: postgres://skillmatrix:skillmatrix@localhost:5432/skillmatrix?sslmode=disable
         run: go test ./...
 
       - name: ビルド
