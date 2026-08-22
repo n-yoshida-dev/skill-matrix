@@ -26,7 +26,8 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 - [x] `internal/config` で環境変数を読む（`.env.example` を `SPEC.md` §8.3 に合わせて更新）
 - [x] GitHub OAuth ログインとセッション（HttpOnly Cookie）を実装する
 - [x] GitHub OAuth App を実際に作り、ブラウザでログインを一度通す（2026-08-20 完了。認可 → トークン交換 → セッション発行 → `/api/me` まで実機で確認）
-- [ ] `internal/store` の DB テストを足す（`sessions` の期限切れ・cascade 削除。テスト用 DB の起動方法とセットで）
+- [x] `internal/store` の DB テストの土台を作る（`TEST_DATABASE_URL` が無ければスキップ、あればテストごとに専用スキーマへマイグレーションを流す。CI にも postgres サービスを追加。`store_test.go`）
+- [ ] `internal/store` の `sessions` の DB テストを足す（期限切れ・cascade 削除。土台は `store_test.go` にある）
 - [ ] `docker-compose.yml` に backend サービスを足す（Dockerfile とセット）
 
 ### 2-2. 理解度モデル（純粋関数・先に作る）
@@ -40,7 +41,7 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 
 - [x] `internal/roadmap` にマスタ JSON のスキーマ検証を実装する（key 重複・循環参照・上限・`origin` 別の必須項目）
 - [x] `backend/testdata/` にダミーのロードマップとダミー学習ログを用意する
-- [ ] `internal/store` にインポートの永続化を実装する（`roadmaps` / `domains` / `items` を1トランザクションで作る。`levels` は jsonb でそのまま入れる）
+- [x] `internal/store` にインポートの永続化を実装する（`ImportRoadmap`。`roadmaps` / `domains` / `items` を1トランザクションで作る。`levels` は jsonb でそのまま入れる。DB テスト5件）
 - [ ] インポート API と、自分のロードマップの CRUD を実装する（`outcome` 欠落は警告として応答に載せ、インポート自体は通す）
 - [ ] インポート時のリクエストボディのサイズ制限と、1フィールドの長さ上限を入れる（KNOWLEDGE.md 2026-08-14）
 - [ ] `docs/spec-guide.md` にインポートの説明を足す（壊れた JSON を貼るとどうなるか＝何がエラーで何が警告か、`roadmaps.levels` の保存先）。API まで出来てから書く
