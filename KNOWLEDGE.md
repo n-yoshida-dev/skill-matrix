@@ -427,5 +427,31 @@ WSL で並行開発していると、**別のディストリや Windows 側の�
 フック3種と `/handoff` は app-template 由来のコピーで、4リポジトリに同じものがあった。
 `n-yoshida-dev/claude-plugins` の `apps-workflow` プラグインに移し、`.claude/settings.json` の
 `extraKnownMarketplaces` + `enabledPlugins` で読み込む形にした。スキル名は `/apps-workflow:handoff` /
-`/apps-workflow:pr-check` になる。マシンごとに初回だけ `claude plugin install apps-workflow@n-yoshida-dev` が要る。
+`/apps-workflow:pr-check` になる。マシンごとに初回だけ、セッション内の `/plugin` からの導入が要る。
 判断の詳細は babyfood-check の KNOWLEDGE.md 2026-08-21。
+
+### 2026-08-22：`claude plugin install` は VSCode 拡張では使えない。導入はセッション内の `/plugin` から
+
+PR #2 のあと `claude plugin install apps-workflow@n-yoshida-dev` を実行したら `command not found` になった。
+
+**原因：VSCode 拡張は自前の実行環境を持っていて、`claude` コマンドをシェルの PATH に置かない。**
+確認したところ PATH にも `npm ls -g` にも存在しなかった。異常ではなく、拡張で使う限りこれが通常の状態。
+プラグインの導入も更新も**セッション内の `/plugin`** から行う。
+
+**「マシンごと」の単位は WSL ディストリごと（ユーザー単位）であって、リポジトリごとではない。**
+置き場所を見ると分かる。
+
+| 何が | どこに | 単位 |
+|---|---|---|
+| プラグイン本体（フック・スキル） | `~/.claude/plugins/cache/` | ユーザー |
+| マーケットプレイスの登録 | `~/.claude/plugins/known_marketplaces.json` | ユーザー |
+| 「このリポジトリで使う」宣言 | 各リポジトリの `.claude/settings.json` の `enabledPlugins` | リポジトリ |
+
+**本体はユーザー単位で1つ持ち、各リポジトリは「それを使う」と手を挙げるだけ。**
+実体を4リポジトリにコピーしていた状態を解消するのが PR #2 の目的だったので、この形が意図どおり。
+新しいアプリでは `enabledPlugins` を書くだけでよく（テンプレートに入っている）、導入の再実行は要らない。
+
+**動いているかの確かめ方：リポジトリ側に `.claude/hooks/` が無いのに、セッション開始時に
+TODO の未完タスクが表示されるか。** 表示されればプラグイン側の `session-briefing.sh` が動いている。
+
+この誤った案内は4リポジトリ＋テンプレート＋プラグインの README に横断で入っていたので、まとめて直した。
