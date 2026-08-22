@@ -25,7 +25,7 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 - [x] マイグレーション基盤を入れて `SPEC.md` §3 のテーブルを作る（golang-migrate）
 - [x] `internal/config` で環境変数を読む（`.env.example` を `SPEC.md` §8.3 に合わせて更新）
 - [x] GitHub OAuth ログインとセッション（HttpOnly Cookie）を実装する
-- [ ] GitHub OAuth App を実際に作り、ブラウザでログインを一度通す（本人作業。`.env` に3つの値を入れる）
+- [x] GitHub OAuth App を実際に作り、ブラウザでログインを一度通す（2026-08-20 完了。認可 → トークン交換 → セッション発行 → `/api/me` まで実機で確認）
 - [ ] `internal/store` の DB テストを足す（`sessions` の期限切れ・cascade 削除。テスト用 DB の起動方法とセットで）
 - [ ] `docker-compose.yml` に backend サービスを足す（Dockerfile とセット）
 
@@ -56,6 +56,7 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 
 ### 2-5. フロントエンド
 
+- [ ] `vite.config.ts` に `server: { port: 5173, strictPort: true }` を入れる（ポートが黙ってずれると `FRONTEND_ORIGIN` と食い違う。KNOWLEDGE.md 2026-08-20）
 - [ ] API クライアントと認証まわりの土台（TanStack Query）
 - [ ] マトリクス画面（可変長グリッド＋サマリー帯、色＝レベル／枠線＝要再確認）
 - [ ] 学習パス画面（依存順の縦一列、済／今ここ／この先、到達状態の表示）
@@ -66,7 +67,7 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 ### 2-6. 仕上げ
 
 - [ ] E2E（Playwright）でログ投稿からマトリクス更新までを1本通す
-- [ ] GitHub Actions で lint / typecheck / test / build を通す
+- [x] GitHub Actions で lint / typecheck / test / build を通す（テンプレート由来の `.github/workflows/ci.yml` が要件を満たしている。PR #1 で実際に通ることを確認）
 - [ ] README を書く（セットアップ手順・スクリーンショット）
 
 ## フェーズ3：v2 以降

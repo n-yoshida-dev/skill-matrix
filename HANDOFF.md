@@ -21,6 +21,9 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 **純粋関数の層が完結した（`domain` → `roadmap`）。次は 2-3 の残り＝インポートの永続化と API。
 ここから作業の性質が「純粋関数」から「DB・HTTP」に変わる。**
 
+ここまでの成果は **PR #1 で `main` にマージ済み**。CI（gofmt / vet / test / build、
+フロントの lint / typecheck / test / build、秘密情報スキャン）は `main` と全 PR で走る。
+
 - `SPEC.md` — 実装が参照する正本。9節すべて記入済み
 - `docs/spec-guide.md` — **人間向けの解説。本人はこちらを読む。** SPEC.md と同じ事実を二重に書かない
 - `backend/internal/domain/` — 理解度モデルの純粋関数。テスト62件・カバレッジ96.6%
@@ -29,7 +32,7 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 - `backend/internal/config/` — 環境変数の読み込みと検証。カバレッジ94.3%
 - `backend/internal/store/` — PostgreSQL アクセス（users / sessions）。**DB テスト未着手**
 - `backend/internal/httpapi/` — chi ルータ、CORS、GitHub OAuth、セッション。カバレッジ39.1%
-  （DB を使う経路が未検査。低いのはそのため）
+  （DB を使う経路が未検査。低いのはそのため）。**ログインは実機で通し確認済み（2026-08-20）**
 - `backend/migrations/` — 12テーブル ＋ `roadmaps.levels`。`up` → `down -all` → `up` を実機確認済み
 - `backend/testdata/` — ダミーのロードマップ2種とダミー学習ログ6件。**実データは置かない**
 
@@ -92,12 +95,14 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
    長さは未着手（KNOWLEDGE.md 2026-08-14）
 4. 自分のロードマップの CRUD（一覧・取得・名前と目標日の更新・削除）
 
-**本人にやってもらう必要があること（AI 側ではできない）**：
-GitHub OAuth App を作り（<https://github.com/settings/developers>）、
-`backend/.env` に `GITHUB_OAUTH_CLIENT_ID` / `GITHUB_OAUTH_CLIENT_SECRET` /
-`SESSION_SECRET` を入れて、ブラウザでログインを一度通すこと。
-Authorization callback URL は `http://localhost:8080/api/auth/github/callback`。
-**現時点で通しで検証できていないのはこの1点だけ。**
+**本人にやってもらう必要があること：現時点で無し。**
+GitHub OAuth App は作成済みで、2026-08-20 に認可 → トークン交換 → セッション発行 →
+`/api/me` まで実機で通した。**未検証のまま残っている経路はもう無い。**
+
+ただし `backend/.env` は**ローカルにしか無い**（コミットしていない）。別のマシンで動かすときは
+作り直しが要る。値は GitHub の OAuth App 設定と `openssl rand -base64 48` から取り直す。
+本番にデプロイするときは Redirect URI が変わるので**本番用の OAuth App を別に作る**こと
+（Client Secret をローカルと共用しない）。
 
 ## 6. 動作確認コマンド
 
