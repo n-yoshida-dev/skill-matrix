@@ -1,5 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "ENABLE_STOP_REVIEW": "0"
+  },
   "permissions": {
     "allow": [
       "Bash(npm ci)",
@@ -31,7 +34,8 @@
   },
   "enabledPlugins": {
     "apps-workflow@n-yoshida-dev": true,
-    "security-guidance@claude-plugins-official": true
+    "security-guidance@claude-plugins-official": true,
+    "explanatory-output-style@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "n-yoshida-dev": {
@@ -40,8 +44,5 @@
         "repo": "n-yoshida-dev/claude-plugins"
       }
     }
-  },
-  "env": {
-    "ENABLE_STOP_REVIEW": "0"
   }
 }
