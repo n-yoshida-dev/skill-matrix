@@ -38,7 +38,7 @@
 ## Claude Code の設定
 
 共通のフック3種と `/apps-workflow:handoff` `/apps-workflow:pr-check` は [apps-workflow プラグイン](https://github.com/n-yoshida-dev/claude-plugins)から来る（`.claude/settings.json` の `enabledPlugins`）。
-マシン（WSL ディストリ）ごとに初回だけ導入が要る。**Claude Code のセッション内で `/plugin` から入れる**（VSCode 拡張などはシェルに `claude` コマンドを置かないため、`claude plugin install` は `command not found` になる）。
+**`enabledPlugins` だけでは install されない。アプリごとに project スコープで install が要る**（反映は次のセッションから。このアプリは 2026-08-30 に `enabledPlugins` の全プラグインを導入済み）。手順は `../CLAUDE.md`「新しいアプリを作るとき」を参照。
 
 | 種別 | 中身 | 出どころ |
 |---|---|---|
