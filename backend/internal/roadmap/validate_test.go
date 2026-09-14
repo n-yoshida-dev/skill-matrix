@@ -463,6 +463,63 @@ func TestValidate_Limits(t *testing.T) {
 // 依存関係
 // ---------------------------------------------------------------------------
 
+func TestValidate_FieldLength(t *testing.T) {
+	// 「文字数」で数えることを確かめるため、日本語（1文字3バイト）で埋める
+	over := func(n int) string { return strings.Repeat("あ", n+1) }
+	exact := func(n int) string { return strings.Repeat("あ", n) }
+
+	tests := []struct {
+		name     string
+		mutate   func(d *Document)
+		wantPath string
+	}{
+		{"ロードマップ名", func(d *Document) { d.Name = over(MaxNameLen) }, "name"},
+		{"ロードマップの説明", func(d *Document) { d.Description = over(MaxTextLen) }, "description"},
+		{"出典", func(d *Document) { d.Source = "https://example.com/" + over(MaxSourceLen) }, "source"},
+		{"レベル名", func(d *Document) { d.Levels[0].Name = over(MaxNameLen) }, "levels[0].name"},
+		{"判定基準", func(d *Document) { d.Levels[2].Criteria = over(MaxTextLen) }, "levels[2].criteria"},
+		{"分野名", func(d *Document) { d.Domains[0].Name = over(MaxNameLen) }, "domains[0].name"},
+		{"分野の到達状態", func(d *Document) { d.Domains[0].Goal = over(MaxTextLen) }, "domains[0].goal"},
+		{"項目名", func(d *Document) { d.Domains[0].Items[1].Name = over(MaxNameLen) }, "domains[0].items[1].name"},
+		{"項目の説明", func(d *Document) { d.Domains[0].Items[0].Description = over(MaxTextLen) }, "domains[0].items[0].description"},
+		{"項目の到達状態", func(d *Document) { d.Domains[0].Items[0].Outcome = over(MaxTextLen) }, "domains[0].items[0].outcome"},
+		{"次の確認方法", func(d *Document) { d.Domains[0].Items[0].VerifyBy = over(MaxTextLen) }, "domains[0].items[0].verifyBy"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name+"が上限を超えるとエラー", func(t *testing.T) {
+			d := validDoc()
+			tt.mutate(d)
+			res := Validate(d)
+			if !hasIssue(res, IssueTooLong, tt.wantPath) {
+				t.Errorf("%s に too_long が出るべき。出た問題: %+v", tt.wantPath, res.Issues)
+			}
+		})
+	}
+
+	t.Run("上限ちょうどは通る", func(t *testing.T) {
+		d := validDoc()
+		d.Name = exact(MaxNameLen)
+		d.Levels[0].Criteria = exact(MaxTextLen)
+		d.Domains[0].Items[0].Outcome = exact(MaxTextLen)
+		res := Validate(d)
+		if codes := issueCodes(res, SeverityError); len(codes) != 0 {
+			t.Errorf("上限ちょうどの文字数でエラーが出ている: %+v", res.Issues)
+		}
+	})
+
+	t.Run("バイト数ではなく文字数で数える", func(t *testing.T) {
+		// MaxNameLen 文字の日本語は MaxNameLen*3 バイト。バイト数で見ていたら弾かれてしまう
+		d := validDoc()
+		d.Name = exact(MaxNameLen)
+		if len(d.Name) <= MaxNameLen {
+			t.Fatal("テストの前提が崩れている（日本語がマルチバイトになっていない）")
+		}
+		if res := Validate(d); hasIssue(res, IssueTooLong, "name") {
+			t.Error("文字数は上限内なのに too_long が出ている（バイト数で数えている）")
+		}
+	})
+}
+
 func TestValidate_Dependencies(t *testing.T) {
 	t.Run("実在しない項目への依存", func(t *testing.T) {
 		doc := validDoc()

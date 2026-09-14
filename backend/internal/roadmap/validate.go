@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 // このファイルはマスタ JSON の検査を担う。方針は3つ。
@@ -47,7 +48,8 @@ const (
 	IssueUnknownDependency        IssueCode = "unknown_dependency"         // 実在しない項目への依存
 	IssueSelfDependency           IssueCode = "self_dependency"            // 自分自身への依存
 	IssueCircularDependency       IssueCode = "circular_dependency"        // 循環参照
-	IssueTooMany                  IssueCode = "too_many"                   // 上限超え
+	IssueTooMany                  IssueCode = "too_many"                   // 件数の上限超え
+	IssueTooLong                  IssueCode = "too_long"                   // 1フィールドの文字数の上限超え
 	IssueMissingOutcome           IssueCode = "missing_outcome"            // 到達状態が無い
 )
 
@@ -232,6 +234,9 @@ func validateMeta(doc *Document, origin Origin, res *Result) {
 	if strings.TrimSpace(doc.Name) == "" {
 		res.errorf(IssueRequired, "name", "ロードマップの名前は必須です")
 	}
+	checkLen(doc.Name, "name", MaxNameLen, res)
+	checkLen(doc.Description, "description", MaxTextLen, res)
+	checkLen(doc.Source, "source", MaxSourceLen, res)
 
 	if doc.Origin != "" && !doc.Origin.Valid() {
 		res.errorf(IssueInvalidOrigin, "origin",
@@ -318,6 +323,8 @@ func validateLevels(doc *Document, res *Result) {
 			res.errorf(IssueRequired, path+".criteria",
 				"判定基準（criteria）は必須です。この文言がそのまま AI の判定基準になります")
 		}
+		checkLen(lv.Name, path+".name", MaxNameLen, res)
+		checkLen(lv.Criteria, path+".criteria", MaxTextLen, res)
 	}
 
 	var missing []int
@@ -368,6 +375,8 @@ func validateStructure(doc *Document, origin Origin, res *Result) map[string]str
 		if strings.TrimSpace(dom.Name) == "" {
 			res.errorf(IssueRequired, domPath+".name", "分野の名前は必須です")
 		}
+		checkLen(dom.Name, domPath+".name", MaxNameLen, res)
+		checkLen(dom.Goal, domPath+".goal", MaxTextLen, res)
 		checkGoal(dom, origin, domPath, res)
 
 		if len(dom.Items) == 0 {
@@ -394,6 +403,10 @@ func validateStructure(doc *Document, origin Origin, res *Result) map[string]str
 			if strings.TrimSpace(it.Name) == "" {
 				res.errorf(IssueRequired, itemPath+".name", "詳細項目の名前は必須です")
 			}
+			checkLen(it.Name, itemPath+".name", MaxNameLen, res)
+			checkLen(it.Description, itemPath+".description", MaxTextLen, res)
+			checkLen(it.Outcome, itemPath+".outcome", MaxTextLen, res)
+			checkLen(it.VerifyBy, itemPath+".verifyBy", MaxTextLen, res)
 			checkOutcome(it, origin, itemPath, res)
 		}
 	}
@@ -414,6 +427,16 @@ func checkKey(key, path, what string, res *Result) bool {
 		return false
 	}
 	return true
+}
+
+// checkLen は1フィールドの文字数が上限内かを見る。空は「未設定」なので通す。
+//
+// バイト数（len）ではなく文字数（utf8.RuneCountInString）で数える。
+// 日本語は1文字3バイトなので、バイト数で見ると英語との間で不公平になる。
+func checkLen(s, path string, maxRunes int, res *Result) {
+	if n := utf8.RuneCountInString(s); n > maxRunes {
+		res.errorf(IssueTooLong, path, "%d 文字までです（%d 文字あります）", maxRunes, n)
+	}
 }
 
 // checkOutcome は到達状態を origin 別に見る（SPEC.md §2.1）。

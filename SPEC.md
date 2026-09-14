@@ -117,6 +117,10 @@
 - `dependsOn` は同一ロードマップ内の `item.key` のみ参照可。**循環参照はインポート時に弾く**
 - `levels` は 1〜5 を必ず全て含む。`criteria` は**そのまま LLM のプロンプトに埋め込まれる**ため、判定基準の正本はここ1か所
 - 上限：domains 50、1 domain あたり items 100、1 ロードマップあたり items 500
+- **1フィールドの文字数の上限**（バイト数ではなく文字数。日本語1文字＝1）：`name`（ロードマップ・分野・項目・レベル）200、
+  `description` / `outcome` / `goal` / `criteria` / `verifyBy` 2,000、`source` 2,048。
+  `criteria` / `outcome` / `goal` / `verifyBy` は LLM のプロンプトに載るので、上限が無いと判定1回の課金に直結する。
+  超えたらエラー（`too_long`）。定数は `backend/internal/roadmap/schema.go`
 - **定義にないフィールドはエラーにして弾く。** `dependsOn` を `dependOn` と打ち間違えたときに、黙って依存関係が消えて学習パスの並び順だけが静かに狂う、という壊れ方を避けるため
 - **検査は1件目で打ち切らず、問題を全部集めて返す。** エラー（インポート中止）と警告（インポートは通す）を分け、`domains[0].items[2].key` の形で場所を添える。実装は `backend/internal/roadmap/`
 
@@ -538,6 +542,22 @@ priority = w.Readiness * readiness   // 依存項目がすべて L1 以上なら
 ```json
 { "error": { "code": "quota_exceeded", "message": "今月の判定回数の上限に達しました" } }
 ```
+
+### インポート（`POST /api/roadmaps/import`）
+
+リクエストボディは §2 のマスタ JSON **そのもの**（何かで包まない）。上限は 2 MiB。
+検査（§2）は問題を全部集めて返し、**エラーが1件でもあれば保存しない。警告だけなら保存する。**
+
+| 状況 | ステータス | 応答 |
+|---|---|---|
+| 保存した | 201 | `{ "id": "<roadmaps.id>", "issues": [警告のみ] }`。警告が無ければ `"issues": []` |
+| 検査エラーあり | 400 | `{ "error": { "code": "invalid_roadmap", "message": "..." }, "issues": [エラーと警告の全部] }` |
+| JSON として読めない | 400 | 同上（`issues[0].code` が `invalid_json` / `unknown_field`） |
+| ボディが上限超え | 413 | `{ "error": { "code": "payload_too_large", "message": "..." } }` |
+
+`issues[]` の1件は `{ "severity": "error" | "warning", "code": "...", "path": "domains[0].items[2].key", "message": "..." }`。
+`code` の一覧は `backend/internal/roadmap/validate.go` の `IssueCode`。フロントは `message` ではなく `code` と `path` で分岐する。
+インポートで作られるロードマップは常に `kind='personal'`、`visibility='private'`。
 
 ---
 

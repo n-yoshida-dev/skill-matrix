@@ -23,6 +23,17 @@ const (
 	MaxKeyLen         = 64  // key の最大長。^[a-z0-9][a-z0-9-]{0,63}$ に対応する
 )
 
+// 1フィールドの文字数の上限（SPEC.md §2）。バイト数ではなく文字数（rune）で数える。
+// 日本語は1文字が3バイトなので、バイト数で制限すると英語の3分の1しか書けなくなる。
+//
+// criteria / outcome / goal / verifyBy は LLM のプロンプトにそのまま載る。
+// 上限が無いと、巨大な文字列を1つ入れるだけで判定1回あたりの課金が跳ね上がる。
+const (
+	MaxNameLen   = 200  // name（ロードマップ・分野・項目・レベル）
+	MaxTextLen   = 2000 // description / outcome / goal / criteria / verifyBy
+	MaxSourceLen = 2048 // source（URL。一般的なブラウザが扱える上限に合わせた）
+)
+
 // Origin はロードマップの出所（SPEC.md §2）。
 //
 // 出典（source / checkedAt）と到達状態（outcome / goal）をどこまで求めるかが、これで変わる。
