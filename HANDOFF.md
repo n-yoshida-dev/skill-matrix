@@ -21,7 +21,8 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 **インポートの永続化（`store.ImportRoadmap`）と DB テストの土台まで完了。
 次は 2-3 の残り＝インポート API（`POST /api/roadmaps/import`）。**
 
-`internal/roadmap` までは **PR #1 で `main` にマージ済み**。`ImportRoadmap` は `feat/roadmap-store` の PR。CI（gofmt / vet / test / build、
+`internal/roadmap` までは **PR #1 で `main` にマージ済み**。`ImportRoadmap` も **PR #8 でマージ済み**
+（feat のコミットが chore ブランチに乗った経緯は KNOWLEDGE.md 2026-08-22）。CI（gofmt / vet / test / build、
 フロントの lint / typecheck / test / build、秘密情報スキャン）は `main` と全 PR で走る。
 
 - `SPEC.md` — 実装が参照する正本。9節すべて記入済み

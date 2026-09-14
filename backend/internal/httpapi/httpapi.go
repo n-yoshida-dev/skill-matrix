@@ -20,14 +20,18 @@ type API struct {
 	cfg    *config.Config
 	store  *store.Store
 	github *githubOAuth
+	// importer は store と同じ実体。ロードマップのインポートだけインタフェース越しに呼び、
+	// テストで DB 無しの偽物に差し替えられるようにしている（roadmaps.go）
+	importer roadmapImporter
 }
 
 // New はルータを組み立てて返す。
 func New(cfg *config.Config, st *store.Store) http.Handler {
 	api := &API{
-		cfg:    cfg,
-		store:  st,
-		github: newGitHubOAuth(cfg.GitHub),
+		cfg:      cfg,
+		store:    st,
+		github:   newGitHubOAuth(cfg.GitHub),
+		importer: st,
 	}
 
 	r := chi.NewRouter()
@@ -45,6 +49,7 @@ func New(cfg *config.Config, st *store.Store) http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(api.requireAuth)
 			r.Get("/me", api.handleMe)
+			r.Post("/roadmaps/import", api.handleImportRoadmap)
 		})
 	})
 
@@ -67,10 +72,12 @@ type errorDetail struct {
 
 // エラーコード。フロントが分岐に使うので、文言ではなくこの値で判断させる。
 const (
-	codeUnauthorized = "unauthorized"
-	codeBadRequest   = "bad_request"
-	codeInternal     = "internal_error"
-	codeOAuthFailed  = "oauth_failed"
+	codeUnauthorized    = "unauthorized"
+	codeBadRequest      = "bad_request"
+	codeInternal        = "internal_error"
+	codeOAuthFailed     = "oauth_failed"
+	codePayloadTooLarge = "payload_too_large" // リクエストボディが上限を超えた
+	codeInvalidRoadmap  = "invalid_roadmap"   // マスタ JSON の検査でエラーがあった（issues を併せて返す）
 )
 
 // writeJSON は JSON を書き出す。
