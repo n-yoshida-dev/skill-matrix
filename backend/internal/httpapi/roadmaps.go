@@ -19,12 +19,16 @@ import (
 // 500 項目 × 数 KB でも収まる大きさにしてある。
 const maxImportBodyBytes = 2 << 20 // 2 MiB
 
-// roadmapImporter はインポートのハンドラが store に求める操作。
+// roadmapStore はロードマップのハンドラが store に求める操作。
 //
 // *store.Store をそのまま持たず、必要なメソッドだけをインタフェースにしておくと、
 // テストでは DB を使わない偽物に差し替えられる（Spring で Repository をモックするのと同じ考え方）。
-type roadmapImporter interface {
+type roadmapStore interface {
 	ImportRoadmap(ctx context.Context, ownerUserID, kind string, doc *roadmap.Document) (string, error)
+	ListRoadmaps(ctx context.Context, ownerUserID string) ([]store.RoadmapSummary, error)
+	GetRoadmap(ctx context.Context, ownerUserID, roadmapID string) (*store.Roadmap, error)
+	UpdateRoadmap(ctx context.Context, ownerUserID, roadmapID string, upd store.RoadmapUpdate) (*store.RoadmapSummary, error)
+	DeleteRoadmap(ctx context.Context, ownerUserID, roadmapID string) error
 }
 
 // importResponse は POST /api/roadmaps/import の 201 応答（SPEC.md §6）。
@@ -82,7 +86,7 @@ func (a *API) handleImportRoadmap(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := a.importer.ImportRoadmap(r.Context(), u.ID, store.RoadmapKindPersonal, doc)
+	id, err := a.roadmaps.ImportRoadmap(r.Context(), u.ID, store.RoadmapKindPersonal, doc)
 	if err != nil {
 		log.Printf("ロードマップの保存に失敗しました: %v", err)
 		writeError(w, http.StatusInternalServerError, codeInternal, "ロードマップを保存できませんでした")

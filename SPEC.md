@@ -558,6 +558,23 @@ priority = w.Readiness * readiness   // 依存項目がすべて L1 以上なら
 `issues[]` の1件は `{ "severity": "error" | "warning", "code": "...", "path": "domains[0].items[2].key", "message": "..." }`。
 `code` の一覧は `backend/internal/roadmap/validate.go` の `IssueCode`。フロントは `message` ではなく `code` と `path` で分岐する。
 インポートで作られるロードマップは常に `kind='personal'`、`visibility='private'`。
+`path` は問題の場所が特定できるときだけ付く。`invalid_json` などファイル全体の問題では `path` キー自体が無い。
+
+### 自分のロードマップの CRUD（`/api/roadmaps`）
+
+対象は自分の `kind='personal'` だけ。**他人のもの・存在しないものはどちらも 404 `not_found`**
+（403 にすると「その id は存在する」と教えてしまう）。`:id` が uuid の形でない場合も 404。
+
+| メソッド | 応答 |
+|---|---|
+| `GET /api/roadmaps` | 200 `{ "roadmaps": [見出し, ...] }`。最近更新した順。0件なら `[]` |
+| `GET /api/roadmaps/:id` | 200 見出し ＋ `levels`（§2 の形）＋ `domains: [{ id, key, name, goal, items: [{ id, key, name, description, outcome, outcomeSource, verifyBy, dependsOn }] }]`。分野・項目は JSON に書いた順、`dependsOn` は key の配列（無ければ `[]`） |
+| `PATCH /api/roadmaps/:id` | ボディ `{ "name"?: string, "targetDate"?: "YYYY-MM-DD" \| null }`。**キーが無ければ触らない、`null` なら目標日を消す。** 定義にないキー・空の名前（前後の空白を除いて空）・形の違う日付・更新項目なしは 400。名前は前後の空白を除いて保存する。ボディ上限 16 KiB（超えると 413）。200 で更新後の見出し |
+| `DELETE /api/roadmaps/:id` | 204。分野・項目・学習ログ・判定は FK の cascade で消える |
+
+見出し：`{ id, kind, name, description, origin, source, checkedAt, targetDate, itemCount, createdAt, updatedAt }`。
+日付（`checkedAt` / `targetDate`）は `YYYY-MM-DD` か `null`、日時（`createdAt` / `updatedAt`）は RFC 3339。
+未設定の文字列は `null` ではなく `""`（フロントの分岐を減らす）。
 
 ---
 

@@ -15,9 +15,12 @@ import (
 	"github.com/n-yoshida-dev/skill-matrix/internal/store"
 )
 
-// fakeImporter は DB を使わない偽物の store。
+// fakeImporter は DB を使わない偽物の store（インポート用）。
 // 呼ばれたときの引数を覚えておき、決めておいた結果を返す。
+// CRUD 側のメソッドは fakeRoadmapStore（roadmaps_crud_test.go）に埋め込んで満たす。
 type fakeImporter struct {
+	fakeRoadmapStore
+
 	called  bool
 	ownerID string
 	kind    string
@@ -48,7 +51,7 @@ func importRequest(body []byte) *http.Request {
 func callImport(t *testing.T, body []byte, imp *fakeImporter) *httptest.ResponseRecorder {
 	t.Helper()
 	api := testAPI()
-	api.importer = imp
+	api.roadmaps = imp
 	rec := httptest.NewRecorder()
 	api.handleImportRoadmap(rec, importRequest(body))
 	return rec
