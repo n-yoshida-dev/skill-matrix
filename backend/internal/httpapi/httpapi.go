@@ -20,9 +20,9 @@ type API struct {
 	cfg    *config.Config
 	store  *store.Store
 	github *githubOAuth
-	// importer は store と同じ実体。ロードマップのインポートだけインタフェース越しに呼び、
+	// roadmaps は store と同じ実体。ロードマップの操作だけインタフェース越しに呼び、
 	// テストで DB 無しの偽物に差し替えられるようにしている（roadmaps.go）
-	importer roadmapImporter
+	roadmaps roadmapStore
 }
 
 // New はルータを組み立てて返す。
@@ -31,7 +31,7 @@ func New(cfg *config.Config, st *store.Store) http.Handler {
 		cfg:      cfg,
 		store:    st,
 		github:   newGitHubOAuth(cfg.GitHub),
-		importer: st,
+		roadmaps: st,
 	}
 
 	r := chi.NewRouter()
@@ -50,6 +50,10 @@ func New(cfg *config.Config, st *store.Store) http.Handler {
 			r.Use(api.requireAuth)
 			r.Get("/me", api.handleMe)
 			r.Post("/roadmaps/import", api.handleImportRoadmap)
+			r.Get("/roadmaps", api.handleListRoadmaps)
+			r.Get("/roadmaps/{id}", api.handleGetRoadmap)
+			r.Patch("/roadmaps/{id}", api.handlePatchRoadmap)
+			r.Delete("/roadmaps/{id}", api.handleDeleteRoadmap)
 		})
 	})
 
@@ -76,6 +80,7 @@ const (
 	codeBadRequest      = "bad_request"
 	codeInternal        = "internal_error"
 	codeOAuthFailed     = "oauth_failed"
+	codeNotFound        = "not_found"         // 存在しない、または自分のものではない（存在の有無は教えない）
 	codePayloadTooLarge = "payload_too_large" // リクエストボディが上限を超えた
 	codeInvalidRoadmap  = "invalid_roadmap"   // マスタ JSON の検査でエラーがあった（issues を併せて返す）
 )

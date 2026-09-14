@@ -44,7 +44,7 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 - [x] `internal/store` にインポートの永続化を実装する（`ImportRoadmap`。`roadmaps` / `domains` / `items` を1トランザクションで作る。`levels` は jsonb でそのまま入れる。DB テスト5件）
 - [x] インポート API（`POST /api/roadmaps/import`）を実装する（`outcome` 欠落は警告として 201 の応答に載せ、インポート自体は通す。エラーは 400 で全問題を返す。SPEC.md §6）
 - [x] インポート時のリクエストボディのサイズ制限（2 MiB → 413）と、1フィールドの文字数上限（`too_long`）を入れる（SPEC.md §2）
-- [ ] 自分のロードマップの CRUD を実装する（一覧・取得・名前と目標日の更新・削除）。完了条件：`GET /api/roadmaps` `GET/PATCH/DELETE /api/roadmaps/:id` が他人のロードマップには 404 を返し、`depends_on_keys` が `[]string` で読める（KNOWLEDGE.md 2026-08-22）
+- [x] 自分のロードマップの CRUD を実装する（一覧・取得・名前と目標日の更新・削除）。完了条件：`GET /api/roadmaps` `GET/PATCH/DELETE /api/roadmaps/:id` が他人のロードマップには 404 を返し、`depends_on_keys` が `[]string` で読める（KNOWLEDGE.md 2026-08-22）。SPEC.md §6
 - [ ] `docs/spec-guide.md` にインポートの説明を足す（壊れた JSON を貼るとどうなるか＝何がエラーで何が警告か、`roadmaps.levels` の保存先）。API まで出来てから書く
 
 ### 2-4. AI 判定

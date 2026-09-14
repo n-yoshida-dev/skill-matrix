@@ -8,16 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
-
 	"github.com/n-yoshida-dev/skill-matrix/internal/roadmap"
 )
-
-// textArrayScanner は text[] の列を []string に読むための Scanner を返す。
-// database/sql は配列を知らないので、pgx の型マップに変換を任せる。
-func textArrayScanner(dst *[]string) any {
-	return pgtype.NewMap().SQLScanner(dst)
-}
 
 // loadSampleDocument は testdata/roadmap-sample.json を読み込んで検査を通す。
 func loadSampleDocument(t *testing.T) *roadmap.Document {
