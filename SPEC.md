@@ -569,7 +569,7 @@ priority = w.Readiness * readiness   // 依存項目がすべて L1 以上なら
 |---|---|
 | `GET /api/roadmaps` | 200 `{ "roadmaps": [見出し, ...] }`。最近更新した順。0件なら `[]` |
 | `GET /api/roadmaps/:id` | 200 見出し ＋ `levels`（§2 の形）＋ `domains: [{ id, key, name, goal, items: [{ id, key, name, description, outcome, outcomeSource, verifyBy, dependsOn }] }]`。分野・項目は JSON に書いた順、`dependsOn` は key の配列（無ければ `[]`） |
-| `PATCH /api/roadmaps/:id` | ボディ `{ "name"?: string, "targetDate"?: "YYYY-MM-DD" \| null }`。**キーが無ければ触らない、`null` なら目標日を消す。** 定義にないキー・空の名前・形の違う日付・更新項目なしは 400。200 で更新後の見出し |
+| `PATCH /api/roadmaps/:id` | ボディ `{ "name"?: string, "targetDate"?: "YYYY-MM-DD" \| null }`。**キーが無ければ触らない、`null` なら目標日を消す。** 定義にないキー・空の名前（前後の空白を除いて空）・形の違う日付・更新項目なしは 400。名前は前後の空白を除いて保存する。ボディ上限 16 KiB（超えると 413）。200 で更新後の見出し |
 | `DELETE /api/roadmaps/:id` | 204。分野・項目・学習ログ・判定は FK の cascade で消える |
 
 見出し：`{ id, kind, name, description, origin, source, checkedAt, targetDate, itemCount, createdAt, updatedAt }`。
