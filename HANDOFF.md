@@ -18,12 +18,12 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 
 ## 1. 現在地
 
-**インポートの永続化（`store.ImportRoadmap`）と DB テストの土台まで完了。
-次は 2-3 の残り＝インポート API（`POST /api/roadmaps/import`）。**
+**フェーズ2 の 2-3（ロードマップ）が API まで完了。`main` は PR #14 まで取り込み済みで、作業中のブランチは無い。
+次は 2-3 の残り＝`docs/spec-guide.md` にインポートの説明を足す（API が出来たので書ける）。その後 2-1 の `sessions` DB テスト。**
 
-`internal/roadmap` までは **PR #1 で `main` にマージ済み**。`ImportRoadmap` も **PR #8 でマージ済み**
-（feat のコミットが chore ブランチに乗った経緯は KNOWLEDGE.md 2026-08-22）。CI（gofmt / vet / test / build、
-フロントの lint / typecheck / test / build、秘密情報スキャン）は `main` と全 PR で走る。
+`main` にあるもの：`internal/roadmap`（PR #1）、`store.ImportRoadmap`（PR #8）、
+**インポート API とサイズ制限（PR #13）、自分のロードマップの CRUD API（PR #14）**。
+CI（gofmt / vet / test / build、フロントの lint / typecheck / test / build、秘密情報スキャン）は `main` と全 PR で走る。
 
 - `SPEC.md` — 実装が参照する正本。9節すべて記入済み
 - `docs/spec-guide.md` — **人間向けの解説。本人はこちらを読む。** SPEC.md と同じ事実を二重に書かない
@@ -32,30 +32,22 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
   テスト66件・カバレッジ95.6%**
 - `backend/internal/config/` — 環境変数の読み込みと検証。カバレッジ94.3%
 - `backend/internal/store/` — PostgreSQL アクセス（users / sessions / roadmaps）。
-  **`ImportRoadmap` は DB テスト5件。`sessions` の DB テストは未着手**（土台は `store_test.go` にある）
-- `backend/internal/httpapi/` — chi ルータ、CORS、GitHub OAuth、セッション。カバレッジ39.1%
-  （DB を使う経路が未検査。低いのはそのため）。**ログインは実機で通し確認済み（2026-08-20）**
+  ロードマップの永続化と CRUD は DB テスト13件。**`sessions` の DB テストは未着手**（土台は `store_test.go` にある）
+- `backend/internal/httpapi/` — chi ルータ、CORS、GitHub OAuth、セッション、**ロードマップのインポートと CRUD**。
+  ロードマップのハンドラは store をインタフェース越しに呼び、DB 無しの偽物でテストする（KNOWLEDGE.md 2026-09-14）。
+  **ログインは実機で通し確認済み（2026-08-20）。インポートと CRUD も curl で実機確認済み（2026-09-14）**
 - `backend/migrations/` — 12テーブル ＋ `roadmaps.levels`。`up` → `down -all` → `up` を実機確認済み
 - `backend/testdata/` — ダミーのロードマップ2種とダミー学習ログ6件。**実データは置かない**
 
 ## 2. 直近でやったこと
 
-- **`store.ImportRoadmap`** — 検査済みの `roadmap.Document` から `roadmaps` / `domains` / `items` を
-  1トランザクションで作る。`levels` は jsonb に丸ごと、`depends_on_keys` は key のまま `text[]`、
-  `outcome` があれば `outcome_source='authored'`。戻り値は `roadmaps.id`
-- **DB テストの土台**（`store_test.go`）— `TEST_DATABASE_URL` が無ければスキップ。あればテストごとに
-  専用スキーマを作り `migrations/*.up.sql` を流す。CI の backend ジョブに postgres サービスを追加。
-  要点は KNOWLEDGE.md 2026-08-22
-- **`internal/roadmap`** — マスタ JSON の検査。詳細は KNOWLEDGE.md 2026-08-14 の3件。要点だけ：
-  - **問題を全部集めて返す**（1件目で打ち切らない）。エラー＝インポート中止、警告＝通す
-  - 未知のフィールドはエラー（`dependsOn` の打ち間違いを黙って通さない）
-  - 循環参照を DFS で検出し、経路をメッセージに出す
-  - 問題の場所を `domains[0].items[2]` の形の経路で返し、フロントが該当箇所を指せる
-- **`migrations/000003_roadmap_levels`** — `roadmaps.levels`（jsonb）。SPEC に保存先が
-  抜けていたのを埋めた。**このマイグレーションは `roadmaps` が0行である前提**
-- `backend/testdata/` — ダミーのロードマップ（正常・壊れたもの）とダミー学習ログ
-- `.env.example` をコミット（**前セッションから未コミットだった。原因は §4-5**）
-- `.mcp.json`（context7）をリポジトリに追加
+履歴はここに積まない（`git log` と KNOWLEDGE.md が持つ）。直近の2本だけ：
+
+- **PR #13**：インポート API（`POST /api/roadmaps/import`）。検査エラーは 400 で全問題、警告だけなら 201 で保存。
+  ボディ 2 MiB と1フィールドの文字数上限。SPEC.md §2 §6、KNOWLEDGE.md 2026-09-14
+- **PR #14**：自分のロードマップの CRUD。他人のもの・存在しないものは 404。PATCH は `null` で目標日を消す。SPEC.md §6
+- それ以前（`store.ImportRoadmap`、DB テストの土台、`internal/roadmap` の検査、`roadmaps.levels`）は
+  KNOWLEDGE.md 2026-08-14 / 2026-08-22 と `git log` を参照
 
 ## 3. 確定している決定事項
 
@@ -91,18 +83,9 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 
 ## 5. 次セッションのタスク
 
-`TODO.md` の未完タスクを上から。**次は 2-3 の残り（インポート API）から。**
-
-1. **インポート API（`POST /api/roadmaps/import`）。**
-   `roadmap.ParseAndValidate` → `store.ImportRoadmap(ctx, user.ID, store.RoadmapKindPersonal, doc)`。
-   **エラーは 400、警告は 201 の応答に載せる**（`outcome` 欠落でインポートを止めない）。
-   `Result` の JSON 形はテストで固定してある
-2. **リクエストボディのサイズ制限と1フィールドの長さ上限。**
-   `criteria` / `outcome` は LLM のプロンプトに載るのでコストに直結する。件数の上限は入れたが
-   長さは未着手（KNOWLEDGE.md 2026-08-14）
-3. 自分のロードマップの CRUD（一覧・取得・名前と目標日の更新・削除）。
-   `depends_on_keys` の読み出しは `pgtype.NewMap().SQLScanner` が要る（KNOWLEDGE.md 2026-08-22）
-4. `internal/store` の `sessions` の DB テスト（期限切れ・cascade 削除）
+`TODO.md` の未完タスクを上から。**最初の一手は 2-3 の残り＝`docs/spec-guide.md` にインポートの説明を足す。**
+何がエラーで何が警告か、`roadmaps.levels` の保存先、CRUD で何ができるか。事実は SPEC.md §2 §6 にあり、
+人間向けの言葉に直すだけ（同じ事実を二重に書かず、SPEC へリンクする）。
 
 **本人にやってもらう必要があること：現時点で無し。**
 GitHub OAuth App は作成済みで、2026-08-20 に認可 → トークン交換 → セッション発行 →
@@ -134,6 +117,9 @@ docker compose run --rm migrate
 # サーバ起動（backend/.env を用意してから）
 set -a; source backend/.env; set +a
 go -C backend run ./cmd/server
+
+# Claude が API を curl で通し確認するとき（.env は Claude から読めない）：
+# ダミー値を環境変数で直接渡して起動し、ダミーユーザーとセッションを DB に直接入れる。手順は KNOWLEDGE.md 2026-09-14
 
 # やり直す
 docker compose down -v
