@@ -41,22 +41,13 @@ CI（gofmt / vet / test / build、フロントの lint / typecheck / test / buil
 
 ## 2. 直近でやったこと
 
-- **`store.ImportRoadmap`** — 検査済みの `roadmap.Document` から `roadmaps` / `domains` / `items` を
-  1トランザクションで作る。`levels` は jsonb に丸ごと、`depends_on_keys` は key のまま `text[]`、
-  `outcome` があれば `outcome_source='authored'`。戻り値は `roadmaps.id`
-- **DB テストの土台**（`store_test.go`）— `TEST_DATABASE_URL` が無ければスキップ。あればテストごとに
-  専用スキーマを作り `migrations/*.up.sql` を流す。CI の backend ジョブに postgres サービスを追加。
-  要点は KNOWLEDGE.md 2026-08-22
-- **`internal/roadmap`** — マスタ JSON の検査。詳細は KNOWLEDGE.md 2026-08-14 の3件。要点だけ：
-  - **問題を全部集めて返す**（1件目で打ち切らない）。エラー＝インポート中止、警告＝通す
-  - 未知のフィールドはエラー（`dependsOn` の打ち間違いを黙って通さない）
-  - 循環参照を DFS で検出し、経路をメッセージに出す
-  - 問題の場所を `domains[0].items[2]` の形の経路で返し、フロントが該当箇所を指せる
-- **`migrations/000003_roadmap_levels`** — `roadmaps.levels`（jsonb）。SPEC に保存先が
-  抜けていたのを埋めた。**このマイグレーションは `roadmaps` が0行である前提**
-- `backend/testdata/` — ダミーのロードマップ（正常・壊れたもの）とダミー学習ログ
-- `.env.example` をコミット（**前セッションから未コミットだった。原因は §4-5**）
-- `.mcp.json`（context7）をリポジトリに追加
+履歴はここに積まない（`git log` と KNOWLEDGE.md が持つ）。直近の2本だけ：
+
+- **PR #13**：インポート API（`POST /api/roadmaps/import`）。検査エラーは 400 で全問題、警告だけなら 201 で保存。
+  ボディ 2 MiB と1フィールドの文字数上限。SPEC.md §2 §6、KNOWLEDGE.md 2026-09-14
+- **PR #14**：自分のロードマップの CRUD。他人のもの・存在しないものは 404。PATCH は `null` で目標日を消す。SPEC.md §6
+- それ以前（`store.ImportRoadmap`、DB テストの土台、`internal/roadmap` の検査、`roadmaps.levels`）は
+  KNOWLEDGE.md 2026-08-14 / 2026-08-22 と `git log` を参照
 
 ## 3. 確定している決定事項
 
