@@ -493,3 +493,72 @@ PR #8（chore）がスカッシュマージされた時点でその feat も一�
 - **main の履歴では、store 永続化の変更は `c03f598`（#8「chore: security-guidance…」）に含まれている。** `git log` で feat を探しても見つからないので注意
 - PR #7 はクローズ（マージではない）。中身は #8 で取り込み済み
 - 再発防止：コミット前に `git status -sb` の先頭行でブランチ名を確認する。`/apps-workflow:pr-check` にブランチ名の表示を足す案は `claude-plugins` 側の課題
+
+### 2026-09-14：ロードマップのハンドラは store をインタフェース越しに呼ぶ
+
+`httpapi` の `API` は `*store.Store` を直接持っているが、ロードマップのハンドラだけは
+必要なメソッド（Import / List / Get / Update / Delete）を並べた `roadmapStore` インタフェースで受ける。
+テストでは DB を使わない偽物に差し替え、「検査エラーなら store を呼ばない」「ログイン中のユーザー ID で
+問い合わせる」「`ErrNotFound` を 404 に写す」をミリ秒で確かめる。Spring で Repository をモックするのと同じ発想。
+
+| 案 | 却下・採用の理由 |
+|---|---|
+| **必要なメソッドだけのインタフェース**（採用） | 変更が小さく、`New` で `roadmaps: st` と代入するだけ。既存の認証まわりは触らない |
+| httpapi でも `TEST_DATABASE_URL` の DB テスト | store の土台（専用スキーマ・マイグレーション）を httpapi からも使えるよう別パッケージに出す必要がある。SQL の正しさは store 側の DB テストが既に見ている |
+| `API.store` 全体をインタフェース化 | 認証・OAuth の経路まで巻き込む大きな変更になる。今は要らない |
+
+SQL の正しさ（所有者の絞り込み・cascade・`text[]` の読み出し）は store の DB テストで、
+HTTP の振る舞い（ステータス・応答の形・入力検査）は偽物で、と役割を分けている。
+
+### 2026-09-14：他人のロードマップは 403 ではなく 404。所有者の絞り込みは SQL の WHERE に入れる
+
+`GET / PATCH / DELETE /api/roadmaps/:id` は他人のもの・存在しないもの・uuid の形でない id を
+すべて 404 `not_found` にする。403 を返すと「その id は存在する」と教えてしまう。
+
+絞り込みは store の SQL（`WHERE id = $1 AND owner_user_id = $2 AND kind = 'personal'`）に入れる。
+「id で引いてから Go 側で owner を比べる」形にすると、比較を書き忘れた経路が1つあるだけで漏れる。
+uuid の形でない id は DB に渡すと「invalid input syntax for type uuid」で 500 になるので、
+ハンドラの正規表現で先に 404 へ寄せる。
+
+### 2026-09-14：PATCH の「消す」と「触らない」は `json.RawMessage` で区別する
+
+`PATCH /api/roadmaps/:id` の `targetDate` は、キーが無ければ触らず、`null` なら目標日を消す。
+Go の `*string` で受けるとどちらも nil になって区別できない。`json.RawMessage`（生の JSON 片）で受け、
+長さ 0 ＝キー無し、`null` ＝消す、それ以外＝日付として解釈、と分けた。store 側は
+`RoadmapUpdate{TargetDate *time.Time, SetTargetDate bool}` の組で受け、SQL は `CASE WHEN $5 THEN $6 ELSE target_date END`。
+名前は「変えない」しかないので `coalesce($4, name)` で足りる。
+
+### 2026-09-14：上限値（文字数・ボディサイズ）は環境変数にせず `internal/roadmap` の定数にした
+
+CLAUDE.md の「ハードコード禁止」は制度・料金など**外部由来で変わりうる数値**が対象。
+文字数上限（name 200 / 本文 2,000 / source 2,048）とボディ上限（2 MiB）はアプリ自身の仕様で、
+`MaxDomains` などと同じく SPEC.md §2 を出典とする定数に置いた。環境ごとに変える理由が無く、
+変えられると SPEC と実装がずれる。文字数は `utf8.RuneCountInString` で数える（日本語1文字＝1）。
+
+### 2026-09-14：Claude が API を実機で通し確認する手順（`.env` は読めない）
+
+`backend/.env` はグローバル設定の deny で Claude から読めず、`source` も止まる。回避ではなく、
+**ダミー値を環境変数で直接渡して別ポートで起動する**（GitHub の値はインポート・CRUD では使わない）。
+
+```bash
+APP_ENV=development PORT=18080 FRONTEND_ORIGIN=http://localhost:5173 \
+DATABASE_URL='postgres://skillmatrix:skillmatrix@localhost:5432/skillmatrix?sslmode=disable' \
+SESSION_SECRET=smoke-test-secret-not-for-production-1234 \
+GITHUB_OAUTH_CLIENT_ID=dummy GITHUB_OAUTH_CLIENT_SECRET=dummy \
+GITHUB_OAUTH_CALLBACK_URL=http://localhost:18080/api/auth/github/callback LLM_PROVIDER=stub \
+go -C backend run ./cmd/server
+```
+
+ログインはブラウザが要るので、**ダミーユーザーとセッションを DB に直接入れる**。Cookie に入れる値を決め、
+その SHA-256 を `sessions.token_hash` に入れる（`printf 'TOKEN' | sha256sum`、`decode('<hex>','hex')`）。
+curl は `-b sm_session=TOKEN`。終わったらダミーユーザーを削除する（sessions / roadmaps は cascade で消える）。
+
+落とし穴：`psql -tA -c "INSERT ... RETURNING id"` の出力には末尾に `INSERT 0 1` の行が付く。
+変数に取るときは `head -1` で先頭行だけにする。付いたまま URL に使うと uuid の形にならず、
+所有者の絞り込みとは無関係に 404 になり、確認したつもりで確認できていない状態になる。
+
+### 2026-09-14：`/apps-workflow:handoff` はユーザー起動限定。Claude からは呼べない
+
+`/apps-workflow:pr-check` と同じく `disable-model-invocation` が付いている。
+区切りで Claude が呼ぼうとすると失敗する。**ユーザーに実行してもらう。** CLAUDE.md の
+「区切りには `/apps-workflow:handoff` を実行」はそのまま読むと Claude が実行するように見えるので、追記が要る。
