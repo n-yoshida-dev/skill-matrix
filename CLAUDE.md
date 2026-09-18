@@ -7,7 +7,9 @@
 1. **`HANDOFF.md` を読む** — 現在地・決定事項・次のタスクがすべてここにある
 
 未完タスクは SessionStart フックが `TODO.md` から自動で提示する。
-セッションの区切りには `/apps-workflow:handoff` を実行して引き継ぎを書く。
+セッションの区切りには `/apps-workflow:handoff` で引き継ぎを書く。
+**`/apps-workflow:handoff` はユーザー起動限定で、Claude からは呼べない**（`/apps-workflow:pr-check` と同じ扱い。
+どちらも `disable-model-invocation` が付いている）。区切りでは Claude が呼ぼうとせず、**ユーザーに実行を頼む**（KNOWLEDGE.md 2026-09-14）。
 
 ## ドキュメントの役割
 
