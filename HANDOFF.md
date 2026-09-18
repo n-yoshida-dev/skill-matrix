@@ -33,7 +33,7 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 
 **フェーズ2 の 2-3（ロードマップ）が完了（API と `docs/spec-guide.md` §3.3〜§3.5 の解説まで）。
 `main` は PR #16 まで取り込み済みで、作業中のブランチは無い。
-次は 2-1 の残り＝`sessions` の DB テスト。その後 2-4（AI 判定）に入る。**
+次は 2-1 の残り 3 件（`sessions` の DB テスト → TODO.md の続き 2 件）。その後 2-4（AI 判定）に入る。**
 
 `main` にあるもの：`internal/roadmap`（PR #1）、`store.ImportRoadmap`（PR #8）、
 **インポート API とサイズ制限（PR #13）、自分のロードマップの CRUD API（PR #14）**。
