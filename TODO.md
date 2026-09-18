@@ -83,12 +83,18 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 - [x] GitHub Actions で lint / typecheck / test / build を通す（テンプレート由来の `.github/workflows/ci.yml` が要件を満たしている。PR #1 で実際に通ることを確認）
 - [ ] README を書く（セットアップ手順・スクリーンショット）
   完了条件：クローン直後の人が README だけで `docker compose up -d --build backend` まで進める。必要な Docker Compose のバージョン（v2.24 以降。`env_file` の `required: false` のため）が書かれている
+- [ ] CI に `docker build backend` を足す（2026-09-19 に採用。今の CI は Dockerfile をビルドしないので、壊れても気づけない。`logs/decisions.md`）
+  完了条件：backend に変更のある PR で Dockerfile のビルドが CI で走り、わざと壊した Dockerfile では赤くなることを一度確かめてある
+- [ ] `DefaultWeights()` の重みを実データの手触りで調整する（今は仮置き。v1 が動いてから、と本人合意済み）
+  完了条件：「次にやること Top N」の並びを本人が見て違和感が無い。変えた重みと理由が KNOWLEDGE.md にあり、単体テストが更新されている
+- [ ] デプロイ先を決める（Cloud Run / Render。v1 がローカルで動いてから。費用が絡むのでユーザー判断）
+  完了条件：選んだ先と理由が `logs/decisions.md` にある。本番用の GitHub OAuth App をローカル用とは別に作る（Redirect URI が変わる。Client Secret を共用しない）手順がタスクに起きている
 
 ## フェーズ3：v2 以降
 
-（v1 が動いてから起こす。公開ロードマップの一覧・star・fork、publish、GUI エディタ）
+（v1 が動いてから起こす。公開ロードマップの一覧・star・fork、publish、GUI エディタ。
+利用者が増えたときの LLM コスト対策＝BYOK / 課金 / モデル切り替えもここで扱う）
 
 ## 確認待ち
 
-- [ ] CI に `docker build backend` を足すか（2026-09-18 に Claude から提案。今の CI は Dockerfile をビルドしないので、壊れても気づけない。PR #19 の受け入れレビューでも指摘）
-  完了条件：採否をユーザーが決める。採用なら 2-6 にタスクとして起こす
+（なし）
