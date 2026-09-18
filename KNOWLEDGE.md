@@ -563,6 +563,9 @@ curl は `-b sm_session=TOKEN`。終わったらダミーユーザーを削除�
 区切りで Claude が呼ぼうとすると失敗する。**ユーザーに実行してもらう。** CLAUDE.md の
 「区切りには `/apps-workflow:handoff` を実行」はそのまま読むと Claude が実行するように見えるので、追記が要る。
 
+**→ 2026-09-18 に解消。上の記載はもう当てはまらない。** apps-workflow v1.4.2 で handoff の `disable-model-invocation` が外れ、
+区切りでは Claude が自分で呼ぶ形になった（`../CLAUDE.md`「開発ドキュメント」）。ユーザー起動限定のまま残っているのは `pr-check` だけ。
+
 ### 2026-09-18：「frontend は検査対象外」と誤判定した（一覧を途中で切って見たため）
 
 PR #16（ドキュメントのみ）のコミット前検査で、frontend の検査コマンドが出力なしの exit 2 で終わった。
@@ -573,6 +576,19 @@ CI では frontend ジョブが走って通っていた（事後にローカル�
 回避方法：**「このディレクトリは検査対象か」は CI と同じ条件で確かめる**（`.github/workflows/ci.yml` の
 detect ジョブは `[ -f frontend/package.json ]`）。一覧を `head` で切って有無を判断しない。
 出力なしで失敗したコマンドは、原因が分かるまで「対象外」と読み替えない。
+
+### 2026-09-18：セッション中にプラグインと上位 CLAUDE.md が更新され、古い前提のまま TODO を実装した
+
+TODO の「CLAUDE.md に handoff はユーザー起動限定と追記する」を文面どおり実装して PR #20 を出したが、
+同じ日の 21:58 に apps-workflow v1.4.2 で限定が外れ、`../CLAUDE.md` も書き換わっていた。
+このセッションは切り替え前の版（v1.4.0 と古い文面）を読み込んで始まっていたので、手元の文脈だけ見ると矛盾が無かった。
+acceptance-reviewer がディスク上の現行版と突き合わせて止めた（判定「直してから」）。マージ前に直している。
+
+回避方法：**Claude Code の設定・プラグイン・スキルの挙動について「事実」を書く TODO は、着手前にディスク上の現物で確かめる。**
+セッションに読み込まれた CLAUDE.md とスキル一覧は起動時点の写しで、別セッションでの変更は反映されない。
+確認先：`../CLAUDE.md` の現行文面、`~/.claude/plugins/installed_plugins.json` の導入版、
+`~/.claude/plugins/cache/n-yoshida-dev/apps-workflow/<版>/skills/<名前>/SKILL.md` の frontmatter。
+プラグインの更新が効くのは次のセッションから（このセッションでは v1.4.2 の handoff はまだ呼べなかった）。
 
 ### 2026-09-18：backend の Dockerfile と compose サービスの判断
 
