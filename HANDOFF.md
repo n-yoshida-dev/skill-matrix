@@ -22,21 +22,23 @@ Go と React は学習中。（`~/.claude/CLAUDE.md` にも記載済み）
 進捗（TODO.md より自動集計・2026-09-18）
 
 ████████████████████ 100%  残り  0 / 11  フェーズ1：設計（完了）
-████████░░░░░░░░░░░░  42%  残り 24 / 42  フェーズ2：v1 実装
+██████████░░░░░░░░░░  50%  残り 21 / 42  フェーズ2：v1 実装
 ░░░░░░░░░░░░░░░░░░░░   -   （タスク未定義）  フェーズ3：v2 以降
-██████████░░░░░░░░░░  54%  残り 24 / 53  合計（ほかに未定義のフェーズ 1）
+████████████░░░░░░░░  60%  残り 21 / 53  合計（ほかに未定義のフェーズ 1）
+あなたの回答待ち：1 件（回答済み 0 件）
 
-前回の区切り（2026-09-15）から：完了 +1 件、新たに見つかったタスク +0 件
+前回の区切り（2026-09-18）から：完了 +3 件、新たに見つかったタスク +0 件
 ```
 
 ## 1. 現在地
 
-**フェーズ2 の 2-3（ロードマップ）が完了（API と `docs/spec-guide.md` §3.3〜§3.5 の解説まで）。
-`main` は PR #16 まで取り込み済みで、作業中のブランチは無い。
-次は 2-1 の残り 3 件（`sessions` の DB テスト → TODO.md の続き 2 件）。その後 2-4（AI 判定）に入る。**
+**フェーズ2 の 2-1（土台）・2-2（理解度モデル）・2-3（ロードマップ）が完了。
+`main` は PR #20 まで取り込み済みで、作業中のブランチは無い。
+次は 2-4（AI 判定）。最初のタスクは `internal/llm` のインタフェースと stub プロバイダ。**
 
 `main` にあるもの：`internal/roadmap`（PR #1）、`store.ImportRoadmap`（PR #8）、
-**インポート API とサイズ制限（PR #13）、自分のロードマップの CRUD API（PR #14）**。
+インポート API とサイズ制限（PR #13）、自分のロードマップの CRUD API（PR #14）、
+**`sessions` の DB テスト（PR #18）、backend の Dockerfile と compose サービス（PR #19）**。
 CI（gofmt / vet / test / build、フロントの lint / typecheck / test / build、秘密情報スキャン）は `main` と全 PR で走る。
 
 - `SPEC.md` — 実装が参照する正本。9節すべて記入済み
@@ -46,7 +48,9 @@ CI（gofmt / vet / test / build、フロントの lint / typecheck / test / buil
   テスト66件・カバレッジ95.6%**
 - `backend/internal/config/` — 環境変数の読み込みと検証。カバレッジ94.3%
 - `backend/internal/store/` — PostgreSQL アクセス（users / sessions / roadmaps）。
-  ロードマップの永続化と CRUD は DB テスト13件。**`sessions` の DB テストは未着手**（土台は `store_test.go` にある）
+  ロードマップの永続化と CRUD は DB テスト13件、`sessions` は7件（期限切れ・延長・cascade 削除）
+- `backend/Dockerfile` ＋ `docker-compose.yml` の `backend` — `docker compose up -d --build backend` で
+  DB 起動 → マイグレーション → サーバ起動まで進む。判断の理由は KNOWLEDGE.md 2026-09-18
 - `backend/internal/httpapi/` — chi ルータ、CORS、GitHub OAuth、セッション、**ロードマップのインポートと CRUD**。
   ロードマップのハンドラは store をインタフェース越しに呼び、DB 無しの偽物でテストする（KNOWLEDGE.md 2026-09-14）。
   **ログインは実機で通し確認済み（2026-08-20）。インポートと CRUD も curl で実機確認済み（2026-09-14）**
@@ -97,9 +101,9 @@ CI（gofmt / vet / test / build、フロントの lint / typecheck / test / buil
 
 ## 5. 次セッションのタスク
 
-`TODO.md` の未完タスクを上から。**最初の一手は 2-1 の残り＝`internal/store` の `sessions` の DB テスト。**
-期限切れのセッションが引けないことと、ユーザー削除で cascade されることを確かめる。土台は `store_test.go` にある
-（`TEST_DATABASE_URL` が無ければスキップされる。起動手順は §6）。
+`TODO.md` の未完タスクを上から。**最初の一手は 2-4 の先頭＝`internal/llm` のインタフェースと stub プロバイダ**
+（`LLM_PROVIDER=stub`。開発中の課金ゼロとテストの決定性のため）。着手前に SPEC.md §4 と `logs/decisions.md` を読み、
+設計を初心者向けに説明してから実装する（§0）。
 
 **本人にやってもらう必要があること：現時点で無し。**
 GitHub OAuth App は作成済みで、2026-08-20 に認可 → トークン交換 → セッション発行 →
@@ -131,6 +135,9 @@ docker compose run --rm migrate
 # サーバ起動（backend/.env を用意してから）
 set -a; source backend/.env; set +a
 go -C backend run ./cmd/server
+
+# 同じことを Docker Compose で（DB 起動 → マイグレーション → サーバ起動まで1コマンド）
+docker compose up -d --build backend
 
 # Claude が API を curl で通し確認するとき（.env は Claude から読めない）：
 # ダミー値を環境変数で直接渡して起動し、ダミーユーザーとセッションを DB に直接入れる。手順は KNOWLEDGE.md 2026-09-14

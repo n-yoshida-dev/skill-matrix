@@ -82,6 +82,7 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 - [ ] E2E（Playwright）でログ投稿からマトリクス更新までを1本通す
 - [x] GitHub Actions で lint / typecheck / test / build を通す（テンプレート由来の `.github/workflows/ci.yml` が要件を満たしている。PR #1 で実際に通ることを確認）
 - [ ] README を書く（セットアップ手順・スクリーンショット）
+  完了条件：クローン直後の人が README だけで `docker compose up -d --build backend` まで進める。必要な Docker Compose のバージョン（v2.24 以降。`env_file` の `required: false` のため）が書かれている
 
 ## フェーズ3：v2 以降
 
@@ -89,4 +90,5 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 
 ## 確認待ち
 
-（なし）
+- [ ] CI に `docker build backend` を足すか（2026-09-18 に Claude から提案。今の CI は Dockerfile をビルドしないので、壊れても気づけない。PR #19 の受け入れレビューでも指摘）
+  完了条件：採否をユーザーが決める。採用なら 2-6 にタスクとして起こす
