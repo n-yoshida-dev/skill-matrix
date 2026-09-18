@@ -573,3 +573,24 @@ CI では frontend ジョブが走って通っていた（事後にローカル�
 回避方法：**「このディレクトリは検査対象か」は CI と同じ条件で確かめる**（`.github/workflows/ci.yml` の
 detect ジョブは `[ -f frontend/package.json ]`）。一覧を `head` で切って有無を判断しない。
 出力なしで失敗したコマンドは、原因が分かるまで「対象外」と読み替えない。
+
+### 2026-09-18：backend の Dockerfile と compose サービスの判断
+
+`docker compose up -d --build backend` の1コマンドで DB 起動 → マイグレーション → サーバ起動まで進む。
+
+| 判断 | 理由 |
+|---|---|
+| マルチステージビルド。実行側は `gcr.io/distroless/static-debian12:nonroot` | Go は単一の実行ファイルになるので、実行側にコンパイラもシェルも要らない。イメージは 13 MB、一般ユーザーで動く。CA 証明書入りなので GitHub への HTTPS も通る。alpine 案（シェルで中に入れる）は、入れて調べたい場面がまだ無いので採らなかった |
+| 設定は `env_file: backend/.env`（`required: false`）で渡す | 秘密の値を `docker-compose.yml` に書かない。`required: false` が無いと、`.env` の無い環境では **`up -d postgres` など他サービスの操作まで**「ファイルが無い」で止まる |
+| `DATABASE_URL` と `PORT` だけ `environment` で上書き | `.env` の `DATABASE_URL` はホストから見た住所（localhost）。コンテナの中からはサービス名 `postgres`。`environment` は `env_file` より優先される。`go run` と compose で同じ `.env` を使い回せる |
+| `depends_on` で `migrate` の成功（`service_completed_successfully`）を待つ | テーブルが無い状態でリクエストを受けない |
+| `restart` は付けない | 設定不備で終了したとき再起動を繰り返すと、`config.Load` の「不足を全部並べて終了」に気づきにくくなる |
+| compose の healthcheck は付けない | distroless にはシェルも curl も無く、コンテナ内から `/health` を叩く手段が無い。backend の起動を待つサービス（frontend）を足すときに、必要なら実行ファイルに自己診断のサブコマンドを足す |
+
+**`.dockerignore` は `.gitignore` とは別物。** 書かないと `.env` がビルドコンテキストに入り、`COPY . .` でビルド用の層に残る。
+確認方法：`docker build --target build -t x backend && docker run --rm x ls -a /src` に `.env` が出ないこと。
+
+**Claude が compose 経由で実機確認するとき**は、本人の `.env` を読み込ませずダミー値で起動する。
+一時的な上書きファイルを `-f` で重ね、`env_file: !reset []` で `.env` の読み込みを外して `environment` にダミー値を書く
+（`docker compose -f docker-compose.yml -f <上書き>.yml up -d --build backend`）。上書きファイルはリポジトリに置かない。
+ログイン済みの確認は 2026-09-14 の手順と同じ。psql なら `sha256('TOKEN'::bytea)` でハッシュを作れる。

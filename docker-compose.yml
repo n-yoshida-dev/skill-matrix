@@ -1,12 +1,14 @@
 # ローカル開発用。本番の構成ではない。
 #
 # ここに書いてあるパスワードは開発専用の固定値。本番の値は .env で与える。
-# backend / worker / frontend のサービスは、それぞれのコードと Dockerfile ができてから追加する。
+# worker / frontend のサービスは、それぞれのコードと Dockerfile ができてから追加する。
 #
 # 使い方:
-#   docker compose up -d postgres   # DB だけ起動
-#   docker compose run --rm migrate # マイグレーション適用
-#   docker compose down -v          # データごと破棄してやり直す
+#   docker compose up -d postgres          # DB だけ起動
+#   docker compose run --rm migrate        # マイグレーション適用
+#   docker compose up -d --build backend   # DB 起動 → マイグレーション → API サーバ起動（backend/.env が要る）
+#   docker compose logs -f backend         # サーバのログを見る
+#   docker compose down -v                 # データごと破棄してやり直す
 
 services:
   postgres:
@@ -40,6 +42,34 @@ services:
       - "-path=/migrations"
       - "-database=postgres://skillmatrix:skillmatrix@postgres:5432/skillmatrix?sslmode=disable"
       - "up"
+
+  # API サーバ（backend/cmd/server）。
+  # 設定は backend/.env から読む。ひな形は backend/.env.example（変数の正本は SPEC.md §8.3）。
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # テーブルが無い状態でリクエストを受けないよう、マイグレーションの成功を待ってから起動する
+      migrate:
+        condition: service_completed_successfully
+    env_file:
+      # required: false は、.env をまだ作っていない環境でも `up -d postgres` など
+      # 他のサービスの操作が「ファイルが無い」で止まらないようにするため。
+      # 無いまま backend を起動した場合は、サーバが不足している変数を全部並べて終了する
+      - path: ./backend/.env
+        required: false
+    environment:
+      # env_file より environment が優先される。.env の値はホストから見た住所（localhost）なので、
+      # コンテナの中から見た住所（サービス名 postgres）に差し替える。認証情報は上の postgres と同じ開発専用の固定値
+      DATABASE_URL: postgres://skillmatrix:skillmatrix@postgres:5432/skillmatrix?sslmode=disable
+      # 下の ports と食い違わないように固定する
+      PORT: "8080"
+    ports:
+      # GITHUB_OAUTH_CALLBACK_URL（http://localhost:8080/...）と同じポートでホストに出す
+      - "8080:8080"
+    # restart は付けない。設定不備で終了したときに再起動を繰り返すと、エラーに気づきにくくなる
 
 volumes:
   postgres-data:

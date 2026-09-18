@@ -28,7 +28,8 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 - [x] GitHub OAuth App を実際に作り、ブラウザでログインを一度通す（2026-08-20 完了。認可 → トークン交換 → セッション発行 → `/api/me` まで実機で確認）
 - [x] `internal/store` の DB テストの土台を作る（`TEST_DATABASE_URL` が無ければスキップ、あればテストごとに専用スキーマへマイグレーションを流す。CI にも postgres サービスを追加。`store_test.go`）
 - [x] `internal/store` の `sessions` の DB テストを足す（期限切れ・cascade 削除。土台は `store_test.go` にある。`sessions_test.go` に7本）
-- [ ] `docker-compose.yml` に backend サービスを足す（Dockerfile とセット）
+- [x] `docker-compose.yml` に backend サービスを足す（Dockerfile とセット）
+  完了条件：`docker compose up -d --build backend` の1コマンドで DB 起動 → マイグレーション → API サーバ起動まで進み、`/health` が 200、セッション付きの `/api/me` が 200 を返す。`.env` はイメージに入らない（KNOWLEDGE.md 2026-09-18）
 - [ ] `CLAUDE.md` に「`/apps-workflow:handoff` はユーザー起動限定。Claude からは呼べないので、区切りでは Claude がユーザーに実行を頼む」を追記する（KNOWLEDGE.md 2026-09-14）
   完了条件：`CLAUDE.md` の「セッション開始時にすること」節に上記が書かれ、`pr-check` と同じ扱いだと分かる
 
