@@ -562,3 +562,14 @@ curl は `-b sm_session=TOKEN`。終わったらダミーユーザーを削除�
 `/apps-workflow:pr-check` と同じく `disable-model-invocation` が付いている。
 区切りで Claude が呼ぼうとすると失敗する。**ユーザーに実行してもらう。** CLAUDE.md の
 「区切りには `/apps-workflow:handoff` を実行」はそのまま読むと Claude が実行するように見えるので、追記が要る。
+
+### 2026-09-18：「frontend は検査対象外」と誤判定した（一覧を途中で切って見たため）
+
+PR #16（ドキュメントのみ）のコミット前検査で、frontend の検査コマンドが出力なしの exit 2 で終わった。
+原因を調べるのに `ls frontend | head -3` を使い、先頭 3 件（README.md / dist / index.html）だけを見て
+「package.json が無いので対象外」と結論し、ローカルの frontend 検査を飛ばした。実際には package.json はあり、
+CI では frontend ジョブが走って通っていた（事後にローカルでも全部通ることを確認済み）。
+
+回避方法：**「このディレクトリは検査対象か」は CI と同じ条件で確かめる**（`.github/workflows/ci.yml` の
+detect ジョブは `[ -f frontend/package.json ]`）。一覧を `head` で切って有無を判断しない。
+出力なしで失敗したコマンドは、原因が分かるまで「対象外」と読み替えない。
