@@ -56,7 +56,8 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 - [x] `internal/llm` にインタフェースと **stub プロバイダ**を実装する（`LLM_PROVIDER=stub`。開発中の課金ゼロ＋テストの決定性）
   完了条件：`llm.New` が `LLM_PROVIDER=stub` で LLM を呼ばない実装を返し、同じ入力に同じ判定を返す。その判定が `domain.ApplyJudgments` を違反なしで通る。返す JSON を差し替えた stub で V1・V2・V4 が記録される。形の崩れた判定は捨てずに `Rejected` に残る（KNOWLEDGE.md 2026-09-19）
 - [ ] `internal/llm` に Claude API クライアントとプロンプト組み立てを実装する（共通部を先頭に固める。判定基準は `roadmaps.levels` の `criteria` を使い、コードに書かない）
-- [ ] 判定ジョブのキューとワーカーを実装する（`FOR UPDATE SKIP LOCKED`・リトライ・失敗記録。形の検査で弾いた `llm.Output.Rejected` も V1〜V8 の違反と一緒に `llm_responses.violations` へ記録する）
+- [ ] 判定ジョブのキューとワーカーを実装する（`FOR UPDATE SKIP LOCKED`・リトライ・失敗記録。形の検査で弾いた `llm.Output.Rejected` も V1〜V8 の違反と一緒に `llm_responses.violations` へ記録する。
+  着手時に決めること：出力全体が読めず `ErrInvalidOutput` になったとき、生の出力をどこへ残すか（`llm_responses.raw` は jsonb なので JSON でない文字列は入らない。今の `Judge` はエラー時に `Raw` を返さない）と、`ErrInvalidOutput` を再試行の対象にするか。PR #25 のレビューで判明）
 - [ ] レート制限（月次クォータ）を実装する
 - [ ] ログ投稿 API（202 + jobId）とジョブ状態 API を実装する
 - [ ] 反映モード（`auto` / `confirm`）と保留判定の確定 API を実装する
@@ -98,7 +99,7 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 
 ## 確認待ち
 
-- [ ] 【ユーザー確認】SPEC.md の stub の説明を実装に合わせて直す（PR #24 で判明。理由は KNOWLEDGE.md 2026-09-19）。直す箇所は 3 つ：
+- [x] 【ユーザー確認】SPEC.md の stub の説明を実装に合わせて直す（2026-09-20 に Naoki が了承し、同日に反映。同じ言い回しが残っていた `backend/.env.example` と `docs/spec-guide.md` §8 も合わせた。PR #24 で判明。理由は KNOWLEDGE.md 2026-09-19）。直す箇所は 3 つ：
   §4.6・§8.3 の「固定レスポンスを返す」→「LLM を呼ばず、同じ入力には同じ判定を返す（ロードマップの先頭から未達の項目を 3 件まで選び、現在レベル + 1 を提案する。同じログを繰り返し投稿すると開発環境のマトリクスは先頭から順に埋まる）」／
   §4.5 に「V1〜V8 の前に形の検査（型の不一致・必須欄の欠落・空の rationale・0〜1 の外の confidence）があり、弾いた判定も `llm_responses.violations` に記録する」を追記／
   `backend/internal/config/config.go` の `ProviderStub` のコメントを同じ文面に合わせる

@@ -381,6 +381,17 @@ Cloud Run にデプロイする場合、**リクエスト処理外の CPU が絞
 | V7 | `confidence` が閾値（既定 0.5）未満 | 適用せず「レビュー待ち」として記録 |
 | V8 | 1ログあたりの判定件数が上限（既定 20）以内 | 超過分を棄却して記録 |
 
+**V1〜V8 の前に、形の検査を通す**（`internal/llm` の `ParseOutput`。V1〜V8 は意味の検査で `internal/domain` が担当し、同じ検査を2か所に書かない）。
+形の崩れた判定はその1件だけを棄却し、同じログの他の判定は生かす。棄却した判定も V1〜V8 の違反と同じく `llm_responses.violations` に記録する。
+出力全体が JSON として読めない・外枠の型が合わない（`judgments` が配列でない等）・`judgments` が無い場合は、判定ジョブの失敗として扱う。
+
+| 形の検査 | 違反時の扱い |
+|---|---|
+| 型が合っている（`proposedLevel` が整数、など） | 棄却して記録 |
+| 必須の欄（`itemKey` / `proposedLevel` / `evidenceType` / `rationale` / `confidence`）が揃っている | 棄却して記録 |
+| `rationale` が空でない | 棄却して記録 |
+| `confidence` が 0〜1 の範囲内（範囲外は `assessment_events.confidence` の CHECK 制約にも反する） | 棄却して記録 |
+
 **配点の分配はしない。** 1つのログが複数項目にまたがる場合も、項目ごとに独立して判定させる。合計制約は設けない（LLM が苦手で、意味もない）。
 
 ### 4.6 モデル選択とコスト
@@ -402,10 +413,15 @@ Cloud Run にデプロイする場合、**リクエスト処理外の CPU が絞
 実質的に無視できる額。1,000人規模では成立しないため、v2 で BYOK かレート制限の強化が必要になる。
 
 **開発中のコスト対策として、LLM を呼ばない stub モードを用意する。**
-環境変数 `LLM_PROVIDER=stub` で固定レスポンスを返す実装に差し替える。理由は2つ。
+環境変数 `LLM_PROVIDER=stub` で、LLM を呼ばず**同じ入力には同じ判定を返す**実装に差し替える。理由は2つ。
 
 - 開発・テスト中の呼び出し回数は本番より多くなりやすく、そちらのほうが高くつく
-- 判定結果が固定されるので、検証ルール V1〜V8 と集計処理のテストが決定的になる
+- 同じ入力なら判定結果が変わらないので、検証ルール V1〜V8 と集計処理のテストが決定的になる
+
+stub の判定は、渡されたロードマップの先頭から、まだ最大レベルでない項目を 3 件まで選び、それぞれ「現在レベル + 1」を提案する
+（確信度は 0.9 固定。既定の閾値 0.5 を上回るので保留にならないが、`JUDGMENT_CONFIDENCE_THRESHOLD` を 0.9 より上にすると全件が V7 で保留になる）。文面を完全に固定しないのは、項目の `key` がロードマップごとに違い、固定の `key` では全件が V1 で弾かれるため。
+学習ログの本文は読まないので、開発環境で同じログを繰り返し投稿するとマトリクスは先頭から順に埋まる。
+テストでは、返す JSON を丸ごと指定した stub で「行儀の悪い LLM」を演じさせる。stub の出力も本物と同じ読み取り処理（4.5 の形の検査）を通す。
 
 Anthropic の Console で**支出上限（spend limit）を設定しておく**こと。事故で青天井にならないようにする。
 
@@ -751,7 +767,7 @@ SESSION_SECRET                 # 32文字以上。OAuth の state Cookie の署�
 GITHUB_OAUTH_CLIENT_ID
 GITHUB_OAUTH_CLIENT_SECRET
 GITHUB_OAUTH_CALLBACK_URL
-LLM_PROVIDER=anthropic          # anthropic | stub（stub は LLM を呼ばず固定レスポンス）
+LLM_PROVIDER=anthropic          # anthropic | stub（stub は LLM を呼ばず、同じ入力には同じ判定を返す。§4.6）
 ANTHROPIC_API_KEY
 ANTHROPIC_MODEL=claude-sonnet-5
 JUDGMENT_MONTHLY_QUOTA=100
