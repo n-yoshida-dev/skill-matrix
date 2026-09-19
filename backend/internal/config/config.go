@@ -32,7 +32,7 @@ type LLMProvider string
 const (
 	// ProviderAnthropic は Claude API を実際に呼ぶ。
 	ProviderAnthropic LLMProvider = "anthropic"
-	// ProviderStub は LLM を呼ばず固定レスポンスを返す。
+	// ProviderStub は LLM を呼ばず、同じ入力には同じ判定を返す（SPEC.md §4.6）。
 	// 開発中の課金をゼロにし、テストの結果を決定的にするために使う（SPEC.md §8.3）。
 	ProviderStub LLMProvider = "stub"
 )
