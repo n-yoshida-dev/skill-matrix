@@ -99,6 +99,21 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 
 ## 確認待ち
 
+- [ ] 【ユーザー作業】全アプリの apps-workflow を v1.4.4 に更新する（`/plugin` から。反映は各アプリの次のセッションから）
+  v1.4.4 は claude-plugins の PR #14 で main にマージ済み（2026-09-21）。pr-flow の後始末が「Claude が確認 2 点のうえ削除する」に変わる。
+  `/plugin` に 1.4.4 が出ないときはマーケットプレイスを取得し直す（ローカルのカタログは更新するまで 1.4.3 のまま）。
+  2026-09-21 時点の導入版は skill-matrix が 1.4.3、app-template / home-site-finder / babyfood-check /
+  life-plan-simulator / photo-prompt-builder が 1.4.2
+  完了条件：`jq -r '.plugins["apps-workflow@n-yoshida-dev"][] | "\(.version)  \(.projectPath)"' ~/.claude/plugins/installed_plugins.json` の全行が 1.4.4 になっている
+
+- [ ] 【別セッション】他アプリに溜まったマージ済みローカルブランチを片付ける
+  2026-09-21 時点の非 main ブランチは life-plan-simulator 25 本・babyfood-check 7 本・photo-prompt-builder 2 本・app-template 1 本。
+  枝ごとに `gh pr list --state merged --head <枝> --json number,headRefOid` でマージ済み PR を引き、ローカルの先端
+  （`git rev-parse <枝>`）が一致することを確かめてから消す。引けない枝・一致しない枝は残す（pr-flow v1.4.4 の「6. 後始末」）。
+  **life-plan-simulator の `feat/gap-first-result` は PR #65 が OPEN の作業中の枝。消さず、チェックアウトも動かさない。**
+  **同アプリは 2026-09-21 時点で未コミットの変更が 2 件ある（`frontend/src/features/result/rows.ts` と `timeline.ts`）ので、扱いを先に本人へ確認する**
+  完了条件：4 アプリで、マージ済み PR に対応するローカルブランチが残っていない。消さなかった枝は理由が報告されている
+
 - [x] 【ユーザー確認】SPEC.md の stub の説明を実装に合わせて直す（2026-09-20 に Naoki が了承し、同日に反映。同じ言い回しが残っていた `backend/.env.example` と `docs/spec-guide.md` §8 も合わせた。PR #24 で判明。理由は KNOWLEDGE.md 2026-09-19）。直す箇所は 3 つ：
   §4.6・§8.3 の「固定レスポンスを返す」→「LLM を呼ばず、同じ入力には同じ判定を返す（ロードマップの先頭から未達の項目を 3 件まで選び、現在レベル + 1 を提案する。同じログを繰り返し投稿すると開発環境のマトリクスは先頭から順に埋まる）」／
   §4.5 に「V1〜V8 の前に形の検査（型の不一致・必須欄の欠落・空の rationale・0〜1 の外の confidence）があり、弾いた判定も `llm_responses.violations` に記録する」を追記／
@@ -106,4 +121,4 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
   完了条件：Naoki が説明を読んで了承し、SPEC.md §4.5・§4.6・§8.3 と config.go のコメントが実装（`backend/internal/llm/stub.go`・`output.go`）と同じことを言っている
 
 - [x] 【ユーザー作業】マージ済みのローカルブランチを削除する（2026-09-19 に本人が実行し、一覧が `main` だけになったことを確認。2026-09-19 に削除で合意。Claude の `git branch -D` は権限設定で拒否されるため本人が実行する。`logs/decisions.md`）
-  完了条件：`git branch` の一覧に、PR が MERGED の作業ブランチが残っていない。消す前に「PR が MERGED」「ローカルの先端が PR の先端と一致」の 2 点を確かめてある（PR #13〜#21 の 9 本は 2026-09-19 に確認済み）
+  完了条件：`git branch` の一覧に、PR が MERGED の作業ブランチが残っていない。消す前に「PR が MERGED」「ローカルの先端が PR の先端と一致」の 2 点を確かめてある（PR #13〜#21 の 9 本は 2026-09-19 に確認済み）。**この項目の「拒否されるため本人が実行する」は 2026-09-19 時点の前提。2026-09-21 に ask へ移し、今は Claude が実行する（`logs/decisions.md` 2026-09-21）**
