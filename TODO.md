@@ -109,6 +109,14 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
   life-plan-simulator / photo-prompt-builder が 1.4.2
   完了条件：`jq -r '.plugins["apps-workflow@n-yoshida-dev"][] | "\(.version)  \(.projectPath)"' ~/.claude/plugins/installed_plugins.json` の全行が 1.4.4 になっている
 
+- [ ] 【ユーザー確認】SPEC.md §3 の `llm_responses` に `raw_text` 列を足す（PR #29 で実装。2026-09-23）
+  読み取れなかった LLM の出力（「承知しました。判定結果は…」のような JSON でない文字列）を残す場所。
+  `raw` は jsonb なので壊れた文字列が入らず、捨てると原因を調べようがなくなる（SPEC §4.5「握りつぶし禁止」）。
+  直す箇所：SPEC.md §3 の `llm_responses` の列一覧に `raw_text text` を足し、`raw jsonb not null` を `raw jsonb`（NULL 可）に直す。
+  「どちらか片方は必ず埋まる」制約（`llm_responses_has_payload`）があることも書く。
+  併せて §4.5 に「出力全体が読めないときは、生の文字列を `llm_responses.raw_text` に残して判定ジョブを失敗にする」を追記する
+  完了条件：Naoki が了承し、SPEC.md §3・§4.5 と `backend/migrations/000004_llm_response_raw_text.up.sql`・`internal/store/jobs.go` が同じことを言っている
+
 - [ ] 【ユーザー確認】SPEC.md §4.2 の表で、system に載せるものから「出力スキーマ」を外す（PR #28 の受け入れレビューで判明。2026-09-23）
   実装では返事の形を system の文面ではなく `output_config.format`（構造化出力）で指定している。system 側には「JSON 以外の文章を出力しない」とだけ書いてある。
   縛りとしては構造化出力のほうが強いので実装を変える必要はないが、SPEC の表は「system に出力スキーマを書く」と読める。
