@@ -283,6 +283,10 @@ func DefaultRules() Rules {
 
 // Applied は判定1件を適用した結果。
 type Applied struct {
+	// Judgment は元になった判定（LLM の提案そのもの）。
+	// 適用結果を assessment_events に保存するとき、提案値・根拠・確信度が要る。
+	// State から逆算できないので、どの判定から来たかを持ち歩く。
+	Judgment Judgment
 	// State は適用後の状態。Deferred が true のときは適用前のまま。
 	State ItemState
 	// Changed は状態が実際に変わったか。
@@ -290,6 +294,9 @@ type Applied struct {
 	// Deferred は保留にしたか。確信度が低い場合（V7）に立つ。
 	// 保留分は assessment_events に書かず、人が承認してから積む（SPEC.md §4.7）。
 	Deferred bool
+	// Rejected は丸ごと棄却したか。レベルが範囲外（V2）・根拠が許可リストに無い（V3）場合に立つ。
+	// **棄却した判定は反映してはいけない。** State は適用前のままで、判定は無かったものとして扱う。
+	Rejected bool
 	// Violations は検証で弾いた／切り詰めた内容。空でないことは異常を意味しない。
 	Violations []Violation
 }

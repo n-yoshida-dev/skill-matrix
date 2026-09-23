@@ -2,6 +2,7 @@ package llm
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -94,6 +95,9 @@ type InvalidOutputError struct {
 	Raw []byte
 	// Reason は読み取れなかった理由。人が読むための文。
 	Reason string
+	// Usage はこの失敗で消費したトークン数。
+	// **読み取れなくても課金は発生している。** 記録しないと利用量の実績が実際より少なく見える。
+	Usage Usage
 }
 
 // Error はエラーの文面を返す。生の出力は長くなりうるので、ここには含めない。
@@ -104,12 +108,54 @@ func (e *InvalidOutputError) Error() string {
 // Unwrap は errors.Is(err, ErrInvalidOutput) を成り立たせる。
 func (e *InvalidOutputError) Unwrap() error { return ErrInvalidOutput }
 
+// TokenUsage は失敗したときの消費トークン数を返す（usageCarrier の実装）。
+func (e *InvalidOutputError) TokenUsage() Usage { return e.Usage }
+
 // newInvalidOutputError は生の出力を写して持つエラーを作る。
 func newInvalidOutputError(raw []byte, format string, args ...any) *InvalidOutputError {
 	return &InvalidOutputError{
 		Raw:    append([]byte(nil), raw...),
 		Reason: fmt.Sprintf(format, args...),
 	}
+}
+
+// RefusalError は Claude が判定そのものを断ったことを表す。
+//
+// 形の問題（ErrInvalidOutput）とは別に扱う。直し方が違うため。
+// 読み取れないのはプロンプトや上限の問題だが、拒否は依頼の内容の問題。
+type RefusalError struct {
+	// Category は拒否の分類。API が返す値をそのまま持つ。
+	Category string
+	// Usage は拒否までに消費したトークン数。**拒否されても課金は発生している。**
+	Usage Usage
+}
+
+// Error はエラーの文面を返す。
+func (e *RefusalError) Error() string {
+	if e.Category == "" {
+		return "llm: Claude が判定を拒否しました"
+	}
+	return fmt.Sprintf("llm: Claude が判定を拒否しました（理由: %s）", e.Category)
+}
+
+// TokenUsage は拒否までの消費トークン数を返す（usageCarrier の実装）。
+func (e *RefusalError) TokenUsage() Usage { return e.Usage }
+
+// usageCarrier は「失敗したが課金は発生した」エラーが満たす約束。
+type usageCarrier interface {
+	TokenUsage() Usage
+}
+
+// UsageOf は失敗したエラーから消費トークン数を取り出す。
+//
+// 判定が失敗しても API の呼び出し自体は課金されている。呼び出し側（ワーカー）は
+// これで消費分を拾って記録する。取り出せない（API に届く前に失敗した）ときは ok が false。
+func UsageOf(err error) (Usage, bool) {
+	var carrier usageCarrier
+	if errors.As(err, &carrier) {
+		return carrier.TokenUsage(), true
+	}
+	return Usage{}, false
 }
 
 // ParseOutput は LLM の出力を読み取る。

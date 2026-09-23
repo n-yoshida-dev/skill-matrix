@@ -57,13 +57,14 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
   完了条件：`llm.New` が `LLM_PROVIDER=stub` で LLM を呼ばない実装を返し、同じ入力に同じ判定を返す。その判定が `domain.ApplyJudgments` を違反なしで通る。返す JSON を差し替えた stub で V1・V2・V4 が記録される。形の崩れた判定は捨てずに `Rejected` に残る（KNOWLEDGE.md 2026-09-19）
 - [x] `internal/llm` に Claude API クライアントとプロンプト組み立てを実装する（共通部を先頭に固める。判定基準は `roadmaps.levels` の `criteria` を使い、コードに書かない）
   完了条件：`llm.New` が `LLM_PROVIDER=anthropic` で Claude API を呼ぶ実装を返す。system に共通部（役割・`criteria`・根拠の種類・禁止事項）とキャッシュの印が載り、ロードマップ・現在の状態・ログ本文は後ろの user ブロックに分かれる。返事は `output_config.format` の JSON Schema で縛り、stub と同じ `ParseOutput` を通す。API を呼ばずに `httptest` で送信内容とエラーの仕分けを検証している（KNOWLEDGE.md 2026-09-23）
-- [ ] 判定ジョブのキューとワーカーを実装する（`FOR UPDATE SKIP LOCKED`・リトライ・失敗記録。形の検査で弾いた `llm.Output.Rejected` も V1〜V8 の違反と一緒に `llm_responses.violations` へ記録する。
-  着手時に決めること：`*llm.InvalidOutputError` が運んでくる生の出力（`Raw`）をどこへ残すか（`llm_responses.raw` は jsonb なので JSON でない文字列は入らない）と、`ErrInvalidOutput` を再試行の対象にするか。
-  再試行してよい失敗の判別は `errors.Is(err, llm.ErrTemporary)` で行う（2026-09-23 に実装。429・5xx・接続断・待ち時間切れだけが対象）。PR #25 のレビューで判明。
-  併せて決めること：**課金済みの失敗**（拒否・上限切れ・読み取り不能）のトークン消費をどう記録するか。今の `Judge` はエラー時に `Usage` を返さないため、
-  その分がコスト実績と月次クォータの数え上げから抜ける。エラーに載せるか、結果と併せて返す形にするか（PR #28 のレビューで判明。2026-09-23））
+- [x] 判定ジョブのキューとワーカーを実装する（`FOR UPDATE SKIP LOCKED`・リトライ・失敗記録。形の検査で弾いた `llm.Output.Rejected` も V1〜V8 の違反と一緒に `llm_responses.violations` へ記録する）
+  完了条件：`cmd/worker` が順番待ちから判定を1件ずつ処理し、応答（読めなかった生の出力・拒否・課金済みの失敗を含む）を `llm_responses` に残し、
+  検証を通った判定を `assessment_events` → `item_states` へ1トランザクションで反映する。再試行するのは `llm.ErrTemporary` が付いた失敗だけで、
+  上限は `JUDGMENT_MAX_ATTEMPTS`（既定3）。同じ仕事を二度取り出さない。`LLM_PROVIDER=stub` で実機の通し確認ができる（KNOWLEDGE.md 2026-09-23）
 - [ ] レート制限（月次クォータ）を実装する
 - [ ] ログ投稿 API（202 + jobId）とジョブ状態 API を実装する
+  着手時に決めること：**`running` のまま取り残された仕事をどう回収するか**。ワーカーが処理中に落ちるとその仕事は誰にも拾われず、
+  画面には「判定中」が出たままになる。`started_at` が一定時間より古い `running` を `queued` に戻す方式が素直（PR #29 のレビューで判明。2026-09-23）
 - [ ] 反映モード（`auto` / `confirm`）と保留判定の確定 API を実装する
 - [ ] 到達状態（`outcome`）の AI 下書き生成ジョブと API を実装する
 
@@ -109,6 +110,18 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
   2026-09-21 時点の導入版は skill-matrix が 1.4.3、app-template / home-site-finder / babyfood-check /
   life-plan-simulator / photo-prompt-builder が 1.4.2
   完了条件：`jq -r '.plugins["apps-workflow@n-yoshida-dev"][] | "\(.version)  \(.projectPath)"' ~/.claude/plugins/installed_plugins.json` の全行が 1.4.4 になっている
+
+- [ ] 【ユーザー確認】SPEC.md §3 の `llm_responses` に `raw_text` 列を足す（PR #29 で実装。2026-09-23）
+  読み取れなかった LLM の出力（「承知しました。判定結果は…」のような JSON でない文字列）を残す場所。
+  `raw` は jsonb なので壊れた文字列が入らず、捨てると原因を調べようがなくなる（SPEC §4.5「握りつぶし禁止」）。
+  直す箇所：SPEC.md §3 の `llm_responses` の列一覧に `raw_text text` を足し、`raw jsonb not null` を `raw jsonb`（NULL 可）に直す。
+  「どちらか片方は必ず埋まる」制約（`llm_responses_has_payload`）があることも書く。
+  併せて §4.5 に「出力全体が読めないときは、生の文字列を `llm_responses.raw_text` に残して判定ジョブを失敗にする」を追記する。
+  もう1点、§4.1 のフロー図は「生レスポンス保存 → 検証」の順だが、実装は「検証 → 保存 → 反映」の順。
+  `llm_responses.violations` を同じ行に入れるには先に検証が要るため（保存が反映より先である点は図と同じ）。図の順を実装に合わせるかも一緒に判断する。
+  さらに §8.3 の環境変数一覧に、この PR で足した `JUDGMENT_MAX_ATTEMPTS`（既定3、1〜10）と
+  `JUDGMENT_POLL_INTERVAL_SECONDS`（既定5、1〜300）の2行を足す（`backend/.env.example` には反映済み）
+  完了条件：Naoki が了承し、SPEC.md §3・§4.5 と `backend/migrations/000004_llm_response_raw_text.up.sql`・`internal/store/jobs.go` が同じことを言っている
 
 - [ ] 【ユーザー確認】SPEC.md §4.2 の表で、system に載せるものから「出力スキーマ」を外す（PR #28 の受け入れレビューで判明。2026-09-23）
   実装では返事の形を system の文面ではなく `output_config.format`（構造化出力）で指定している。system 側には「JSON 以外の文章を出力しない」とだけ書いてある。
