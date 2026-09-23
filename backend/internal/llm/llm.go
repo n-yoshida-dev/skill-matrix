@@ -30,8 +30,10 @@ var (
 	ErrInvalidRequest = errors.New("llm: 判定の依頼に不備があります")
 	// ErrInvalidOutput は LLM の出力が約束した形（SPEC.md §4.3）になっていないことを表す。
 	ErrInvalidOutput = errors.New("llm: LLM の出力を読み取れません")
-	// ErrProviderNotImplemented は選ばれたプロバイダがまだ実装されていないことを表す。
-	ErrProviderNotImplemented = errors.New("llm: このプロバイダはまだ実装されていません")
+	// ErrTemporary は一時的な失敗（混雑・通信断・サーバ側の不調）であることを表す。
+	// これが付いているエラーだけを、ワーカーが時間を置いて再試行する。
+	// 付いていないエラー（依頼の不備・認証の失敗）は何度やっても同じ結果になる。
+	ErrTemporary = errors.New("llm: 一時的な失敗です")
 )
 
 // Provider は学習ログの判定を引き受ける相手。
@@ -52,6 +54,10 @@ type JudgmentRequest struct {
 	Levels []roadmap.LevelDef
 	// States は項目ごとの現在の状態。まだ判定されたことのない項目は入っていなくてよい。
 	States map[domain.ItemKey]domain.ItemState
+	// RecentEvidence は項目ごとの直近の根拠（新しい順、SPEC.md §4.2 の3番目）。
+	// 過去に何を根拠にレベルが上がったかを見せると、同じ根拠での二重の昇格を避けやすい。
+	// 埋めるのは呼び出し側（ワーカー）。空でも判定は成立する。
+	RecentEvidence map[domain.ItemKey][]string
 	// LogBody は学習ログの本文。
 	LogBody string
 }
@@ -97,11 +103,14 @@ func New(cfg config.LLMConfig) (Provider, error) {
 	case config.ProviderStub:
 		return NewStub(), nil
 	case config.ProviderAnthropic:
-		// Claude API クライアントは TODO.md 2-4 の次のタスクで実装する。
-		// それまでは黙って stub に落とさず、はっきりエラーにする。
-		// 本物を呼んでいるつもりで偽物の判定が DB に入る事故を避けるため。
-		return nil, fmt.Errorf("%w: LLM_PROVIDER=%s（開発中は LLM_PROVIDER=%s を使ってください）",
-			ErrProviderNotImplemented, config.ProviderAnthropic, config.ProviderStub)
+		// 戻り値をそのまま返さないのは Go の落とし穴を避けるため。
+		// nil の *Anthropic をインタフェースに入れると「nil でないインタフェース」になり、
+		// 呼び出し側の `if p != nil` がすり抜ける。
+		p, err := NewAnthropic(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return p, nil
 	default:
 		return nil, fmt.Errorf("llm: 未対応のプロバイダです: %q", cfg.Provider)
 	}
