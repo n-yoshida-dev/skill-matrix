@@ -49,7 +49,7 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
 
 置き場所と粒度は 2026-09-23 に決まった（`logs/decisions.md`）。着手順は上から。
 
-- [ ] `domain.Judgment` に `EvidenceRef` を足す（根拠の出どころを指す文字列。例 `study:orgflow-learning/logs/2026-08-05.md`）
+- [ ] `domain.Judgment` に `EvidenceRef` を足す（根拠の出どころを指す文字列。例 `study:<リポジトリ内のパス>`）
   完了条件：`domain.Judgment` と `llm.ProposedJudgment` に `EvidenceRef` があり、`llm.Output.DomainJudgments` が引き渡す。空文字を許すか必須にするかを決めて単体テストがある。`ApplyJudgment` の判定ロジックは `EvidenceRef` を見ない（出どころは記録であって判定材料ではない）
   書式は `<種別>:<識別子>`（`study:<パス>` / `cert:<資格名>/<年月>-合格` / `repo:<リポジトリ>@<コミット>` / `work:<期間>/<担当>`）
 - [ ] 判定結果と理解度の JSON をリポジトリに置く
