@@ -21,7 +21,11 @@ RUN go mod download
 COPY . .
 # CGO_ENABLED=0: C のライブラリに依存しない実行ファイルにする（実行側に libc が無いため）
 # -trimpath / -ldflags="-s -w": ビルド環境のパスとデバッグ情報を落として小さくする
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/server ./cmd/server
+# サーバと判定ワーカーの2つを作る。中身の大半は共通なので、1つのイメージに両方を入れて
+# 起動時にどちらを動かすか選ぶ（compose の entrypoint で切り替える）。
+# イメージを分けるとビルドも更新も2回ぶんになり、依存のずれも起きやすい
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/server ./cmd/server && \
+    CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/worker ./cmd/worker
 
 # --- 実行用 -------------------------------------------------------------------
 # distroless はシェルもパッケージ管理も無い最小イメージ。攻撃される面を減らす。
@@ -29,8 +33,10 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/server ./cmd/serve
 # nonroot タグは root ではない一般ユーザー（uid 65532）で動く
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=build /out/server /server
+COPY --from=build /out/worker /worker
 
 # 既定の PORT（internal/config の defaultPort）。実際の待ち受けは環境変数 PORT で決まる
 EXPOSE 8080
 USER nonroot:nonroot
+# 既定は HTTP サーバ。判定ワーカーとして動かすときは entrypoint を /worker に差し替える
 ENTRYPOINT ["/server"]

@@ -283,6 +283,10 @@ func DefaultRules() Rules {
 
 // Applied は判定1件を適用した結果。
 type Applied struct {
+	// Judgment は元になった判定（LLM の提案そのもの）。
+	// 適用結果を assessment_events に保存するとき、提案値・根拠・確信度が要る。
+	// State から逆算できないので、どの判定から来たかを持ち歩く。
+	Judgment Judgment
 	// State は適用後の状態。Deferred が true のときは適用前のまま。
 	State ItemState
 	// Changed は状態が実際に変わったか。

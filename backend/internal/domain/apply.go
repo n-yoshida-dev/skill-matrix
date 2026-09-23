@@ -46,7 +46,7 @@ type decision struct {
 // cur がゼロ値（まだ一度も判定されていない項目）でも安全に呼べる。
 func ApplyJudgment(cur ItemState, j Judgment, rules Rules) Applied {
 	rules = rules.withDefaults()
-	res := Applied{State: cur}
+	res := Applied{Judgment: j, State: cur}
 
 	// V2: レベルが 0〜5 の範囲にあるか
 	if !j.ProposedLevel.Valid() {

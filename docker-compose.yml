@@ -1,13 +1,14 @@
 # ローカル開発用。本番の構成ではない。
 #
 # ここに書いてあるパスワードは開発専用の固定値。本番の値は .env で与える。
-# worker / frontend のサービスは、それぞれのコードと Dockerfile ができてから追加する。
+# frontend のサービスは、コードと Dockerfile ができてから追加する。
 #
 # 使い方:
 #   docker compose up -d postgres          # DB だけ起動
 #   docker compose run --rm migrate        # マイグレーション適用
 #   docker compose up -d --build backend   # DB 起動 → マイグレーション → API サーバ起動（backend/.env が要る）
-#   docker compose logs -f backend         # サーバのログを見る
+#   docker compose up -d --build worker    # 判定ワーカーを起動（LLM_PROVIDER=stub なら課金ゼロ）
+#   docker compose logs -f backend worker  # ログを見る
 #   docker compose down -v                 # データごと破棄してやり直す
 
 services:
@@ -70,6 +71,25 @@ services:
       # GITHUB_OAUTH_CALLBACK_URL（http://localhost:8080/...）と同じポートでホストに出す
       - "8080:8080"
     # restart は付けない。設定不備で終了したときに再起動を繰り返すと、エラーに気づきにくくなる
+
+  # 判定ワーカー（backend/cmd/worker）。イメージは backend と同じものを使い、
+  # 起動する実行ファイルだけ差し替える（SPEC.md §4.1：サーバとは別プロセス）。
+  worker:
+    build:
+      context: ./backend
+    entrypoint: ["/worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      # backend と同じ理由で、コンテナから見た DB の住所に差し替える
+      DATABASE_URL: postgres://skillmatrix:skillmatrix@postgres:5432/skillmatrix?sslmode=disable
+    # ポートは開けない。ワーカーは外からのリクエストを受けない
 
 volumes:
   postgres-data:

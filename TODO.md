@@ -57,11 +57,10 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
   完了条件：`llm.New` が `LLM_PROVIDER=stub` で LLM を呼ばない実装を返し、同じ入力に同じ判定を返す。その判定が `domain.ApplyJudgments` を違反なしで通る。返す JSON を差し替えた stub で V1・V2・V4 が記録される。形の崩れた判定は捨てずに `Rejected` に残る（KNOWLEDGE.md 2026-09-19）
 - [x] `internal/llm` に Claude API クライアントとプロンプト組み立てを実装する（共通部を先頭に固める。判定基準は `roadmaps.levels` の `criteria` を使い、コードに書かない）
   完了条件：`llm.New` が `LLM_PROVIDER=anthropic` で Claude API を呼ぶ実装を返す。system に共通部（役割・`criteria`・根拠の種類・禁止事項）とキャッシュの印が載り、ロードマップ・現在の状態・ログ本文は後ろの user ブロックに分かれる。返事は `output_config.format` の JSON Schema で縛り、stub と同じ `ParseOutput` を通す。API を呼ばずに `httptest` で送信内容とエラーの仕分けを検証している（KNOWLEDGE.md 2026-09-23）
-- [ ] 判定ジョブのキューとワーカーを実装する（`FOR UPDATE SKIP LOCKED`・リトライ・失敗記録。形の検査で弾いた `llm.Output.Rejected` も V1〜V8 の違反と一緒に `llm_responses.violations` へ記録する。
-  着手時に決めること：`*llm.InvalidOutputError` が運んでくる生の出力（`Raw`）をどこへ残すか（`llm_responses.raw` は jsonb なので JSON でない文字列は入らない）と、`ErrInvalidOutput` を再試行の対象にするか。
-  再試行してよい失敗の判別は `errors.Is(err, llm.ErrTemporary)` で行う（2026-09-23 に実装。429・5xx・接続断・待ち時間切れだけが対象）。PR #25 のレビューで判明。
-  併せて決めること：**課金済みの失敗**（拒否・上限切れ・読み取り不能）のトークン消費をどう記録するか。今の `Judge` はエラー時に `Usage` を返さないため、
-  その分がコスト実績と月次クォータの数え上げから抜ける。エラーに載せるか、結果と併せて返す形にするか（PR #28 のレビューで判明。2026-09-23））
+- [x] 判定ジョブのキューとワーカーを実装する（`FOR UPDATE SKIP LOCKED`・リトライ・失敗記録。形の検査で弾いた `llm.Output.Rejected` も V1〜V8 の違反と一緒に `llm_responses.violations` へ記録する）
+  完了条件：`cmd/worker` が順番待ちから判定を1件ずつ処理し、応答（読めなかった生の出力・拒否・課金済みの失敗を含む）を `llm_responses` に残し、
+  検証を通った判定を `assessment_events` → `item_states` へ1トランザクションで反映する。再試行するのは `llm.ErrTemporary` が付いた失敗だけで、
+  上限は `JUDGMENT_MAX_ATTEMPTS`（既定3）。同じ仕事を二度取り出さない。`LLM_PROVIDER=stub` で実機の通し確認ができる（KNOWLEDGE.md 2026-09-23）
 - [ ] レート制限（月次クォータ）を実装する
 - [ ] ログ投稿 API（202 + jobId）とジョブ状態 API を実装する
 - [ ] 反映モード（`auto` / `confirm`）と保留判定の確定 API を実装する

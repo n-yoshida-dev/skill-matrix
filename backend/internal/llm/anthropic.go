@@ -88,37 +88,55 @@ func (a *Anthropic) Judge(ctx context.Context, req JudgmentRequest) (*JudgmentRe
 
 	// 生成の打ち切られ方を先に見る。中身を読む前に確かめないと、
 	// 途中で切れた JSON を「壊れた出力」と取り違えて原因を見失う。
+	// ここから先の失敗は、どれも**課金が発生したうえでの失敗**。
+	// 消費トークンをエラーに載せて、呼び出し側が利用量の実績に数えられるようにする
+	used := usageOf(resp)
+
 	switch resp.StopReason {
 	case anthropic.StopReasonRefusal:
-		return nil, fmt.Errorf("llm: Claude が判定を拒否しました（理由: %s）", resp.StopDetails.Category)
+		return nil, &RefusalError{Category: string(resp.StopDetails.Category), Usage: used}
 	case anthropic.StopReasonMaxTokens:
 		// 途中まで生成された本文も捨てずに運ぶ。どこで切れたかが分かると、
 		// max_tokens を上げれば済むのか、そもそも判定が多すぎるのかを見分けられる
-		return nil, newInvalidOutputError(textOf(resp),
+		err := newInvalidOutputError(textOf(resp),
 			"出力が上限（max_tokens=%d）に達して途中で切れました", anthropicMaxTokens)
+		err.Usage = used
+		return nil, err
 	}
 
 	raw := textOf(resp)
 	if len(raw) == 0 {
-		return nil, newInvalidOutputError(nil, "応答に本文がありません")
+		err := newInvalidOutputError(nil, "応答に本文がありません")
+		err.Usage = used
+		return nil, err
 	}
 
 	out, err := ParseOutput(raw)
 	if err != nil {
+		// ParseOutput は API を知らないので、消費トークンはここで補う
+		var outErr *InvalidOutputError
+		if errors.As(err, &outErr) {
+			outErr.Usage = used
+		}
 		return nil, err
 	}
 
 	return &JudgmentResult{
 		Raw:    raw,
 		Output: out,
-		Usage: Usage{
-			InputTokens:         int(resp.Usage.InputTokens),
-			OutputTokens:        int(resp.Usage.OutputTokens),
-			CacheReadTokens:     int(resp.Usage.CacheReadInputTokens),
-			CacheCreationTokens: int(resp.Usage.CacheCreationInputTokens),
-		},
-		Model: string(resp.Model),
+		Usage:  used,
+		Model:  string(resp.Model),
 	}, nil
+}
+
+// usageOf は応答から消費トークン数を取り出す。
+func usageOf(resp *anthropic.Message) Usage {
+	return Usage{
+		InputTokens:         int(resp.Usage.InputTokens),
+		OutputTokens:        int(resp.Usage.OutputTokens),
+		CacheReadTokens:     int(resp.Usage.CacheReadInputTokens),
+		CacheCreationTokens: int(resp.Usage.CacheCreationInputTokens),
+	}
 }
 
 // params は API へ送るリクエストを組み立てる。
