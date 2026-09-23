@@ -30,9 +30,14 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
 
 - [x] TODO.md を仕分ける（2026-09-23 完了。画面のタスクを前に出し、棚上げ分をフェーズ3へ移した）
   完了条件：フェーズ2 に残っているのが自分専用版に必要なタスクだけになり、棚上げした分はフェーズ3に「v2：他人にも使わせる」として理由つきで並んでいる。進捗表の残り件数が、画面まで到達するのに必要な件数を表している
-- [ ] 自分専用版のデータの置き場所と、AI への指示の形を決める
+- [x] 自分専用版のデータの置き場所と、AI への指示の形を決める（2026-09-23 完了。`logs/decisions.md` に6件記録）
   完了条件：`logs/decisions.md` に次の5点が記録されている。(1) 判定結果の JSON をリポジトリのどこに、どんな粒度（1ファイル/項目 か 1ファイル/ロードマップ か）で置くか (2) Claude Code / ChatGPT に渡す指示をどのファイルに置くか（`internal/llm/prompt.go` の文面を流用するか） (3) 検証（V1〜V8）をいつ走らせるか（CI か、書き込み前の CLI か） (4) 学習ログの本文と、判定の `rationale`（ログの引用を含みうる）をリポジトリに置くか。置くなら公開時に読まれる前提になり、CLAUDE.md「実データをコミットしない」と衝突する (5) `internal/llm` の stub の扱い（判定の主体が AI ツール側に移ると役割が変わる）
-  **この決定で 2-1 と 2-4 の完了条件の「どこに・どの粒度で」が埋まる。先にこれを済ませる**
+  決まった内容（要約。正本は `logs/decisions.md` 2026-09-23 の6件）：
+  (1) `data/roadmap.json` ＋ `data/judgments/YYYY-MM-DD-<短い名前>.json`（学習ログ1件 = 1ファイル・追記のみ）＋ `data/state.json`（導出値。CLI が書き直す）
+  (2) 指示書の本体は `prompts/judge.md`。`.claude/skills/judge-log/SKILL.md` は薄い入口。判定基準は書き写さず `data/roadmap.json` と `domain/types.go` を参照させる
+  (3) 手元の `recalc` と CI の `verify` の両方。`verify` は `state.json` が再計算結果と一致するかまで見る
+  (4) **学習ログ本文は置かない。** 正本は `~/workspace/study`（Private）。判定に `evidenceRef` を持たせて出どころを指す。`rationale` は置くが技術的な事実だけに縛る。判定 JSON は実物をコミットし、リポジトリは公開できる
+  (5) stub は棚上げ（コードとテストは残す）。`internal/llm/output.go` は v1 の中核として残る
 - [ ] `PLAN.md` と `SPEC.md` を新しい方針へ書き換える
   完了条件：SPEC.md §3（DB スキーマ）・§4.1（非同期ジョブ）・§4.2（プロンプト構成）・§4.5（検証の置き場所）・§6（API）・§8.3（環境変数）が新しい方針に沿って書き換わっているか「v2 へ棚上げ」と明示されていて、v1 のデータ配置と判定の流れが読める。
   `PLAN.md`「技術的な方針」に、既定スタック（`../CLAUDE.md`）から外れる点＝サーバと DB を持たないこと、サーバ通信が無いので TanStack Query を入れないことが書いてある。`docs/spec-guide.md` も食い違っていない
@@ -41,14 +46,18 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
 
 ### 2-1. 土台（自分専用版）
 
-**下の3件は 2-0 の 2 件目が決まってから着手する。** 完了条件に残っている「決めた場所」「決めた粒度」はその決定で埋まる。
+置き場所と粒度は 2026-09-23 に決まった（`logs/decisions.md`）。着手順は上から。
 
+- [ ] `domain.Judgment` に `EvidenceRef` を足す（根拠の出どころを指す文字列。例 `study:orgflow-learning/logs/2026-08-05.md`）
+  完了条件：`domain.Judgment` と `llm.ProposedJudgment` に `EvidenceRef` があり、`llm.Output.DomainJudgments` が引き渡す。空文字を許すか必須にするかを決めて単体テストがある。`ApplyJudgment` の判定ロジックは `EvidenceRef` を見ない（出どころは記録であって判定材料ではない）
 - [ ] 判定結果と理解度の JSON をリポジトリに置く
-  完了条件：ダミーのロードマップに対する判定結果（`Judgment`）と理解度（`ItemState`）の JSON が 2-0 で決めた場所・粒度で置かれ、`backend/testdata/` と同じく実データを含まない。ファイルの形が SPEC.md に書いてある
+  完了条件：`data/roadmap.json`・`data/judgments/YYYY-MM-DD-<短い名前>.json`（ダミー2〜3件）・`data/state.json` が置かれ、`backend/testdata/` と同じく実データを含まない。ファイルの形が SPEC.md に書いてある。**学習ログ本文は置かない**（`evidenceRef` で指すだけ）
 - [ ] 検証と再計算の CLI を作る（`backend/cmd/`。JSON を読み、形の検査 → V1〜V8 → `ApplyJudgment` → 理解度を書き出す）
-  完了条件：`go run ./cmd/<名前>` がリポジトリの JSON から理解度を計算し直し、違反があれば終了コード 1 と違反の一覧（どの項目のどのルールか）を出す。DB・HTTP・LLM クライアントを import しない。単体テストがある
-- [ ] その CLI を CI で走らせる
-  完了条件：`.github/workflows/ci.yml` に組み込まれ、JSON をわざと壊した PR で CI が赤くなることを一度確かめてある
+  完了条件：`recalc` と `verify` の2モードがある。`recalc` は `data/state.json` を書き出す。`verify` は書き出さず、違反があれば終了コード 1 と違反の一覧（どの項目のどのルールか）を出し、**さらに `state.json` が再計算結果と一致しなければ終了コード 1**。DB・HTTP・LLM クライアントを import しない。単体テストがある
+- [ ] その CLI を CI で走らせる（`verify` モード）
+  完了条件：`.github/workflows/ci.yml` に組み込まれ、JSON をわざと壊した PR と、`state.json` だけ古い PR の両方で CI が赤くなることを一度確かめてある
+- [ ] 根拠の出どころの設定ファイル `sources.local.json` を用意する（`.gitignore` に入れる。`.example` だけコミット）
+  完了条件：`sources.local.json.example` に study のパスを書く形が示され、`.gitignore` に `sources.local.json` が入っている。実ファイルはコミットされていない
 - [x] `CLAUDE.md` に「`apps-workflow:handoff` を誰が実行するか」を正しく書く（当初は「ユーザー起動限定なのでユーザーに頼む」を追記する予定だったが、2026-09-18 の apps-workflow v1.4.2 で限定が外れたため、逆の内容＝Claude が自分で呼ぶ、に改めた。KNOWLEDGE.md 2026-09-14 / 2026-09-18）
   完了条件：`CLAUDE.md` の「セッション開始時にすること」節に、区切りでは Claude が handoff を自分で呼ぶこと、ユーザー起動限定は `pr-check` だけであることが書かれ、`../CLAUDE.md` と矛盾しない
 
@@ -73,9 +82,11 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 
 - [x] `internal/llm` にインタフェースと **stub プロバイダ**を実装する（`LLM_PROVIDER=stub`。開発中の課金ゼロ＋テストの決定性）
   完了条件：`llm.New` が `LLM_PROVIDER=stub` で LLM を呼ばない実装を返し、同じ入力に同じ判定を返す。その判定が `domain.ApplyJudgments` を違反なしで通る。返す JSON を差し替えた stub で V1・V2・V4 が記録される。形の崩れた判定は捨てずに `Rejected` に残る（KNOWLEDGE.md 2026-09-19）
-  **stub を v1 に残すか棚上げするかは 2-0 の 2 件目で決める**（判定の主体が AI ツール側に移ると役割が変わる）
-- [ ] AI への指示書を用意する（`internal/llm/prompt.go` の文面を流用する）
-  完了条件：Claude Code / ChatGPT にそのファイルを読ませるだけで判定の JSON が出てくる。役割・`criteria` の使い方（コードに判定基準を書かない）・根拠の種類・昇格ルール・禁止事項・出力の形が載っている。到達状態（`outcome`）の下書きもこの指示書で作れる。置き場所は 2-0 の 2 件目の決定に従う
+  **2026-09-23 に「棚上げ（コードとテストは残す）」と決定。** v1 の手順書と README には登場させない（`logs/decisions.md`）
+- [ ] AI への指示書 `prompts/judge.md` を用意する（`internal/llm/prompt.go` の文面を流用する）
+  完了条件：Claude Code / ChatGPT にそのファイルを読ませるだけで判定の JSON が出てくる。役割・根拠の種類・昇格ルール・禁止事項・出力の形が載っている。**レベルの基準と根拠の上限は書き写さず、`data/roadmap.json` の `levels` と `backend/internal/domain/types.go` を読ませる**。禁止事項に「`rationale` に所属先・企業名・人名・転職活動・人事評価に関する記述を含めない」がある。`evidenceRef` の書式（`<種別>:<識別子>`）と、`sources.local.json` から根拠の出どころを読む手順が載っている。到達状態（`outcome`）の下書きもこの指示書で作れる
+- [ ] `.claude/skills/judge-log/SKILL.md` を作る（`prompts/judge.md` を読ませる薄い入口）
+  完了条件：`/judge-log` で呼べ、`prompts/judge.md` と `sources.local.json` を読み、未判定の学習ログを探して `data/judgments/` に新しいファイルを1つ書くところまで進む。**既存の判定ファイルは書き換えない**。判定基準や禁止事項をこのファイルに書き写していない（`prompts/judge.md` へのリンクだけ）
 
 ### 2-5. 画面（当初の目的の本体。ここが v1 のゴール）
 
@@ -89,7 +100,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   - [ ] 他分野の前提をゴーストノードで置き、クリックでその分野へ移動
   - [ ] 一列／ツリーの切り替えと、選択の記憶
 - [ ] 項目詳細画面（レベル遷移の履歴と根拠、到達状態の表示）
-  完了条件：ある項目のレベルがいつ・何を根拠に上がったかが読める。**編集をこの画面から行うかは 2-0 の 2 件目の決定に従う**（静的サイトは書き込み先を持たないので、更新は AI ツール側で JSON を書き換える形になる）
+  完了条件：ある項目のレベルがいつ・何を根拠に上がったかが、`rationale` と `evidenceRef` で読める。**この画面から編集はしない**（2026-09-23 決定。静的サイトは書き込み先を持たず、更新は AI ツールが `data/judgments/` にファイルを足す形で行う）
 - [ ] 次にやること Top N の表示（到達状態と次の確認方法をセットで）
 
 ### 2-6. 仕上げ
@@ -101,8 +112,14 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   完了条件：クローン直後の人が README だけで「学習ログを AI に判定させる → JSON を更新する → 画面で見る」を一周できる。画面のスクリーンショットがある
 - [ ] `DefaultWeights()` の重みを実データの手触りで調整する（今は仮置き。v1 が動いてから、と本人合意済み）
   完了条件：「次にやること Top N」の並びを本人が見て違和感が無い。変えた重みと理由が KNOWLEDGE.md にあり、単体テストが更新されている
+- [ ] `~/workspace/study/learner-profile/skill-map.md` との関係を決める（2026-09-23 に判明）
+  skill-map.md は同じ5段階モデルで手で維持されている理解度台帳で、**skill-matrix はこれを自動化するアプリ**。
+  2つ並立すると必ずずれる。方針の案は「画面が実用になるまで skill-map.md が正本のまま並行運転 → 実用になったら
+  skill-map.md を『skill-matrix を見よ』に畳む」。**畳むかどうかはユーザー判断**（study 側の運用が変わるため）
+  完了条件：どちらを正本にするかが `logs/decisions.md` にあり、畳む場合は study 側の変更内容（どのファイルをどう書き換えるか）がタスクとして起きている
 - [ ] 画面を GitHub Pages に公開する
-  完了条件：`main` への push で静的サイトがビルドされて Pages に上がり、URL を開くとマトリクスが見える。**リポジトリを Public にするかどうかはユーザー判断**（2-0 の 2 件目の (4)＝ログ本文と `rationale` をリポジトリに置くかの決定と矛盾しないこと）
+  完了条件：`main` への push で静的サイトがビルドされて Pages に上がり、URL を開くとマトリクスが見える。**Public にする直前に、`data/judgments/` 全件の `rationale` を目で読み、固有名詞（所属先・企業名・人名）が混ざっていないことを確かめる**（2026-09-23 決定の残リスク。`logs/decisions.md`）
+  **【ユーザー作業】リポジトリを Public にする操作はユーザーが行う**（公開設定の変更は不可逆。URL は実施時に添える）
 
 ## フェーズ3：v2「他人にも使わせる」（保留・合計に含めない）
 
@@ -117,8 +134,9 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 - [x] Docker Compose を用意する（postgres + migrate。backend / worker / frontend は実装後に追加）
 - [x] マイグレーション基盤を入れて `SPEC.md` §3 のテーブルを作る（golang-migrate）
 - [x] `internal/config` で環境変数を読む（`.env.example` を `SPEC.md` §8.3 に合わせて更新）
-  **この1件だけは 2026-09-23 の決定の棚上げ列挙に無い。** 中身はサーバ・DB・LLM の設定なのでここへ置いたが、
-  2-1 の CLI が設定値を読むなら扱いが変わる。**置き場所は 2-0 の 2 件目で CLI の設定の持ち方と一緒に決める**
+  **この1件だけは 2026-09-23 の決定の棚上げ列挙に無い。** 中身はサーバ・DB・LLM の設定なのでここへ置いた。
+  2026-09-23 の決定で、v1 の CLI が読む設定は `sources.local.json`（根拠の出どころのパス）だけになり、
+  `internal/config` の環境変数とは別系統になった。**`internal/config` はこのまま棚上げでよい**（CLI からは import しない）
 - [x] GitHub OAuth ログインとセッション（HttpOnly Cookie）を実装する
 - [x] GitHub OAuth App を実際に作り、ブラウザでログインを一度通す（2026-08-20 完了。認可 → トークン交換 → セッション発行 → `/api/me` まで実機で確認）
 - [x] `internal/store` の DB テストの土台を作る（`TEST_DATABASE_URL` が無ければスキップ、あればテストごとに専用スキーマへマイグレーションを流す。CI にも postgres サービスを追加。`store_test.go`）
