@@ -118,7 +118,9 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
   「どちらか片方は必ず埋まる」制約（`llm_responses_has_payload`）があることも書く。
   併せて §4.5 に「出力全体が読めないときは、生の文字列を `llm_responses.raw_text` に残して判定ジョブを失敗にする」を追記する。
   もう1点、§4.1 のフロー図は「生レスポンス保存 → 検証」の順だが、実装は「検証 → 保存 → 反映」の順。
-  `llm_responses.violations` を同じ行に入れるには先に検証が要るため（保存が反映より先である点は図と同じ）。図の順を実装に合わせるかも一緒に判断する
+  `llm_responses.violations` を同じ行に入れるには先に検証が要るため（保存が反映より先である点は図と同じ）。図の順を実装に合わせるかも一緒に判断する。
+  さらに §8.3 の環境変数一覧に、この PR で足した `JUDGMENT_MAX_ATTEMPTS`（既定3、1〜10）と
+  `JUDGMENT_POLL_INTERVAL_SECONDS`（既定5、1〜300）の2行を足す（`backend/.env.example` には反映済み）
   完了条件：Naoki が了承し、SPEC.md §3・§4.5 と `backend/migrations/000004_llm_response_raw_text.up.sql`・`internal/store/jobs.go` が同じことを言っている
 
 - [ ] 【ユーザー確認】SPEC.md §4.2 の表で、system に載せるものから「出力スキーマ」を外す（PR #28 の受け入れレビューで判明。2026-09-23）

@@ -64,6 +64,12 @@ func TestLoad_既定値が入る(t *testing.T) {
 	if cfg.Judgment.MaxItemsPerLog != defaultMaxItemsPerLog {
 		t.Errorf("MaxItemsPerLog = %d, 期待値 %d", cfg.Judgment.MaxItemsPerLog, defaultMaxItemsPerLog)
 	}
+	if cfg.Judgment.MaxAttempts != defaultMaxAttempts {
+		t.Errorf("MaxAttempts = %d, 期待値 %d", cfg.Judgment.MaxAttempts, defaultMaxAttempts)
+	}
+	if cfg.Judgment.PollIntervalSeconds != defaultPollIntervalSeconds {
+		t.Errorf("PollIntervalSeconds = %d, 期待値 %d", cfg.Judgment.PollIntervalSeconds, defaultPollIntervalSeconds)
+	}
 }
 
 func TestLoad_明示した値が優先される(t *testing.T) {
@@ -75,6 +81,8 @@ func TestLoad_明示した値が優先される(t *testing.T) {
 	env["JUDGMENT_MONTHLY_QUOTA"] = "30"
 	env["JUDGMENT_CONFIDENCE_THRESHOLD"] = "0.75"
 	env["JUDGMENT_MAX_ITEMS_PER_LOG"] = "5"
+	env["JUDGMENT_MAX_ATTEMPTS"] = "2"
+	env["JUDGMENT_POLL_INTERVAL_SECONDS"] = "30"
 	setEnv(t, env)
 
 	cfg, err := Load()
@@ -102,6 +110,12 @@ func TestLoad_明示した値が優先される(t *testing.T) {
 	}
 	if cfg.Judgment.MaxItemsPerLog != 5 {
 		t.Errorf("MaxItemsPerLog = %d, 期待値 5", cfg.Judgment.MaxItemsPerLog)
+	}
+	if cfg.Judgment.MaxAttempts != 2 {
+		t.Errorf("MaxAttempts = %d, 期待値 2", cfg.Judgment.MaxAttempts)
+	}
+	if cfg.Judgment.PollIntervalSeconds != 30 {
+		t.Errorf("PollIntervalSeconds = %d, 期待値 30", cfg.Judgment.PollIntervalSeconds)
 	}
 }
 
