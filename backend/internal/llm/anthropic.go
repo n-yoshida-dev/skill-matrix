@@ -92,7 +92,10 @@ func (a *Anthropic) Judge(ctx context.Context, req JudgmentRequest) (*JudgmentRe
 	case anthropic.StopReasonRefusal:
 		return nil, fmt.Errorf("llm: Claude が判定を拒否しました（理由: %s）", resp.StopDetails.Category)
 	case anthropic.StopReasonMaxTokens:
-		return nil, newInvalidOutputError(nil, "出力が上限（max_tokens=%d）に達して途中で切れました", anthropicMaxTokens)
+		// 途中まで生成された本文も捨てずに運ぶ。どこで切れたかが分かると、
+		// max_tokens を上げれば済むのか、そもそも判定が多すぎるのかを見分けられる
+		return nil, newInvalidOutputError(textOf(resp),
+			"出力が上限（max_tokens=%d）に達して途中で切れました", anthropicMaxTokens)
 	}
 
 	raw := textOf(resp)
@@ -109,8 +112,10 @@ func (a *Anthropic) Judge(ctx context.Context, req JudgmentRequest) (*JudgmentRe
 		Raw:    raw,
 		Output: out,
 		Usage: Usage{
-			InputTokens:  int(resp.Usage.InputTokens),
-			OutputTokens: int(resp.Usage.OutputTokens),
+			InputTokens:         int(resp.Usage.InputTokens),
+			OutputTokens:        int(resp.Usage.OutputTokens),
+			CacheReadTokens:     int(resp.Usage.CacheReadInputTokens),
+			CacheCreationTokens: int(resp.Usage.CacheCreationInputTokens),
 		},
 		Model: string(resp.Model),
 	}, nil
@@ -123,7 +128,7 @@ func (a *Anthropic) Judge(ctx context.Context, req JudgmentRequest) (*JudgmentRe
 // 利用者ごとに違うので、キャッシュの対象にしても当たらない。
 //
 // 注意：共通部が約1,024トークンに満たないモデルでは、**エラーにならず黙ってキャッシュされない**
-// （SPEC.md §4.2）。効いているかは resp.Usage.CacheReadInputTokens で確かめる。
+// （SPEC.md §4.2）。効いているかは JudgmentResult.Usage.CacheReadTokens で確かめる。
 func (a *Anthropic) params(req JudgmentRequest) anthropic.MessageNewParams {
 	return anthropic.MessageNewParams{
 		Model:     anthropic.Model(a.model),

@@ -82,6 +82,14 @@ func (r JudgmentRequest) validate() error {
 type Usage struct {
 	InputTokens  int
 	OutputTokens int
+	// CacheReadTokens はキャッシュから読めた入力トークン数。
+	// プロンプトキャッシュは効かなくてもエラーにならず黙って通常料金になるので、
+	// 実際に効いているかはこの値でしか分からない（SPEC.md §4.2）。
+	CacheReadTokens int
+	// CacheCreationTokens はキャッシュを作るのに使った入力トークン数。
+	// 毎回これだけが立って CacheReadTokens が 0 のままなら、キャッシュが作られては
+	// 使われずに捨てられている（有効期限切れ、または共通部が毎回変わっている）。
+	CacheCreationTokens int
 }
 
 // JudgmentResult は判定1回ぶんの結果。

@@ -67,7 +67,7 @@ const successBody = `{
   "model": "claude-sonnet-5",
   "content": [{"type": "text", "text": "{\"judgments\":[{\"itemKey\":\"go-01\",\"proposedLevel\":1,\"evidenceType\":\"drill\",\"rationale\":\"確認問題に答えている\",\"confidence\":0.8}],\"unmatched\":[\"型パラメータの話\"]}"}],
   "stop_reason": "end_turn",
-  "usage": {"input_tokens": 7500, "output_tokens": 500}
+  "usage": {"input_tokens": 7500, "output_tokens": 500, "cache_read_input_tokens": 1200, "cache_creation_input_tokens": 0}
 }`
 
 // newTestProvider は偽サーバに向いた Provider と、受け取ったリクエストの取り出し口を返す。
@@ -194,6 +194,13 @@ func TestAnthropicJudgeResponse(t *testing.T) {
 			t.Errorf("消費トークンが違う: %+v", res.Usage)
 		}
 	})
+
+	t.Run("キャッシュが効いたかを確かめられる値を運ぶ", func(t *testing.T) {
+		// キャッシュは効かなくてもエラーにならないので、この値でしか確かめようがない
+		if res.Usage.CacheReadTokens != 1200 {
+			t.Errorf("キャッシュから読めたトークン数が %d だった", res.Usage.CacheReadTokens)
+		}
+	})
 }
 
 func TestAnthropicJudgeInvalidOutput(t *testing.T) {
@@ -229,6 +236,11 @@ func TestAnthropicJudgeInvalidOutput(t *testing.T) {
 		}
 		if !strings.Contains(err.Error(), "max_tokens") {
 			t.Errorf("上限で切れたことが分からない文面だった: %v", err)
+		}
+		// 途中まで生成された本文も捨てない（握りつぶし禁止）
+		var outErr *InvalidOutputError
+		if !errors.As(err, &outErr) || !strings.Contains(string(outErr.Raw), "go-01") {
+			t.Errorf("切れた本文が運ばれていない: %v", err)
 		}
 	})
 }

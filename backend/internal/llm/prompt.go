@@ -59,7 +59,9 @@ func buildSystemPrompt(levels []roadmap.LevelDef) string {
 	b.WriteString("提案はそのまま採用されるわけではなく、このあと機械的な検証を通ります。\n\n")
 
 	b.WriteString("# レベルの定義\n\n")
-	b.WriteString("レベルは0から5までの整数です。各レベルに到達したと言える条件は次のとおりです。\n\n")
+	// 上限の数字は domain.MaxLevel から差し込む。文面に直書きすると、
+	// 段数を変えたときにここだけ取り残される
+	fmt.Fprintf(&b, "レベルは0から%dまでの整数です。各レベルに到達したと言える条件は次のとおりです。\n\n", domain.MaxLevel)
 	for _, lv := range sortedLevels(levels) {
 		fmt.Fprintf(&b, "- レベル %d（%s）：%s\n", lv.Level, lv.Name, lv.Criteria)
 	}
