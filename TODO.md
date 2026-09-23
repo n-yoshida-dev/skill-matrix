@@ -13,7 +13,7 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 - [x] 理解度のスケールと色の濃度への割り当てを決める（既存5段階を踏襲＋前段階状態）
 - [x] 時間経過による理解度の減衰を入れるか決める（入れない。根拠の鮮度を別軸で持つ）
 - [x] スケジュール調整の定義を決める（自動再配置はせず「次にやること Top N」に絞る）
-- [x] データの置き場所を決める（PostgreSQL + Docker Compose。デプロイは後回し）**2026-09-23 の方針変更で見直し中。2-0 の 2 件目で決め直す**
+- [x] データの置き場所を決める（PostgreSQL + Docker Compose。デプロイは後回し）**2026-09-23 にリポジトリ内の `data/` 配下の JSON へ決め直した（`logs/decisions.md`）。PostgreSQL はフェーズ3 へ棚上げ**
 - [x] ロードマップ・マスタ JSON のスキーマを決める
 - [x] AI 判定の入出力を決める（プロンプト構成・構造化出力・検証ルール V1〜V8）
 - [x] 公開範囲とスコープの段階分けを決める（v1〜v4）
@@ -36,11 +36,12 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
   (1) `data/roadmap.json` ＋ `data/judgments/YYYY-MM-DD-<短い名前>.json`（学習ログ1件 = 1ファイル・追記のみ）＋ `data/state.json`（導出値。CLI が書き直す）
   (2) 指示書の本体は `prompts/judge.md`。`.claude/skills/judge-log/SKILL.md` は薄い入口。判定基準は書き写さず `data/roadmap.json` と `domain/types.go` を参照させる
   (3) 手元の `recalc` と CI の `verify` の両方。`verify` は `state.json` が再計算結果と一致するかまで見る
-  (4) **学習ログ本文は置かない。** 正本は `~/workspace/study`（Private）。判定に `evidenceRef` を持たせて出どころを指す。`rationale` は置くが技術的な事実だけに縛る。判定 JSON は実物をコミットし、リポジトリは公開できる
+  (4) **学習ログ本文は置かない。** 正本は `~/workspace/study`（Private）。判定に `evidenceRef` を持たせて出どころを指す。`rationale` と `evidenceRef` は置くが、どちらも技術的な事実だけに縛る。判定 JSON は実物をコミットし、リポジトリは公開できる
   (5) stub は棚上げ（コードとテストは残す）。`internal/llm/output.go` は v1 の中核として残る
 - [ ] `PLAN.md` と `SPEC.md` を新しい方針へ書き換える
   完了条件：SPEC.md §3（DB スキーマ）・§4.1（非同期ジョブ）・§4.2（プロンプト構成）・§4.5（検証の置き場所）・§6（API）・§8.3（環境変数）が新しい方針に沿って書き換わっているか「v2 へ棚上げ」と明示されていて、v1 のデータ配置と判定の流れが読める。
-  `PLAN.md`「技術的な方針」に、既定スタック（`../CLAUDE.md`）から外れる点＝サーバと DB を持たないこと、サーバ通信が無いので TanStack Query を入れないことが書いてある。`docs/spec-guide.md` も食い違っていない
+  `PLAN.md`「技術的な方針」に、既定スタック（`../CLAUDE.md`）から外れる点＝サーバと DB を持たないこと、サーバ通信が無いので TanStack Query を入れないことが書いてある。`docs/spec-guide.md` も食い違っていない。
+  **`PLAN.md`「やらないこと」の2行も直す**（PR #32 のレビューで判明）：「判定の入力は学習ログのテキストのみ」と「GitHub リポジトリ連携」は、`evidenceRef` が `cert:` / `work:` / `repo:` を根拠として認める決定とずれている。判定の入力はログ本文のままだが、**根拠の出どころはログに限らない**ことを書き分ける
 - [ ] `CLAUDE.md`（このリポジトリ）の「守ること」を見直す
   完了条件：「API キーをリポジトリに入れない」「Claude API は必ずバックエンドから呼ぶ」など、前提が変わった項目が新しい方針と矛盾していない。棚上げした内容は消さずに「v2 で戻す」と分かる形で残っている
 
@@ -50,14 +51,16 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
 
 - [ ] `domain.Judgment` に `EvidenceRef` を足す（根拠の出どころを指す文字列。例 `study:orgflow-learning/logs/2026-08-05.md`）
   完了条件：`domain.Judgment` と `llm.ProposedJudgment` に `EvidenceRef` があり、`llm.Output.DomainJudgments` が引き渡す。空文字を許すか必須にするかを決めて単体テストがある。`ApplyJudgment` の判定ロジックは `EvidenceRef` を見ない（出どころは記録であって判定材料ではない）
+  書式は `<種別>:<識別子>`（`study:<パス>` / `cert:<資格名>/<年月>-合格` / `repo:<リポジトリ>@<コミット>` / `work:<期間>/<担当>`）
 - [ ] 判定結果と理解度の JSON をリポジトリに置く
   完了条件：`data/roadmap.json`・`data/judgments/YYYY-MM-DD-<短い名前>.json`（ダミー2〜3件）・`data/state.json` が置かれ、`backend/testdata/` と同じく実データを含まない。ファイルの形が SPEC.md に書いてある。**学習ログ本文は置かない**（`evidenceRef` で指すだけ）
 - [ ] 検証と再計算の CLI を作る（`backend/cmd/`。JSON を読み、形の検査 → V1〜V8 → `ApplyJudgment` → 理解度を書き出す）
   完了条件：`recalc` と `verify` の2モードがある。`recalc` は `data/state.json` を書き出す。`verify` は書き出さず、違反があれば終了コード 1 と違反の一覧（どの項目のどのルールか）を出し、**さらに `state.json` が再計算結果と一致しなければ終了コード 1**。DB・HTTP・LLM クライアントを import しない。単体テストがある
 - [ ] その CLI を CI で走らせる（`verify` モード）
   完了条件：`.github/workflows/ci.yml` に組み込まれ、JSON をわざと壊した PR と、`state.json` だけ古い PR の両方で CI が赤くなることを一度確かめてある
-- [ ] 根拠の出どころの設定ファイル `sources.local.json` を用意する（`.gitignore` に入れる。`.example` だけコミット）
-  完了条件：`sources.local.json.example` に study のパスを書く形が示され、`.gitignore` に `sources.local.json` が入っている。実ファイルはコミットされていない
+- [ ] 根拠の出どころの設定ファイル `sources.local.json` を用意する（`.example` だけコミット）
+  完了条件：`sources.local.json.example` に study のパスを書く形が示されている。実ファイルはコミットされていない。
+  **`.gitignore` は追記不要**（`*.local.json` が既に `.gitignore:18` にあり、`.example` は guard-secrets の末尾一致に掛からずコミットできる。PR #32 のレビューで確認）
 - [x] `CLAUDE.md` に「`apps-workflow:handoff` を誰が実行するか」を正しく書く（当初は「ユーザー起動限定なのでユーザーに頼む」を追記する予定だったが、2026-09-18 の apps-workflow v1.4.2 で限定が外れたため、逆の内容＝Claude が自分で呼ぶ、に改めた。KNOWLEDGE.md 2026-09-14 / 2026-09-18）
   完了条件：`CLAUDE.md` の「セッション開始時にすること」節に、区切りでは Claude が handoff を自分で呼ぶこと、ユーザー起動限定は `pr-check` だけであることが書かれ、`../CLAUDE.md` と矛盾しない
 
@@ -84,7 +87,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   完了条件：`llm.New` が `LLM_PROVIDER=stub` で LLM を呼ばない実装を返し、同じ入力に同じ判定を返す。その判定が `domain.ApplyJudgments` を違反なしで通る。返す JSON を差し替えた stub で V1・V2・V4 が記録される。形の崩れた判定は捨てずに `Rejected` に残る（KNOWLEDGE.md 2026-09-19）
   **2026-09-23 に「棚上げ（コードとテストは残す）」と決定。** v1 の手順書と README には登場させない（`logs/decisions.md`）
 - [ ] AI への指示書 `prompts/judge.md` を用意する（`internal/llm/prompt.go` の文面を流用する）
-  完了条件：Claude Code / ChatGPT にそのファイルを読ませるだけで判定の JSON が出てくる。役割・根拠の種類・昇格ルール・禁止事項・出力の形が載っている。**レベルの基準と根拠の上限は書き写さず、`data/roadmap.json` の `levels` と `backend/internal/domain/types.go` を読ませる**。禁止事項に「`rationale` に所属先・企業名・人名・転職活動・人事評価に関する記述を含めない」がある。`evidenceRef` の書式（`<種別>:<識別子>`）と、`sources.local.json` から根拠の出どころを読む手順が載っている。到達状態（`outcome`）の下書きもこの指示書で作れる
+  完了条件：Claude Code / ChatGPT にそのファイルを読ませるだけで判定の JSON が出てくる。役割・根拠の種類・昇格ルール・禁止事項・出力の形が載っている。**レベルの基準と根拠の上限は書き写さず、`data/roadmap.json` の `levels` と `backend/internal/domain/types.go` を読ませる**。禁止事項に「**`rationale` と `evidenceRef` に**所属先・企業名・人名・転職活動・人事評価に関する記述を含めない」がある。`evidenceRef` の書式（`<種別>:<識別子>`）と、`sources.local.json` から根拠の出どころを読む手順が載っている。到達状態（`outcome`）の下書きもこの指示書で作れる
 - [ ] `.claude/skills/judge-log/SKILL.md` を作る（`prompts/judge.md` を読ませる薄い入口）
   完了条件：`/judge-log` で呼べ、`prompts/judge.md` と `sources.local.json` を読み、未判定の学習ログを探して `data/judgments/` に新しいファイルを1つ書くところまで進む。**既存の判定ファイルは書き換えない**。判定基準や禁止事項をこのファイルに書き写していない（`prompts/judge.md` へのリンクだけ）
 
@@ -92,6 +95,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 
 - [ ] 画面の土台を作る（テンプレートの初期画面を外し、ルーティングと JSON の読み込みを置く）
   完了条件：`frontend/src` からテンプレートのデモ画面が消え、2-1 で置いた JSON を型付きで読み込んで各画面へ渡せる。サーバ通信が無いので TanStack Query は入れない（既定スタックから外れる点は PLAN.md に書く）
+  **`data/` は `frontend/` の外にあるので、dev サーバで読むのに `vite.config.ts` の `server.fs.allow` が要る可能性がある**（PR #32 のレビューで指摘。着手時に実機で確かめる）
 - [ ] マトリクス画面（可変長グリッド＋サマリー帯、色＝レベル／枠線＝要再確認）
 - [ ] 学習パス画面・一列表示（依存順の縦一列、済／今ここ／この先、到達状態の表示）
 - [ ] 学習パス画面・スキルツリー表示（SPEC §7.2）
@@ -118,7 +122,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   skill-map.md を『skill-matrix を見よ』に畳む」。**畳むかどうかはユーザー判断**（study 側の運用が変わるため）
   完了条件：どちらを正本にするかが `logs/decisions.md` にあり、畳む場合は study 側の変更内容（どのファイルをどう書き換えるか）がタスクとして起きている
 - [ ] 画面を GitHub Pages に公開する
-  完了条件：`main` への push で静的サイトがビルドされて Pages に上がり、URL を開くとマトリクスが見える。**Public にする直前に、`data/judgments/` 全件の `rationale` を目で読み、固有名詞（所属先・企業名・人名）が混ざっていないことを確かめる**（2026-09-23 決定の残リスク。`logs/decisions.md`）
+  完了条件：`main` への push で静的サイトがビルドされて Pages に上がり、URL を開くとマトリクスが見える。**Public にする直前に、`data/judgments/` 全件の `rationale` と `evidenceRef` を目で読み、固有名詞（所属先・企業名・人名）が混ざっていないことを確かめる**（2026-09-23 決定の残リスク。`logs/decisions.md`）
   **【ユーザー作業】リポジトリを Public にする操作はユーザーが行う**（公開設定の変更は不可逆。URL は実施時に添える）
 
 ## フェーズ3：v2「他人にも使わせる」（保留・合計に含めない）
