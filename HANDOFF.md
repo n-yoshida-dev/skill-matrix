@@ -34,17 +34,12 @@
 **2026-09-23 に方針が変わった。v1 を「公開する Web サービス」から「自分専用のツール」へ絞り込む
 （`logs/decisions.md` 2026-09-23）。ドキュメントはまだ古い方針のまま。作業中のブランチは無い。**
 
-バックエンドは、GitHub ログイン → ロードマップのインポートと CRUD → 学習ログの判定 → 理解度への反映まで動く
-（`LLM_PROVIDER=stub` で実機確認済み）。**フロントエンドは1行も書いていない。ここが当初の目的（スキルツリーの可視化）の本体。**
+HTTP から動くのは GitHub ログインとロードマップのインポート・CRUD まで。**ログ投稿の API はまだ無い。**
+判定 → 理解度への反映は、psql でダミーの仕事を積み、ワーカー単体で通し確認した（`LLM_PROVIDER=stub`。PR #29）。
+**フロントエンドは1行も書いていない。ここが当初の目的（スキルツリーの可視化）の本体。**
 
-方針変更で扱いが変わるもの。**消さずに棚上げし、v2「他人にも使わせる」で戻す。**
-
-| 残る | 棚上げ |
-|---|---|
-| `internal/domain`（理解度モデル・V1〜V8・集計・学習パス）| `internal/store`（PostgreSQL）|
-| `internal/roadmap`（マスタ JSON の検査）| `internal/httpapi`（OAuth・セッション・CRUD）|
-| `internal/llm/output.go`（AI 出力の形の検査）| `internal/worker` と `llm_jobs`（非同期キュー）|
-| `internal/llm/prompt.go` の文面（AI への指示に流用する）| `internal/llm/anthropic.go`（サーバから Claude API を呼ぶ部分）|
+**方針変更で棚上げするもの・残るものの一覧は `logs/decisions.md` 2026-09-23 にある**（消さずに残し、v2 で戻す）。
+1点だけ補足：`internal/llm/prompt.go` は**コードとしては棚上げ**だが、**文面（判定の指示）は AI への指示書へ流用する**。
 
 - `SPEC.md` — 実装が参照する正本。**中身はまだ Web サービス前提**。`docs/spec-guide.md` — 人間向けの解説
 - `backend/testdata/` — ダミーのロードマップとダミー学習ログ。**実データは置かない**
