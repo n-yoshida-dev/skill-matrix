@@ -117,6 +117,8 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 - [x] Docker Compose を用意する（postgres + migrate。backend / worker / frontend は実装後に追加）
 - [x] マイグレーション基盤を入れて `SPEC.md` §3 のテーブルを作る（golang-migrate）
 - [x] `internal/config` で環境変数を読む（`.env.example` を `SPEC.md` §8.3 に合わせて更新）
+  **この1件だけは 2026-09-23 の決定の棚上げ列挙に無い。** 中身はサーバ・DB・LLM の設定なのでここへ置いたが、
+  2-1 の CLI が設定値を読むなら扱いが変わる。**置き場所は 2-0 の 2 件目で CLI の設定の持ち方と一緒に決める**
 - [x] GitHub OAuth ログインとセッション（HttpOnly Cookie）を実装する
 - [x] GitHub OAuth App を実際に作り、ブラウザでログインを一度通す（2026-08-20 完了。認可 → トークン交換 → セッション発行 → `/api/me` まで実機で確認）
 - [x] `internal/store` の DB テストの土台を作る（`TEST_DATABASE_URL` が無ければスキップ、あればテストごとに専用スキーマへマイグレーションを流す。CI にも postgres サービスを追加。`store_test.go`）
