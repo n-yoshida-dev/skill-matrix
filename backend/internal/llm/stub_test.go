@@ -67,10 +67,24 @@ func TestNew(t *testing.T) {
 		}
 	})
 
-	t.Run("anthropic は未実装のあいだ、黙って stub に落とさずエラーにする", func(t *testing.T) {
-		p, err := New(config.LLMConfig{Provider: config.ProviderAnthropic, APIKey: "dummy"})
-		if !errors.Is(err, ErrProviderNotImplemented) {
-			t.Fatalf("ErrProviderNotImplemented のはずが %v だった", err)
+	t.Run("anthropic を選ぶと Claude API を呼ぶ実装が返る", func(t *testing.T) {
+		p, err := New(config.LLMConfig{
+			Provider: config.ProviderAnthropic,
+			APIKey:   "dummy",
+			Model:    "claude-sonnet-5",
+		})
+		if err != nil {
+			t.Fatalf("エラーになった: %v", err)
+		}
+		if _, ok := p.(*Anthropic); !ok {
+			t.Fatalf("*Anthropic が返るはずが %T だった", p)
+		}
+	})
+
+	t.Run("anthropic で API キーが無ければ、黙って stub に落とさずエラーにする", func(t *testing.T) {
+		p, err := New(config.LLMConfig{Provider: config.ProviderAnthropic, Model: "claude-sonnet-5"})
+		if err == nil {
+			t.Fatal("エラーになるはずが通った")
 		}
 		if p != nil {
 			t.Fatalf("エラーのときは Provider を返さないはずが %T だった", p)

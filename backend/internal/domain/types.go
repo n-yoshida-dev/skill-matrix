@@ -115,6 +115,29 @@ func (e EvidenceType) MarksPreState() PreState {
 	return PreStateNone
 }
 
+// evidenceOrder は許可リストの並び。昇格できる種類を到達レベルの低い順に、
+// そのあと昇格しない種類を置く。
+//
+// map から組み立てず固定の並びを持つのは、この並びがそのまま LLM へ渡る
+// プロンプトと出力スキーマに載るため。map の反復順は実行のたびに変わり、
+// 並びが変わるとプロンプトキャッシュが毎回外れる（SPEC.md §4.2）。
+var evidenceOrder = []EvidenceType{
+	EvidenceDrill,
+	EvidenceSelfExplanation,
+	EvidenceImplementation,
+	EvidenceUnaidedImplementation,
+	EvidenceCrossContext,
+	EvidenceExplainedTo,
+	EvidenceSelfReport,
+}
+
+// EvidenceTypes は許可リスト（SPEC.md §4.4）の根拠の種類を、常に同じ並びで返す。
+//
+// 呼び出し側が書き換えても影響が出ないよう、毎回写しを返す。
+func EvidenceTypes() []EvidenceType {
+	return append([]EvidenceType(nil), evidenceOrder...)
+}
+
 // ---------------------------------------------------------------------------
 // ロードマップ（純粋関数が必要とする最小限の形）
 // ---------------------------------------------------------------------------

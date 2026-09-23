@@ -345,3 +345,46 @@ func TestApplyJudgments_入力のstatesを破壊しない(t *testing.T) {
 		t.Errorf("返り値の Level = %d, want %d", got.States["go-01"].Level, LevelBasicConfirmed)
 	}
 }
+
+// EvidenceTypes は許可リスト（SPEC.md §4.4）をプロンプトと出力スキーマへ渡すための一覧。
+// 並びが揺れるとプロンプトキャッシュが毎回外れるため、並びまで固定する。
+func TestEvidenceTypes(t *testing.T) {
+	got := EvidenceTypes()
+
+	t.Run("許可リストの7種類を返す", func(t *testing.T) {
+		if len(got) != 7 {
+			t.Fatalf("7 件のはずが %d 件だった: %v", len(got), got)
+		}
+		for _, ev := range got {
+			if !ev.Valid() {
+				t.Errorf("許可リストにない種類が混ざっている: %q", ev)
+			}
+		}
+	})
+
+	t.Run("昇格できる種類が到達レベルの低い順に並び、昇格しない種類が最後に来る", func(t *testing.T) {
+		var last Level
+		seenNonPromoting := false
+		for _, ev := range got {
+			limit, promotes := ev.MaxLevel()
+			if !promotes {
+				seenNonPromoting = true
+				continue
+			}
+			if seenNonPromoting {
+				t.Fatalf("昇格しない種類のあとに %q が来ている", ev)
+			}
+			if limit < last {
+				t.Fatalf("%q の上限 %d が直前の %d より低い", ev, limit, last)
+			}
+			last = limit
+		}
+	})
+
+	t.Run("呼び出し側が書き換えても次の呼び出しに影響しない", func(t *testing.T) {
+		got[0] = "broken"
+		if EvidenceTypes()[0] == "broken" {
+			t.Error("内部の並びが書き換えられた")
+		}
+	})
+}

@@ -55,9 +55,13 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
 
 - [x] `internal/llm` にインタフェースと **stub プロバイダ**を実装する（`LLM_PROVIDER=stub`。開発中の課金ゼロ＋テストの決定性）
   完了条件：`llm.New` が `LLM_PROVIDER=stub` で LLM を呼ばない実装を返し、同じ入力に同じ判定を返す。その判定が `domain.ApplyJudgments` を違反なしで通る。返す JSON を差し替えた stub で V1・V2・V4 が記録される。形の崩れた判定は捨てずに `Rejected` に残る（KNOWLEDGE.md 2026-09-19）
-- [ ] `internal/llm` に Claude API クライアントとプロンプト組み立てを実装する（共通部を先頭に固める。判定基準は `roadmaps.levels` の `criteria` を使い、コードに書かない）
+- [x] `internal/llm` に Claude API クライアントとプロンプト組み立てを実装する（共通部を先頭に固める。判定基準は `roadmaps.levels` の `criteria` を使い、コードに書かない）
+  完了条件：`llm.New` が `LLM_PROVIDER=anthropic` で Claude API を呼ぶ実装を返す。system に共通部（役割・`criteria`・根拠の種類・禁止事項）とキャッシュの印が載り、ロードマップ・現在の状態・ログ本文は後ろの user ブロックに分かれる。返事は `output_config.format` の JSON Schema で縛り、stub と同じ `ParseOutput` を通す。API を呼ばずに `httptest` で送信内容とエラーの仕分けを検証している（KNOWLEDGE.md 2026-09-23）
 - [ ] 判定ジョブのキューとワーカーを実装する（`FOR UPDATE SKIP LOCKED`・リトライ・失敗記録。形の検査で弾いた `llm.Output.Rejected` も V1〜V8 の違反と一緒に `llm_responses.violations` へ記録する。
-  着手時に決めること：出力全体が読めず `ErrInvalidOutput` になったとき、生の出力をどこへ残すか（`llm_responses.raw` は jsonb なので JSON でない文字列は入らない。今の `Judge` はエラー時に `Raw` を返さない）と、`ErrInvalidOutput` を再試行の対象にするか。PR #25 のレビューで判明）
+  着手時に決めること：`*llm.InvalidOutputError` が運んでくる生の出力（`Raw`）をどこへ残すか（`llm_responses.raw` は jsonb なので JSON でない文字列は入らない）と、`ErrInvalidOutput` を再試行の対象にするか。
+  再試行してよい失敗の判別は `errors.Is(err, llm.ErrTemporary)` で行う（2026-09-23 に実装。429・5xx・接続断・待ち時間切れだけが対象）。PR #25 のレビューで判明。
+  併せて決めること：**課金済みの失敗**（拒否・上限切れ・読み取り不能）のトークン消費をどう記録するか。今の `Judge` はエラー時に `Usage` を返さないため、
+  その分がコスト実績と月次クォータの数え上げから抜ける。エラーに載せるか、結果と併せて返す形にするか（PR #28 のレビューで判明。2026-09-23））
 - [ ] レート制限（月次クォータ）を実装する
 - [ ] ログ投稿 API（202 + jobId）とジョブ状態 API を実装する
 - [ ] 反映モード（`auto` / `confirm`）と保留判定の確定 API を実装する
@@ -105,6 +109,13 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
   2026-09-21 時点の導入版は skill-matrix が 1.4.3、app-template / home-site-finder / babyfood-check /
   life-plan-simulator / photo-prompt-builder が 1.4.2
   完了条件：`jq -r '.plugins["apps-workflow@n-yoshida-dev"][] | "\(.version)  \(.projectPath)"' ~/.claude/plugins/installed_plugins.json` の全行が 1.4.4 になっている
+
+- [ ] 【ユーザー確認】SPEC.md §4.2 の表で、system に載せるものから「出力スキーマ」を外す（PR #28 の受け入れレビューで判明。2026-09-23）
+  実装では返事の形を system の文面ではなく `output_config.format`（構造化出力）で指定している。system 側には「JSON 以外の文章を出力しない」とだけ書いてある。
+  縛りとしては構造化出力のほうが強いので実装を変える必要はないが、SPEC の表は「system に出力スキーマを書く」と読める。
+  直す箇所：SPEC.md §4.2 の表の1行目「判定の役割、5段階の `criteria`、`evidenceType` の許可リストと意味、昇格ルール、出力スキーマ、禁止事項」から「出力スキーマ」を外し、
+  代わりに「出力スキーマは §4.3 のとおり `output_config.format` で指定する（system には『JSON 以外を出力しない』とだけ書く）」を注記する
+  完了条件：Naoki が了承し、SPEC.md §4.2 の表と `backend/internal/llm/prompt.go`・`anthropic.go` が同じことを言っている
 
 - [ ] 【別セッション】他アプリに溜まったマージ済みローカルブランチを片付ける
   2026-09-21 時点の非 main ブランチは life-plan-simulator 25 本・babyfood-check 7 本・photo-prompt-builder 2 本・app-template 1 本。

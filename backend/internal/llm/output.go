@@ -83,17 +83,47 @@ type wireJudgment struct {
 	Confidence    *float64 `json:"confidence"`
 }
 
+// InvalidOutputError は読み取れなかった出力そのものを運ぶエラー。
+//
+// errors.Is(err, ErrInvalidOutput) で見分けられ、errors.As で中の Raw を取り出せる。
+// 生の出力を運ぶのは、**握りつぶさない**ため。何と返ってきたのかが残らないと、
+// プロンプトのどこが悪かったのかを後から調べようがない（SPEC.md §4.5）。
+// どこへ保存するかは呼び出し側（ワーカー）が決める。
+type InvalidOutputError struct {
+	// Raw は LLM が返した生のテキスト。JSON として壊れていることもあるので []byte で持つ。
+	Raw []byte
+	// Reason は読み取れなかった理由。人が読むための文。
+	Reason string
+}
+
+// Error はエラーの文面を返す。生の出力は長くなりうるので、ここには含めない。
+func (e *InvalidOutputError) Error() string {
+	return fmt.Sprintf("%s: %s", ErrInvalidOutput.Error(), e.Reason)
+}
+
+// Unwrap は errors.Is(err, ErrInvalidOutput) を成り立たせる。
+func (e *InvalidOutputError) Unwrap() error { return ErrInvalidOutput }
+
+// newInvalidOutputError は生の出力を写して持つエラーを作る。
+func newInvalidOutputError(raw []byte, format string, args ...any) *InvalidOutputError {
+	return &InvalidOutputError{
+		Raw:    append([]byte(nil), raw...),
+		Reason: fmt.Sprintf(format, args...),
+	}
+}
+
 // ParseOutput は LLM の出力を読み取る。
 //
-// 外枠が壊れている（JSON でない・judgments が無い）場合は ErrInvalidOutput を返す。
+// 外枠が壊れている（JSON でない・judgments が無い）場合は *InvalidOutputError を返す。
+// これは errors.Is(err, ErrInvalidOutput) で見分けられる。
 // 個々の判定の形が崩れている場合はエラーにせず、その1件だけを Rejected に入れて続ける。
 func ParseOutput(raw []byte) (Output, error) {
 	var w wireOutput
 	if err := json.Unmarshal(raw, &w); err != nil {
-		return Output{}, fmt.Errorf("%w: JSON として解釈できません: %v", ErrInvalidOutput, err)
+		return Output{}, newInvalidOutputError(raw, "JSON として解釈できません: %v", err)
 	}
 	if w.Judgments == nil {
-		return Output{}, fmt.Errorf("%w: judgments がありません", ErrInvalidOutput)
+		return Output{}, newInvalidOutputError(raw, "judgments がありません")
 	}
 
 	out := Output{Unmatched: w.Unmatched}
