@@ -244,8 +244,10 @@ func (s *Store) ApplyJudgmentResult(ctx context.Context, job *JudgmentJob, in *J
 	}()
 
 	for _, a := range applied {
-		if a.Deferred {
-			// 保留はイベントを積まない。呼び出し側の絞り込み漏れをここでも止める
+		if a.Deferred || a.Rejected {
+			// 保留（V7）はイベントを積まない。棄却（V2・V3）は判定が無かったのと同じ扱い。
+			// domain 側でも取り除いているが、ここでも止める。保存まで来てしまうと
+			// 範囲外のレベルが DB の制約違反を起こし、同じログの正常な判定まで巻き戻る
 			continue
 		}
 		itemID, ok := in.ItemIDs[a.State.ItemKey]

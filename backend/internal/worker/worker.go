@@ -99,12 +99,12 @@ func (w *Worker) Run(ctx context.Context) error {
 			return nil
 		}
 
-		worked, err := w.ProcessOne(ctx)
+		more, err := w.ProcessOne(ctx)
 		switch {
 		case err != nil:
 			// 1件の失敗でワーカーごと止めない。止めると後続の仕事もすべて滞る
 			w.log.Error("判定ジョブの処理に失敗しました", "error", err)
-		case worked:
+		case more:
 			continue // 続けて次の仕事を取りに行く
 		}
 
@@ -116,11 +116,15 @@ func (w *Worker) Run(ctx context.Context) error {
 	}
 }
 
-// ProcessOne は仕事を1件だけ処理する。処理したら worked=true を返す。
+// ProcessOne は仕事を1件だけ処理する。
+//
+// more は「続けてすぐ次の仕事を取りに行ってよいか」。仕事が無かったときと、
+// 再試行のために順番待ちへ戻したときは false になる。戻したものをすぐ取り直すと、
+// 待ち時間ゼロで試行回数だけを使い切ってしまい、再試行の意味が無くなるため。
 //
 // 返すエラーは「ワーカー側の不具合」だけ。判定そのものの失敗（LLM が落ちた・
 // 出力が読めなかった）は仕事の状態として記録し、エラーにはしない。
-func (w *Worker) ProcessOne(ctx context.Context) (worked bool, err error) {
+func (w *Worker) ProcessOne(ctx context.Context) (more bool, err error) {
 	job, err := w.queue.ClaimJudgmentJob(ctx, w.now())
 	if errors.Is(err, store.ErrNotFound) {
 		return false, nil // 今は仕事が無い。異常ではない
@@ -130,18 +134,26 @@ func (w *Worker) ProcessOne(ctx context.Context) (worked bool, err error) {
 	}
 
 	log := w.log.With("jobId", job.ID, "attempts", job.Attempts)
-	if err := w.run(ctx, job, log); err != nil {
-		return true, err
+	requeued, err := w.run(ctx, job, log)
+	if err != nil {
+		return false, err
 	}
-	return true, nil
+	return !requeued, nil
 }
 
 // run は取り出した仕事1件を最後まで処理する。
-func (w *Worker) run(ctx context.Context, job *store.JudgmentJob, log *slog.Logger) error {
+// requeued が true なら、再試行のために順番待ちへ戻したことを表す。
+func (w *Worker) run(ctx context.Context, job *store.JudgmentJob, log *slog.Logger) (requeued bool, err error) {
 	in, err := w.queue.LoadJudgmentInput(ctx, job)
 	if err != nil {
-		// 材料が読めない（ログが消された等）。やり直しても直らないので失敗で閉じる
-		return w.fail(ctx, job, fmt.Sprintf("判定の材料を読めません: %v", err))
+		// 対象が無い（ログが消された等）のはやり直しても直らないので失敗で閉じる。
+		// それ以外（DB の一時的な接続断など）は時間を置けば直るので再試行する。
+		// 区別しないと、DB が一瞬詰まっただけで判定が永久に失われる
+		reason := fmt.Sprintf("判定の材料を読めません: %v", err)
+		if errors.Is(err, store.ErrNotFound) {
+			return false, w.fail(ctx, job, reason)
+		}
+		return w.retryOrFail(ctx, job, reason, log)
 	}
 
 	res, judgeErr := w.provider.Judge(ctx, llm.JudgmentRequest{
@@ -152,7 +164,14 @@ func (w *Worker) run(ctx context.Context, job *store.JudgmentJob, log *slog.Logg
 		LogBody:        in.LogBody,
 	})
 	if judgeErr != nil {
-		return w.handleJudgeError(ctx, job, judgeErr, log)
+		// 失敗していても API を呼んだ分の課金は発生している。消費分を記録に残す
+		if err := w.saveFailedResponse(ctx, job, judgeErr); err != nil {
+			log.Error("失敗した応答を保存できませんでした", "error", err)
+		}
+		if errors.Is(judgeErr, llm.ErrTemporary) {
+			return w.retryOrFail(ctx, job, judgeErr.Error(), log)
+		}
+		return false, w.fail(ctx, job, judgeErr.Error())
 	}
 
 	// 検証（V1〜V8）。ここは純粋関数で、DB も LLM も知らない
@@ -167,18 +186,18 @@ func (w *Worker) run(ctx context.Context, job *store.JudgmentJob, log *slog.Logg
 		InputTokens:  res.Usage.InputTokens,
 		OutputTokens: res.Usage.OutputTokens,
 	}); err != nil {
-		return w.fail(ctx, job, fmt.Sprintf("応答を保存できません: %v", err))
+		return false, w.fail(ctx, job, fmt.Sprintf("応答を保存できません: %v", err))
 	}
 
 	if in.ApplyMode == applyModeConfirm {
 		// 「確認してから反映」の設定。イベントを積まずに保留として残す（SPEC.md §4.7）。
 		// 採否を決める API は後のタスクで作る
 		log.Info("判定を保留にしました（apply_mode=confirm）", "judgments", len(batch.Results))
-		return w.finish(ctx, job)
+		return false, w.finish(ctx, job)
 	}
 
 	if err := w.queue.ApplyJudgmentResult(ctx, job, in, batch.Results); err != nil {
-		return w.fail(ctx, job, fmt.Sprintf("判定を反映できません: %v", err))
+		return false, w.fail(ctx, job, fmt.Sprintf("判定を反映できません: %v", err))
 	}
 
 	log.Info("判定を反映しました",
@@ -191,35 +210,28 @@ func (w *Worker) run(ctx context.Context, job *store.JudgmentJob, log *slog.Logg
 		// キャッシュが効いているかはこの値でしか分からない（効かなくてもエラーは出ない）
 		"cacheReadTokens", res.Usage.CacheReadTokens,
 	)
-	return w.finish(ctx, job)
+	return false, w.finish(ctx, job)
 }
 
 // applyModeConfirm は「確認してから反映」の設定値（users.apply_mode）。
 const applyModeConfirm = "confirm"
 
-// handleJudgeError は判定そのものが失敗したときの後始末をする。
+// retryOrFail は一時的な失敗の後始末をする。
 //
-// 失敗の種類で扱いを変える。
-//   - 一時的な失敗（混雑・通信断）：上限まで順番待ちへ戻して再試行する
-//   - それ以外（出力が読めない・拒否された・鍵が違う）：再試行せず失敗で閉じる
+// 試行回数が上限に達していなければ順番待ちへ戻し、達していれば失敗で閉じる。
 //
-// 出力が読めない失敗を再試行しないのは、構造化出力で形を縛ってもなお読めないなら、
-// 原因が揺らぎではなく構造的なもの（出力が長すぎる等）で、投げ直しても同じ結果になり
-// 課金だけが増えるため（SPEC.md §4.5 も「判定ジョブの失敗として扱う」としている）。
-func (w *Worker) handleJudgeError(ctx context.Context, job *store.JudgmentJob, judgeErr error, log *slog.Logger) error {
-	// 失敗していても API を呼んだ分の課金は発生している。消費分を記録に残す
-	if err := w.saveFailedResponse(ctx, job, judgeErr); err != nil {
-		log.Error("失敗した応答を保存できませんでした", "error", err)
+// **再試行するのは時間を置けば直る失敗だけ。** 出力が読めない・拒否された・鍵が違う失敗は
+// 何度やっても同じ結果になり、課金だけが増える（SPEC.md §4.5 も「判定ジョブの失敗として扱う」）。
+func (w *Worker) retryOrFail(ctx context.Context, job *store.JudgmentJob, reason string, log *slog.Logger) (bool, error) {
+	if job.Attempts >= w.cfg.MaxAttempts {
+		log.Warn("再試行の上限に達しました", "maxAttempts", w.cfg.MaxAttempts)
+		return false, w.fail(ctx, job, reason)
 	}
-
-	if errors.Is(judgeErr, llm.ErrTemporary) && job.Attempts < w.cfg.MaxAttempts {
-		log.Warn("一時的な失敗のため順番待ちへ戻します", "error", judgeErr)
-		if err := w.queue.RequeueJob(ctx, job.ID, judgeErr.Error(), w.now()); err != nil {
-			return fmt.Errorf("仕事を順番待ちへ戻せません: %w", err)
-		}
-		return nil
+	log.Warn("一時的な失敗のため順番待ちへ戻します", "reason", reason)
+	if err := w.queue.RequeueJob(ctx, job.ID, reason, w.now()); err != nil {
+		return false, fmt.Errorf("仕事を順番待ちへ戻せません: %w", err)
 	}
-	return w.fail(ctx, job, judgeErr.Error())
+	return true, nil
 }
 
 // saveFailedResponse は失敗した応答を残す。
@@ -296,10 +308,11 @@ func violationsOf(batch domain.BatchResult, out llm.Output) []store.RecordedViol
 }
 
 // countApplied は実際に反映した件数を数える。
+// 棄却（V2・V3）は domain 側で Results から外れているが、数え方をそろえるためここでも除く。
 func countApplied(rs []domain.Applied) int {
 	n := 0
 	for _, r := range rs {
-		if !r.Deferred {
+		if !r.Deferred && !r.Rejected {
 			n++
 		}
 	}

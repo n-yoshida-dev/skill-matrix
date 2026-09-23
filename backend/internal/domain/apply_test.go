@@ -346,6 +346,66 @@ func TestApplyJudgments_入力のstatesを破壊しない(t *testing.T) {
 	}
 }
 
+// 棄却した判定（V2・V3）は Results に入れない。
+// 入れてしまうと、呼び出し側が棄却を確かめずに保存へ流し、範囲外のレベルが
+// DB の制約違反を起こして同じログの正常な判定まで巻き戻る（2026-09-23 に PR #29 のレビューで判明）。
+func TestApplyJudgments_棄却した判定はResultsに入れない(t *testing.T) {
+	rm := testRoadmap()
+	states := map[ItemKey]ItemState{}
+
+	got := ApplyJudgments(rm, states, []Judgment{
+		// V2: レベルが 0〜5 の外
+		{ItemKey: "go-01", ProposedLevel: 9, EvidenceType: EvidenceDrill, Confidence: 0.9, OccurredAt: day10},
+		// V3: 許可リストに無い根拠
+		{ItemKey: "go-01", ProposedLevel: 1, EvidenceType: "vibes", Confidence: 0.9, OccurredAt: day10},
+		// これだけが受理される
+		{ItemKey: "go-02", ProposedLevel: 1, EvidenceType: EvidenceDrill, Confidence: 0.9, OccurredAt: day10},
+	}, DefaultRules())
+
+	if len(got.Results) != 1 {
+		t.Fatalf("Results = %d 件, want 1 件（棄却分は含めない）", len(got.Results))
+	}
+	if got.Results[0].Judgment.ItemKey != "go-02" {
+		t.Errorf("残ったのが %q（go-02 のはず）", got.Results[0].Judgment.ItemKey)
+	}
+	// 捨てた事実は Violations に残る（握りつぶさない）
+	gotCodes := codes(got.Violations)
+	for _, want := range []ViolationCode{ViolationLevelOutOfRange, ViolationUnknownEvidence} {
+		if !slices.Contains(gotCodes, want) {
+			t.Errorf("%s が記録されていない: %v", want, gotCodes)
+		}
+	}
+	// 棄却された項目のレベルは動かず、正常な判定だけが生きている
+	if _, ok := got.States["go-01"]; ok {
+		t.Error("棄却したのに go-01 の状態が作られている")
+	}
+	if got.States["go-02"].Level != LevelBasicConfirmed {
+		t.Errorf("go-02 のレベル = %d", got.States["go-02"].Level)
+	}
+}
+
+// 単体の ApplyJudgment では、棄却したことが Rejected で分かる。
+func TestApplyJudgment_棄却にはRejectedが立つ(t *testing.T) {
+	tests := []struct {
+		name string
+		j    Judgment
+	}{
+		{name: "レベルが範囲外（V2）", j: Judgment{ItemKey: "go-01", ProposedLevel: 9, EvidenceType: EvidenceDrill, Confidence: 0.9}},
+		{name: "根拠が許可リストに無い（V3）", j: Judgment{ItemKey: "go-01", ProposedLevel: 1, EvidenceType: "vibes", Confidence: 0.9}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ApplyJudgment(ItemState{ItemKey: "go-01"}, tt.j, DefaultRules())
+			if !got.Rejected {
+				t.Error("Rejected が立っていない")
+			}
+			if got.Changed {
+				t.Error("棄却したのに状態が変わっている")
+			}
+		})
+	}
+}
+
 // EvidenceTypes は許可リスト（SPEC.md §4.4）をプロンプトと出力スキーマへ渡すための一覧。
 // 並びが揺れるとプロンプトキャッシュが毎回外れるため、並びまで固定する。
 func TestEvidenceTypes(t *testing.T) {

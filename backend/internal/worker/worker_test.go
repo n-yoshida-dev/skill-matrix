@@ -222,7 +222,8 @@ func TestProcessOne_一時的な失敗は上限まで順番待ちへ戻す(t *te
 		w := newTestWorker(t, q, failingProvider{err: temporary}, Config{MaxAttempts: 3})
 		q.job.Attempts = 2
 
-		if _, err := w.ProcessOne(context.Background()); err != nil {
+		more, err := w.ProcessOne(context.Background())
+		if err != nil {
 			t.Fatalf("エラーになった: %v", err)
 		}
 		if !slices.Contains(q.calls, "requeue") {
@@ -230,6 +231,10 @@ func TestProcessOne_一時的な失敗は上限まで順番待ちへ戻す(t *te
 		}
 		if !strings.Contains(q.requeued, "429") {
 			t.Errorf("今回の失敗の原因が残っていない: %q", q.requeued)
+		}
+		// 戻した直後にすぐ取り直すと、待ち時間ゼロで試行回数を使い切ってしまう
+		if more {
+			t.Error("戻した仕事をすぐ取りに行こうとしている")
 		}
 	})
 
@@ -360,19 +365,67 @@ func TestProcessOne_形の崩れた判定も違反として記録する(t *testi
 	}
 }
 
-func TestProcessOne_材料が読めなければ再試行せず失敗にする(t *testing.T) {
-	// ログが消されたあとに仕事だけ残っている場合。やり直しても直らない
-	q := &fakeQueue{loadErr: store.ErrNotFound}
-	w := newTestWorker(t, q, llm.NewStub(), Config{})
+func TestProcessOne_材料が読めないときは原因で扱いを分ける(t *testing.T) {
+	t.Run("対象が無いなら再試行せず失敗にする", func(t *testing.T) {
+		// ログが消されたあとに仕事だけ残っている場合。やり直しても直らない
+		q := &fakeQueue{loadErr: store.ErrNotFound}
+		w := newTestWorker(t, q, llm.NewStub(), Config{})
+
+		if _, err := w.ProcessOne(context.Background()); err != nil {
+			t.Fatalf("エラーになった: %v", err)
+		}
+		if slices.Contains(q.calls, "requeue") {
+			t.Errorf("再試行している: %v", q.calls)
+		}
+		if !strings.Contains(q.failed, "材料") {
+			t.Errorf("失敗の原因が残っていない: %q", q.failed)
+		}
+	})
+
+	t.Run("DB が一時的に落ちているだけなら再試行する", func(t *testing.T) {
+		// 区別しないと、DB が一瞬詰まっただけで判定が永久に失われる
+		q := &fakeQueue{loadErr: errors.New("connection refused")}
+		w := newTestWorker(t, q, llm.NewStub(), Config{MaxAttempts: 3})
+		q.job.Attempts = 1
+
+		if _, err := w.ProcessOne(context.Background()); err != nil {
+			t.Fatalf("エラーになった: %v", err)
+		}
+		if !slices.Contains(q.calls, "requeue") {
+			t.Errorf("順番待ちへ戻っていない: %v", q.calls)
+		}
+	})
+}
+
+func TestProcessOne_棄却された判定は反映へ渡さない(t *testing.T) {
+	// レベルが範囲外（V2）の判定をそのまま保存へ流すと、DB の制約違反で
+	// 同じログの正常な判定まで巻き戻る（2026-09-23 に PR #29 のレビューで判明）
+	raw := `{"judgments":[
+	  {"itemKey":"go-01","proposedLevel":9,"evidenceType":"drill","rationale":"範囲外のレベル","confidence":0.9},
+	  {"itemKey":"go-02","proposedLevel":1,"evidenceType":"drill","rationale":"確認問題に答えた","confidence":0.9}
+	],"unmatched":[]}`
+	q := &fakeQueue{}
+	w := newTestWorker(t, q, llm.NewStubWithOutput([]byte(raw)), Config{})
 
 	if _, err := w.ProcessOne(context.Background()); err != nil {
 		t.Fatalf("エラーになった: %v", err)
 	}
-	if slices.Contains(q.calls, "requeue") {
-		t.Errorf("再試行している: %v", q.calls)
+
+	if len(q.applied) != 1 {
+		t.Fatalf("反映へ %d 件渡った（正常な 1 件だけのはず）", len(q.applied))
 	}
-	if !strings.Contains(q.failed, "材料") {
-		t.Errorf("失敗の原因が残っていない: %q", q.failed)
+	if q.applied[0].Judgment.ItemKey != "go-02" {
+		t.Errorf("渡ったのが %q（go-02 のはず）", q.applied[0].Judgment.ItemKey)
+	}
+	// 棄却した事実は記録に残る（握りつぶさない）
+	var found bool
+	for _, v := range q.responses[0].Violations {
+		if v.Code == string(domain.ViolationLevelOutOfRange) {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("棄却の記録が残っていない: %+v", q.responses[0].Violations)
 	}
 }
 

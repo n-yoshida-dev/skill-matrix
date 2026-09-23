@@ -294,6 +294,9 @@ type Applied struct {
 	// Deferred は保留にしたか。確信度が低い場合（V7）に立つ。
 	// 保留分は assessment_events に書かず、人が承認してから積む（SPEC.md §4.7）。
 	Deferred bool
+	// Rejected は丸ごと棄却したか。レベルが範囲外（V2）・根拠が許可リストに無い（V3）場合に立つ。
+	// **棄却した判定は反映してはいけない。** State は適用前のままで、判定は無かったものとして扱う。
+	Rejected bool
 	// Violations は検証で弾いた／切り詰めた内容。空でないことは異常を意味しない。
 	Violations []Violation
 }

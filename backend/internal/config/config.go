@@ -45,6 +45,7 @@ const (
 	defaultConfidenceThreshold = 0.5
 	defaultMaxItemsPerLog      = 20
 	defaultMaxAttempts         = 3
+	defaultPollIntervalSeconds = 5
 )
 
 // minSessionSecretLen はセッション Cookie の署名鍵に要求する最低長。
@@ -97,6 +98,9 @@ type JudgmentConfig struct {
 	// MaxAttempts は1つの判定ジョブを試す回数の上限。
 	// 再試行してよい失敗（混雑・通信断）にだけ効く。増やすほど失敗時の課金も増える。
 	MaxAttempts int
+	// PollInterval はワーカーが仕事を見に行く間隔（秒）。
+	// 短くすると投稿から判定までが速くなり、DB への問い合わせが増える。
+	PollIntervalSeconds int
 }
 
 // Load は環境変数から設定を読み込む。
@@ -129,6 +133,7 @@ func Load() (*Config, error) {
 			ConfidenceThreshold: floatInRange("JUDGMENT_CONFIDENCE_THRESHOLD", defaultConfidenceThreshold, 0, 1, fail),
 			MaxItemsPerLog:      intInRange("JUDGMENT_MAX_ITEMS_PER_LOG", defaultMaxItemsPerLog, 1, 200, fail),
 			MaxAttempts:         intInRange("JUDGMENT_MAX_ATTEMPTS", defaultMaxAttempts, 1, 10, fail),
+			PollIntervalSeconds: intInRange("JUDGMENT_POLL_INTERVAL_SECONDS", defaultPollIntervalSeconds, 1, 300, fail),
 		},
 	}
 
@@ -152,12 +157,12 @@ func (c *Config) String() string {
 		"Config{AppEnv:%s Port:%s FrontendOrigin:%s DatabaseURL:%s SessionSecret:%s "+
 			"GitHub:{ClientID:%s ClientSecret:%s CallbackURL:%s} "+
 			"LLM:{Provider:%s APIKey:%s Model:%s} "+
-			"Judgment:{MonthlyQuota:%d ConfidenceThreshold:%g MaxItemsPerLog:%d MaxAttempts:%d}}",
+			"Judgment:{MonthlyQuota:%d ConfidenceThreshold:%g MaxItemsPerLog:%d MaxAttempts:%d PollIntervalSeconds:%d}}",
 		c.AppEnv, c.Port, c.FrontendOrigin, redactURL(c.DatabaseURL), redact(c.SessionSecret),
 		c.GitHub.ClientID, redact(c.GitHub.ClientSecret), c.GitHub.CallbackURL,
 		c.LLM.Provider, redact(c.LLM.APIKey), c.LLM.Model,
 		c.Judgment.MonthlyQuota, c.Judgment.ConfidenceThreshold, c.Judgment.MaxItemsPerLog,
-		c.Judgment.MaxAttempts,
+		c.Judgment.MaxAttempts, c.Judgment.PollIntervalSeconds,
 	)
 }
 

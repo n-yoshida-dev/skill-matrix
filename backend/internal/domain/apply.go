@@ -50,6 +50,7 @@ func ApplyJudgment(cur ItemState, j Judgment, rules Rules) Applied {
 
 	// V2: レベルが 0〜5 の範囲にあるか
 	if !j.ProposedLevel.Valid() {
+		res.Rejected = true
 		res.Violations = append(res.Violations, Violation{
 			Code:     ViolationLevelOutOfRange,
 			ItemKey:  j.ItemKey,
@@ -62,6 +63,7 @@ func ApplyJudgment(cur ItemState, j Judgment, rules Rules) Applied {
 
 	// V3: 根拠の種類が許可リストにあるか
 	if !j.EvidenceType.Valid() {
+		res.Rejected = true
 		res.Violations = append(res.Violations, Violation{
 			Code:     ViolationUnknownEvidence,
 			ItemKey:  j.ItemKey,
@@ -184,7 +186,8 @@ type BatchResult struct {
 	// States は適用後の状態。入力の map は変更せず、新しい map を返す。
 	States map[ItemKey]ItemState
 	// Results は受理された判定ごとの適用結果。入力の並び順を保つ。
-	// V1・V8 で丸ごと捨てた判定はここに含まれない。
+	// **丸ごと捨てた判定はここに含まれない**（V1・V2・V3・V8）。捨てた事実は Violations に残る。
+	// 保留（V7）は含まれる。反映はしないが、人が採否を決める対象として残すため。
 	Results []Applied
 	// Violations は判定単位・バッチ単位のすべての違反。
 	// これをそのまま llm_responses.violations に保存する。
@@ -238,11 +241,18 @@ func ApplyJudgments(rm Roadmap, states map[ItemKey]ItemState, js []Judgment, rul
 		}
 
 		res := ApplyJudgment(cur, j, rules)
+		out.Violations = append(out.Violations, res.Violations...)
+
+		// V2・V3 で棄却したものは Results に入れない。判定が無かったのと同じ扱いにする。
+		// 入れてしまうと、呼び出し側が「棄却されたこと」を確かめずに保存へ流し、
+		// 範囲外のレベルが DB の制約違反を起こす（2026-09-23 に PR #29 のレビューで判明）
+		if res.Rejected {
+			continue
+		}
 		if !res.Deferred {
 			out.States[j.ItemKey] = res.State
 		}
 		out.Results = append(out.Results, res)
-		out.Violations = append(out.Violations, res.Violations...)
 	}
 
 	return out

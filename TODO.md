@@ -63,6 +63,8 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
   上限は `JUDGMENT_MAX_ATTEMPTS`（既定3）。同じ仕事を二度取り出さない。`LLM_PROVIDER=stub` で実機の通し確認ができる（KNOWLEDGE.md 2026-09-23）
 - [ ] レート制限（月次クォータ）を実装する
 - [ ] ログ投稿 API（202 + jobId）とジョブ状態 API を実装する
+  着手時に決めること：**`running` のまま取り残された仕事をどう回収するか**。ワーカーが処理中に落ちるとその仕事は誰にも拾われず、
+  画面には「判定中」が出たままになる。`started_at` が一定時間より古い `running` を `queued` に戻す方式が素直（PR #29 のレビューで判明。2026-09-23）
 - [ ] 反映モード（`auto` / `confirm`）と保留判定の確定 API を実装する
 - [ ] 到達状態（`outcome`）の AI 下書き生成ジョブと API を実装する
 
@@ -114,7 +116,9 @@ SessionStart フックが `- [ ]` の行を先頭12件まで自動で提示す�
   `raw` は jsonb なので壊れた文字列が入らず、捨てると原因を調べようがなくなる（SPEC §4.5「握りつぶし禁止」）。
   直す箇所：SPEC.md §3 の `llm_responses` の列一覧に `raw_text text` を足し、`raw jsonb not null` を `raw jsonb`（NULL 可）に直す。
   「どちらか片方は必ず埋まる」制約（`llm_responses_has_payload`）があることも書く。
-  併せて §4.5 に「出力全体が読めないときは、生の文字列を `llm_responses.raw_text` に残して判定ジョブを失敗にする」を追記する
+  併せて §4.5 に「出力全体が読めないときは、生の文字列を `llm_responses.raw_text` に残して判定ジョブを失敗にする」を追記する。
+  もう1点、§4.1 のフロー図は「生レスポンス保存 → 検証」の順だが、実装は「検証 → 保存 → 反映」の順。
+  `llm_responses.violations` を同じ行に入れるには先に検証が要るため（保存が反映より先である点は図と同じ）。図の順を実装に合わせるかも一緒に判断する
   完了条件：Naoki が了承し、SPEC.md §3・§4.5 と `backend/migrations/000004_llm_response_raw_text.up.sql`・`internal/store/jobs.go` が同じことを言っている
 
 - [ ] 【ユーザー確認】SPEC.md §4.2 の表で、system に載せるものから「出力スキーマ」を外す（PR #28 の受け入れレビューで判明。2026-09-23）

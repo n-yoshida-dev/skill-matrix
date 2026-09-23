@@ -17,6 +17,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/n-yoshida-dev/skill-matrix/internal/config"
 	"github.com/n-yoshida-dev/skill-matrix/internal/domain"
@@ -61,7 +62,8 @@ func run() error {
 	}
 
 	w := worker.New(st, provider, worker.Config{
-		MaxAttempts: cfg.Judgment.MaxAttempts,
+		MaxAttempts:  cfg.Judgment.MaxAttempts,
+		PollInterval: time.Duration(cfg.Judgment.PollIntervalSeconds) * time.Second,
 		Rules: domain.Rules{
 			ConfidenceThreshold: cfg.Judgment.ConfidenceThreshold,
 			MaxItemsPerLog:      cfg.Judgment.MaxItemsPerLog,

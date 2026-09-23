@@ -280,6 +280,35 @@ func TestApplyJudgmentResult_保留はイベントを積まない(t *testing.T) 
 	}
 }
 
+func TestApplyJudgmentResult_棄却された判定は保存しない(t *testing.T) {
+	// domain 側でも Results から取り除いているが、この層でも止める。
+	// 保存まで来ると、範囲外のレベルが DB の制約違反を起こし、
+	// 同じログの正常な判定まで巻き戻る（2026-09-23 に PR #29 のレビューで判明）
+	st := testStore(t)
+	ctx := context.Background()
+	userID, _, _, _ := enqueueTestJob(t, st)
+
+	job, err := st.ClaimJudgmentJob(ctx, jobNow)
+	if err != nil {
+		t.Fatalf("取り出しに失敗: %v", err)
+	}
+	in, err := st.LoadJudgmentInput(ctx, job)
+	if err != nil {
+		t.Fatalf("材料の読み出しに失敗: %v", err)
+	}
+
+	rejected := applyOne("go-01", domain.LevelBasicConfirmed, domain.EvidenceDrill, jobNow)
+	rejected.Rejected = true
+	rejected.Judgment.ProposedLevel = 9 // 範囲外。保存されれば CHECK 制約で落ちる
+
+	if err := st.ApplyJudgmentResult(ctx, job, in, []domain.Applied{rejected}); err != nil {
+		t.Fatalf("反映に失敗: %v", err)
+	}
+	if n := countRows(t, st, "assessment_events", "user_id = $1", userID); n != 0 {
+		t.Errorf("棄却なのにイベントが %d 件積まれた", n)
+	}
+}
+
 func TestApplyJudgmentResult_途中で失敗したら何も残らない(t *testing.T) {
 	// イベントだけ残って状態が古い、という食い違いを作らない
 	st := testStore(t)
