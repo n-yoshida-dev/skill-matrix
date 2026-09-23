@@ -18,39 +18,44 @@
 ## 進捗
 
 ```
-進捗（TODO.md より自動集計・2026-09-20）
+進捗（TODO.md より自動集計・2026-09-23）
 
 ████████████████████ 100%  残り  0 / 11  フェーズ1：設計（完了）
-█████████░░░░░░░░░░░  48%  残り 23 / 45  フェーズ2：v1 実装
+█████████░░░░░░░░░░░  48%  残り 25 / 49  フェーズ2：v1 実装
 ░░░░░░░░░░░░░░░░░░░░   -   （タスク未定義）  フェーズ3：v2 以降
-███████████░░░░░░░░░  58%  残り 23 / 56  合計（ほかに未定義のフェーズ 1）
-あなたの回答待ち：0 件（回答済み 2 件）
+███████████░░░░░░░░░  58%  残り 25 / 60  合計（ほかに未定義のフェーズ 1）
+あなたの回答待ち：2 件（回答済み 4 件）
 
-前回の区切り（2026-09-19）から：完了 +1 件、新たに見つかったタスク +0 件
+前回の区切り（2026-09-20）から：完了 +2 件、新たに見つかったタスク +4 件
 ```
 
 ## 1. 現在地
 
-**フェーズ2 の 2-1（土台）・2-2（理解度モデル）・2-3（ロードマップ）が完了。2-4（AI 判定）は 7 件中 1 件
-（`internal/llm` のインタフェースと stub）が完了。作業中のブランチは無い（どこまで取り込んだかは `git log` を見る）。**
+**2026-09-23 に方針が変わった。v1 を「公開する Web サービス」から「自分専用のツール」へ絞り込む
+（`logs/decisions.md` 2026-09-23）。ドキュメントはまだ古い方針のまま。作業中のブランチは無い。**
 
-バックエンドは、GitHub ログイン → ロードマップのインポートと CRUD までが実機で動く（フロントエンドは未着手）。
-`internal/llm` はまだどこからも呼ばれていない（ワーカーが未実装）。`LLM_PROVIDER=anthropic` で `llm.New` を呼ぶと未実装エラーになる。
-`docker compose up -d --build backend` で DB 起動 → マイグレーション → サーバ起動まで進む。
-CI（backend の gofmt / vet / test / build、frontend の lint / typecheck / test / build、秘密情報スキャン）は `main` と全 PR で走る。
+バックエンドは、GitHub ログイン → ロードマップのインポートと CRUD → 学習ログの判定 → 理解度への反映まで動く
+（`LLM_PROVIDER=stub` で実機確認済み）。**フロントエンドは1行も書いていない。ここが当初の目的（スキルツリーの可視化）の本体。**
 
-- `SPEC.md` — 実装が参照する正本。`docs/spec-guide.md` — 人間向けの解説（本人はこちらを読む）
-- `backend/internal/` — `domain`（理解度モデルの純粋関数）/ `roadmap`（マスタ JSON の検査）/ `config` /
-  `store`（PostgreSQL。DB テストあり）/ `httpapi`（chi、OAuth、セッション、ロードマップ API）/
-  `llm`（`Provider` インタフェース、stub、出力の形の検査 `ParseOutput`）
+方針変更で扱いが変わるもの。**消さずに棚上げし、v2「他人にも使わせる」で戻す。**
+
+| 残る | 棚上げ |
+|---|---|
+| `internal/domain`（理解度モデル・V1〜V8・集計・学習パス）| `internal/store`（PostgreSQL）|
+| `internal/roadmap`（マスタ JSON の検査）| `internal/httpapi`（OAuth・セッション・CRUD）|
+| `internal/llm/output.go`（AI 出力の形の検査）| `internal/worker` と `llm_jobs`（非同期キュー）|
+| `internal/llm/prompt.go` の文面（AI への指示に流用する）| `internal/llm/anthropic.go`（サーバから Claude API を呼ぶ部分）|
+
+- `SPEC.md` — 実装が参照する正本。**中身はまだ Web サービス前提**。`docs/spec-guide.md` — 人間向けの解説
 - `backend/testdata/` — ダミーのロードマップとダミー学習ログ。**実データは置かない**
+- CI（backend の gofmt / vet / test / build、frontend の lint / typecheck / test / build、秘密情報スキャン）は `main` と全 PR で走る
 
 ## 2. 次セッションで最初にやること
 
-**2-4 の 2 番目＝`internal/llm` に Claude API クライアントとプロンプト組み立てを実装する**
-（`llm.New` の anthropic 分岐を埋める。出力は stub と同じ `ParseOutput` に通す）。
-着手前に SPEC.md §4.2〜§4.6、KNOWLEDGE.md 2026-09-19、`logs/decisions.md` を読み、API の使い方は `claude-api` スキルで
-現行仕様を確かめてから（構造化出力・プロンプトキャッシュ・Go の SDK を使うか）、設計を初心者向けに説明して実装する（§0）。
+**2-0 の 1 件目＝TODO.md を仕分ける**（画面のタスクを前に出し、棚上げ分をフェーズ3へ移す）。
+
+着手前に `logs/decisions.md` の 2026-09-23 を読む。**棚上げしたタスクは消さず、フェーズ3 に理由つきで並べる。**
+仕分けが終わるまで 2-1〜2-6 には着手しない（棚上げ対象が混ざっている）。
 
 ## 3. 動作確認コマンド
 
@@ -65,6 +70,7 @@ TEST_DATABASE_URL='postgres://skillmatrix:skillmatrix@localhost:5432/skillmatrix
 
 # サーバ起動（backend/.env を用意してから。.env はローカルにしか無く、コミットしていない）
 docker compose up -d --build backend      # DB 起動 → マイグレーション → サーバ起動まで1コマンド
+docker compose up -d --build worker       # 判定ワーカー（LLM_PROVIDER=stub なら課金ゼロ）
 set -a; source backend/.env; set +a; go -C backend run ./cmd/server   # Docker を使わない場合
 
 # Claude が実機確認するとき（.env は Claude から読めない）：ダミー値で起動する。
