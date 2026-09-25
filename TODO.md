@@ -55,7 +55,10 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
 `docs/skill-map-migration.md`（以下「移行計画」）。段階 A（決定の記録・TODO の分割）は 2026-09-25 に完了。** 着手順は上から。
 
 - [ ] `SPEC.md` を 2 本の梯子モデルへ書き換える（移行計画の段階 B。§7 の表のとおり）
-  完了条件：§0（正本の移行）・§1（印と `verifiedLevel`、`learning_activity`、`preState` の導出）・§2（`moduleRefs`、公開前提の縛り）・§3.3（`schemaVersion: 2`、`source: migration`、`evidenceRefs`、`confidence` の条件、`occurredAt`、`repo:` `log:`）・§3.4（`verifiedLevel` / `evidencedLevels` / `marked`）・§3.5（`logs` と `repos`）・§4.2・§4.4・§4.5（V4 欠番）・§5（`Action.PendingLevels`）・§7 が書き換わり、`docs/spec-guide.md` と食い違わない
+  完了条件：§0（正本の移行）・§1（印と `verifiedLevel`、`learning_activity`、`preState` の導出）・§2（`moduleRefs`、公開前提の縛り）・§3.3（`schemaVersion: 2`、`source: migration`、`evidenceRefs`、`confidence` の条件、`occurredAt`、`repo:` `log:`）・§3.4（`verifiedLevel` / `evidencedLevels` / `marked`）・§3.5（`logs` と `repos`）・§4.2・§4.4・§4.5（V4 欠番）・§5（`Action.PendingLevels`）・§7 が書き換わり、`docs/spec-guide.md` と食い違わない。
+  `PLAN.md`「未確定」の skill-map の行と `KNOWLEDGE.md` 2026-08-10「移行しない」に「2026-09-25 の決定で置き換え」の注記がある。
+  SPEC に写した後は SPEC が正本なので、段階 C 以降の完了条件にある「移行計画 §x」の参照を SPEC の節番号へ付け替えてある。
+  `CLAUDE.md`「判定基準を指示書に書き写さない」の「根拠の種類と上限」を「根拠の種類と印」に直してある
 - [ ] `internal/domain` と `internal/llm/output.go` を 2 本の梯子モデルへ変更する（段階 C-1。移行計画 §3）
   完了条件：`ItemState` に `VerifiedLevel`（導出）と `Evidenced`、`Judgment` に `Source` / `EvidenceRefs` / `HasConfidence`、`EvidenceLearningActivity`、`evidenceLadder`（Base / Top）がある。V4（`MaxLevelStep` / `ViolationLevelJump`）が消え、V5 は梯子の範囲、V6 は `proposedLevel == 0`、V7 は `source: ai` のときだけ。印がある項目の `preState` は常に `none`。導出（`[3]`→0、`[1,3]`→1、`[1,2,3]`→3、`[1,2,3,4]`→4）・不合格報告・鮮度の更新条件・source 別の V7 がテストにある。`ParseOutput` が `evidenceRefs`（配列・1 件以上・書式）と `confidence` の有無（`ai` なら必須、他は禁止）を検査する。棚上げ中の `store` は改名に機械的に追従するだけ（挙動は変えない）。`EvidenceRefs` は判定材料にしない
 - [ ] 検証と再計算の CLI を作る（段階 C-2。`backend/cmd/skillmatrix`。JSON を読み、形の検査 → V1〜V8 → `ApplyJudgment` → 理解度を書き出す）
@@ -133,7 +136,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 - [x] `~/workspace/study/learner-profile/skill-map.md` との関係を決める（2026-09-23 に判明 → **2026-09-25 に決定。skill-matrix を正本にし、移行する。** `logs/decisions.md` 2026-09-25 の 4 件。手順は 2-1 の段階 B〜G に分割済み）
   完了条件：どちらを正本にするかが `logs/decisions.md` にあり、畳む場合は study 側の変更内容（どのファイルをどう書き換えるか）がタスクとして起きている
 - [ ] 画面を GitHub Pages に公開する
-  完了条件：`main` への push で静的サイトがビルドされて Pages に上がり、URL を開くとマトリクスが見える。**Public にする直前に、`data/judgments/` 全件の `rationale` と `evidenceRef` を目で読み、固有名詞（所属先・企業名・人名）が混ざっていないことを確かめる**（2026-09-23 決定の残リスク。`logs/decisions.md`）
+  完了条件：`main` への push で静的サイトがビルドされて Pages に上がり、URL を開くとマトリクスが見える。**Public にする直前に、`data/judgments/` 全件の `rationale` と `evidenceRefs` を目で読み、固有名詞（所属先・企業名・人名）が混ざっていないことを確かめる**（2026-09-23 決定の残リスク。`logs/decisions.md`）
   **【ユーザー作業】リポジトリを Public にする操作はユーザーが行う**（公開設定の変更は不可逆。URL は実施時に添える）
 
 ## フェーズ2.5：v1.5 テンプレート配布（保留・v1 の画面到達後に着手・合計に含めない）
@@ -163,7 +166,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   完了条件：フォームに学習ログを書くと、指示書＋ロードマップ＋現在の理解度＋本文をまとめたプロンプトがコピーできる。
   返ってきた JSON を貼ると、`data/judgments/` 配下の正しいファイル名で GitHub の新規ファイル作成画面が中身入りで開く。
   画面はデータを書き換えない。採用時に 2026-09-23「画面は読むだけ」の決定へ一行足す
-- [ ] 【未確定】`prompts/judge.md` に「確認質問」の節を足し、`evidenceRef` の例に `chat:` を足す
+- [ ] 【未確定】`prompts/judge.md` に「確認質問」の節を足し、`evidenceRefs` の例に `chat:` を足す
   完了条件：判定の会話で AI が 2〜3 問の確認質問をして `drill` の根拠にできる。会話の要約を `learning-logs/` に書き残す手順がある。
   `PLAN.md`「やらないこと」の「クイズ形式の理解度測定」との線引き（問題バンク・採点画面は作らない）が PLAN に書き分けてある。採用の判断は本人
 - [ ] README を公開向けに拡張する（2-6 の README タスクの続き）

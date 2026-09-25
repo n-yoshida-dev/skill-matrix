@@ -49,7 +49,7 @@
 - **ロードマップ定義（分野・詳細項目の一覧）をコードに直書きしない。**
   マスタデータ（`data/roadmap.json`）に分離し、`source`（出典 URL 等）と `checkedAt` を記録する
 - **判定基準を AI への指示書に書き写さない。** `prompts/judge.md` はレベルの基準を `data/roadmap.json` の `levels` から、
-  根拠の種類と上限を `backend/internal/domain/types.go` から読ませる（`SPEC.md` §4.2）。基準の正本は1か所
+  根拠の種類と印（付けられるレベル）を `backend/internal/domain/types.go` から読ませる（`SPEC.md` §4.2）。基準の正本は1か所
 - **理解度スコアの算出ロジックは純粋関数として分離する。** Go 側（`internal/domain`）は DB・HTTP・LLM クライアントを import しない。
   AI の出力（判定結果）は入力として受け取るだけにして、検証・集計・進捗率の計算は単体テスト可能に保つ。
   「今日」に依存する計算（鮮度・次にやること）は TypeScript 側の純粋関数に置き、DOM・ファイル読み込みを import しない（`SPEC.md` §5）

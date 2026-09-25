@@ -230,11 +230,11 @@ study 側（`learning-ops.md` の「レベル 2 以上で支援を減らす」�
 
 ## 8. 移行計画
 
-### 8.1 段階（1 段階 = PR 1 本）
+### 8.1 段階（1 段階 = PR 1 本。C だけは domain／CLI／CI の 3 本に分ける）
 
 | 段階 | 場所 | 内容 | 完了条件 |
 |---|---|---|---|
-| A. 決定の記録 | skill-matrix | `logs/decisions.md` に 4 件（正本の移行／2 本の梯子と V4 廃止／evidenceRefs の文法／移行判定の扱い）。TODO 2-6 のタスクを B〜F に分割。`CLAUDE.md`「守ること」に roadmap の文字列の縛りを追加（2-0 の 4 件目と同時） | decisions に 4 件あり、TODO が段階どおりに並んでいる |
+| A. 決定の記録 | skill-matrix | `logs/decisions.md` に 4 件（正本の移行／2 本の梯子と V4 廃止／evidenceRefs の文法／移行判定の扱い）。TODO 2-6 のタスクを B〜G に分割。`CLAUDE.md`「守ること」に roadmap の文字列の縛りを追加 | decisions に 4 件あり、TODO が段階どおりに並んでいる |
 | B. SPEC | skill-matrix | §7 の表のとおり書き換え | SPEC と `docs/spec-guide.md` が食い違わない |
 | C. domain と CLI | skill-matrix | §3 の変更＋テスト。`recalc` / `verify` CLI（TODO 2-1 の 3〜4 件目をこの形で実装） | `go test ./internal/...` 緑。`[3]`→0 などの導出がテストにある。CI で `verify` が走る |
 | D. roadmap | skill-matrix | `data/roadmap.json` を §8.3 の対応表から起こす（実物。`backend/testdata/` のダミーとは別） | `verify` が通る。`verifyBy` に転職・面接の語が無い |
@@ -340,8 +340,8 @@ skill-map.md 冒頭の注記（案）：
 | baas-vs-custom-backend | [1] | 1 | none | |
 | billing-* | [] | 0 | none | |
 
-verifiedLevel の分布：3 が 2 項目、1 が 7 項目、0 が残り。**実装根拠あり・理解未確認（[3] または [3,4] で verified < 3）が 13 項目。**
-これが厳密モデルの意図どおりの姿で、次にやることはこの 13 項目の L1/L2 確認に向く。
+verifiedLevel の分布：3 が 2 項目、1 が 7 項目、0 が残り。**上位の根拠あり（印の最上段 > verifiedLevel。§6 の角の印と同じ定義）が 14 項目**（うち 1 が無いものが 13、`devops-branch-protection` は 1 だけあって 2 が無い）。
+これが厳密モデルの意図どおりの姿で、次にやることはこの 14 項目の L1/L2 確認に向く。
 
 ### 8.5 変更するファイル・変更しないファイル
 
