@@ -157,8 +157,8 @@ ChatGPT 標準の GitHub コネクタは読み取り専用で、書き込みは 
 
 ## 未確定
 
-- `~/workspace/study/learner-profile/skill-map.md`（同じ5段階モデルの手動台帳）との関係。
-  並行運転から始め、画面が実用になったら畳むかどうかはユーザー判断（`TODO.md` 2-6）
+- ~~`~/workspace/study/learner-profile/skill-map.md` との関係~~ → **2026-09-25 の決定で置き換え。** skill-matrix を正本にし、
+  skill-map.md は移行判定で写し取ってから凍結する（`logs/decisions.md` 2026-09-25、`docs/skill-map-migration.md`、`TODO.md` 2-1）
 - v2 へ進むか、CLI 配布へ進むか。自分専用版を実際に使ってから決める（`logs/decisions.md` 2026-09-23「見直す条件」）。
   **2026-09-25 に CLI 配布の側を「v1.5 テンプレート配布」として具体化した**（上の節）。v2 との順番は v1 → v1.5 → 必要なら v2
 - `DefaultWeights()`（次にやることの重み）の調整。v1 が動いてから実データの手触りで決める

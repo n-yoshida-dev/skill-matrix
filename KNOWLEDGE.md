@@ -92,6 +92,10 @@ CPU always-on が要る。デプロイ先を決めるときに再確認するこ
 
 ### 2026-08-10：`skill-map.md` は手動運用のまま。アプリへ移行しない
 
+> **2026-09-25 の決定で置き換えた。** skill-matrix を習熟度の正本にし、`skill-map.md` は移行判定（`source: "migration"`）で
+> 写し取ってから凍結する（`logs/decisions.md` 2026-09-25「習熟度の正本を…移す」、`docs/skill-map-migration.md`）。
+> 下の記録は当時の判断として残す。
+
 skill-matrix はまず「とりあえず作ってみるもの」で、学習ロードマップの管理は
 `~/workspace/study/learner-profile/skill-map.md` の手動運用を継続する（ユーザー判断）。
 出来がよければ後から移行を検討する。
