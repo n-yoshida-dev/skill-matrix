@@ -703,3 +703,18 @@ V8（件数の上限）しか除いておらず、**V2（レベルが 0〜5 の�
 `Results` のように**呼び出し側が中身を確かめずに次へ流す値**は、除外条件を1か所（フラグ）に寄せる。
 PR #29 の受け入れレビューで指摘された。CI も DB テストも通っていた（範囲外のレベルを返す LLM を演じさせるテストが、
 ワーカー経由の経路には無かった）。
+
+### 2026-09-25：画面の土台。`data/` を `frontend/` の外から読む設定は 2 か所に要る
+
+`data/*.json` はリポジトリ直下にあり、`frontend/` の外。画面から `@data/roadmap.json` で指すには、
+**Vite の別名（`vite.config.ts` の `resolve.alias`）と TypeScript の別名（`tsconfig.app.json` の `paths`）の両方**が要り、
+さらに TS 側は `resolveJsonModule: true` と `include` に `../data/*.json` を足さないと「モジュールが見つからない」になる。
+dev サーバは既定で `frontend/` の外を配信しないので `server.fs.allow` に `data/` を足す（PR #32 のレビューの予想どおり要った。
+`curl http://localhost:5199/@fs/.../data/state.json` が 200 になることで確認）。ビルドは `base: './'`（GitHub Pages の配置先に依存させない。v1.5 の制約）。
+
+ハマり：Testing Library の `render` は Vitest の `globals` を使わない設定だと自動で片付かず、テストをまたいで DOM が残って
+「同じ名前のボタンが複数見つかる」で落ちる。`setupTests.ts` に `afterEach(cleanup)` を書いて解決。
+
+もう 1 点：apps-workflow の `check-edited.sh`（PostToolUse）が frontend のファイル編集のたびに `npx eslint` を呼ぶが、
+このリポジトリの lint は oxlint（テンプレート由来）で eslint が無く、毎回「eslint 失敗（missing packages）」が出る。
+実害は無い（CI は `npm run lint` = oxlint）が、フックの側を「`package.json` の `lint` スクリプトを呼ぶ」に直すべき。claude-plugins 側の課題。

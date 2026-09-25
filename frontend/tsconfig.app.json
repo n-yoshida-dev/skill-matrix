@@ -5,6 +5,9 @@
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
     "types": ["vite/client"],
+    "resolveJsonModule": true,
+    /* 画面からは @data/... でリポジトリ直下の data/ を指す（vite.config.ts の alias と対で保つ） */
+    "paths": { "@data/*": ["../data/*"] },
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 
@@ -23,5 +26,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src", "../data/*.json"]
 }

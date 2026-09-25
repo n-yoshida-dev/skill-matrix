@@ -1,32 +1,22 @@
-# React + TypeScript + Vite
+# frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+skill-matrix の画面。React + TypeScript + Vite の静的サイトで、リポジトリ直下の `data/*.json` をビルド時に取り込む。
+サーバ通信は無い。仕様は `../SPEC.md` §7・§8。
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm ci
+npm run dev        # http://localhost:5173/ 。#/ が公開ビュー、#/plan が作業ビュー
+npm run test       # Vitest
+npm run build      # dist/ に静的サイトを出力（base は相対パス）
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+CI と同じ検査：`npm run format:check` → `npm run lint` → `npm run typecheck` → `npm run test` → `npm run build`。
+
+## 構成
+
+| 場所                   | 役割                                                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `src/data/`            | `data/*.json` の型と読み込み（`@data/...` で指す。別名は `vite.config.ts` と `tsconfig.app.json` の両方にある） |
+| `src/features/public/` | 公開ビュー（SPEC §7.3）。集計は `summary.ts` の純粋関数                                                         |
+| `src/features/plan/`   | 作業ビュー（SPEC §7 の 3 画面。実装中）                                                                         |
+| `src/index.css`        | 色と文字の土台。各画面はここで付けた名前だけを使う                                                              |

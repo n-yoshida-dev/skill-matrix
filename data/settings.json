@@ -1,0 +1,6 @@
+{
+  "rules": { "confidenceThreshold": 0.5, "maxItemsPerLog": 20 },
+  "staleness": { "freshWithinDays": 30, "agingWithinDays": 90 },
+  "weights": { "readiness": 1.0, "gap": 0.8, "staleness": 0.3, "unlocks": 0.5 },
+  "nextActions": { "limit": 5 }
+}

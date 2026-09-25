@@ -1,0 +1,357 @@
+/* 公開ビュー（SPEC.md §7.3）。1 書体・藍のランプ・カードも影も使わず罫線と余白で区切る */
+
+.thesis {
+  max-width: 46em;
+  margin: 0;
+  font-size: 16px;
+  text-wrap: pretty;
+  line-break: strict;
+}
+
+.thesis.sub {
+  margin-top: 6px;
+  color: var(--dim);
+  font-size: 14px;
+}
+
+.domain {
+  margin-top: 44px;
+  padding-top: 22px;
+  border-top: 1px solid var(--rule);
+}
+
+.domain-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 18px;
+}
+
+.domain-head h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.domain-head .goal {
+  color: var(--dim);
+  font-size: 14px;
+}
+
+.domain-head .count {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+/* 項目名が常時見えるタイル（2026-09-25 決定） */
+.cells {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.cell {
+  min-height: 74px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--empty);
+  color: var(--dim);
+  cursor: pointer;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 6px;
+  padding: 8px 10px 9px;
+  position: relative;
+  text-align: left;
+}
+
+.cell .n {
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.cell .lv {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.cell .name {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 400;
+  align-self: end;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 塗り = verifiedLevel の 6 階調 */
+.cell.l1,
+.swatch.l1,
+.step i.l1 {
+  background: var(--l1);
+  color: var(--on-light);
+}
+.cell.l2,
+.swatch.l2,
+.step i.l2 {
+  background: var(--l2);
+  color: var(--on-dark);
+}
+.cell.l3,
+.swatch.l3,
+.step i.l3 {
+  background: var(--l3);
+  color: var(--on-dark);
+}
+.cell.l4,
+.swatch.l4,
+.step i.l4 {
+  background: var(--l4);
+  color: var(--on-dark);
+}
+.cell.l5,
+.swatch.l5,
+.step i.l5 {
+  background: var(--l5);
+  color: var(--on-dark);
+}
+
+.cell.l1 .name,
+.cell.l2 .name,
+.cell.l3 .name,
+.cell.l4 .name,
+.cell.l5 .name {
+  font-weight: 500;
+}
+
+.cell:hover {
+  outline: 2px solid var(--rule-strong);
+  outline-offset: 2px;
+}
+
+.cell[aria-expanded='true'],
+.cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 開いている根拠の枠へ向く小さな矢 */
+.cell[aria-expanded='true']::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  width: 10px;
+  height: 10px;
+  background: var(--panel);
+  border-left: 1px solid var(--rule-strong);
+  border-top: 1px solid var(--rule-strong);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.detail {
+  margin-top: 14px;
+  background: var(--panel);
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  padding: 18px 20px 16px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 680px) {
+  .detail {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 20px 32px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .detail {
+    animation: open 0.18s ease-out;
+  }
+  @keyframes open {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+.detail h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.detail .key {
+  color: var(--dim);
+  font-size: 13px;
+}
+
+.detail .level {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail .swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--empty);
+  flex: none;
+}
+
+.detail .pending {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--dim);
+}
+
+.detail .outcome {
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.detail .outcome span {
+  color: var(--dim);
+}
+
+.evidence {
+  display: grid;
+  gap: 12px;
+}
+
+.evidence .head {
+  font-size: 13px;
+  color: var(--dim);
+}
+
+.ev {
+  display: grid;
+  grid-template-columns: 6.5em 1fr;
+  gap: 2px 14px;
+  font-size: 14px;
+}
+
+.ev .d {
+  color: var(--dim);
+  font-size: 13px;
+  padding-top: 2px;
+}
+
+.ev .t {
+  font-weight: 500;
+}
+
+.ev .r.dim {
+  color: var(--dim);
+}
+
+.detail .close {
+  justify-self: start;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--dim);
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.detail .close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.scale {
+  margin-top: 56px;
+  padding-top: 22px;
+  border-top: 1px solid var(--rule);
+}
+
+.scale h2,
+.how h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 10px;
+  align-items: start;
+  flex: 1 1 130px;
+  font-size: 13px;
+}
+
+.step i {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: var(--empty);
+}
+
+.step b {
+  display: block;
+  font-weight: 500;
+}
+
+.step span {
+  color: var(--dim);
+}
+
+.how {
+  margin-top: 40px;
+}
+
+.how ol {
+  margin: 0;
+  padding-left: 1.4em;
+  max-width: 40em;
+  font-size: 14px;
+}
+
+.how li {
+  margin-bottom: 6px;
+}
+
+.how li span {
+  color: var(--dim);
+}
+
+.foot {
+  margin-top: 56px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  font-size: 13px;
+  color: var(--dim);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+}
