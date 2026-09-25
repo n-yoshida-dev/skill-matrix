@@ -37,7 +37,8 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
 `main` はクリーン（PR #36 まで）。作業中のブランチは無い。
 
 - 2-0（方針変更の反映）は 4 件とも完了。`PLAN.md` / `SPEC.md` / `CLAUDE.md` は自分専用版の方針になっている
-- **2026-09-25 に判定モデルと移行の設計が確定した**（`logs/decisions.md` 2026-09-25 の 4 件）。
+- **2026-09-25 に判定モデルと移行の設計が確定した**（`logs/decisions.md` 2026-09-25 の先頭 4 件＝正本の移行／2 本の梯子／evidenceRefs／移行判定。
+  同日付の残り 4 件は v1.5 テンプレート配布の話で別物）。
   レベルは「印」（`evidencedLevels`）から導出する `verifiedLevel` に変わり、V4 は廃止。
   `study/learner-profile/skill-map.md` は skill-matrix へ移行して凍結する。
   **設計の全体と移行手順・対応表・期待表は `docs/skill-map-migration.md`。** `SPEC.md` はまだ旧モデル（1 本の数直線）のままで、
