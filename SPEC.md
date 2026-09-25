@@ -740,8 +740,9 @@ Go        目標: …   進捗: 6項目中2項目
 **出さないもの**：`preState`、鮮度（`staleness`）、要再確認の枠線、保留（`deferred`）、棄却（`rejected`）、優先度と次にやること、検証ルールの記号（V5 等）、
 `evidenceRefs` の生の文字列、`confidence`。これらは作業ビューにある。載せる項目を増やしたくなったら「採用担当者が 10 秒で読めるか」で判断する。
 
-見た目：1 書体（IBM Plex Sans JP。数字と日付だけ IBM Plex Mono）、色は藍の 5 段階＋選択中のタイルにだけ朱、カードも影も使わず罫線と余白で区切る。
-デモ（2026-09-25 に本人が了承）が参照実装。
+見た目：1 書体（IBM Plex Sans JP。数字と日付だけ IBM Plex Mono）、色は L1〜L5 に藍の 5 段階で L0 は無色（合わせて §7.1 の 6 階調）、
+選択中のタイルにだけ朱、カードも影も使わず罫線と余白で区切る。
+参照実装は `docs/demo/public-view.html`（2026-09-25 に本人が了承したデモ。ダミーデータ入りの単体 HTML。文言と配色はこれに合わせる）。
 
 ### 7.4 項目詳細と「次にやること」の文言
 
@@ -800,7 +801,7 @@ CLI と画面が共通で読む。秘密情報は入らないのでコミット�
 
 ```jsonc
 {
-  "rules":     { "confidenceThreshold": 0.5, "maxItemsPerLog": 20, "maxLevelStep": 1 },   // §4.5。domain.DefaultRules()
+  "rules":     { "confidenceThreshold": 0.5, "maxItemsPerLog": 20 },                       // §4.5。domain.DefaultRules()。maxLevelStep は V4 廃止で消えた
   "staleness": { "freshWithinDays": 30, "agingWithinDays": 90 },                          // §1.3。domain.DefaultStalenessConfig()
   "weights":   { "readiness": 1.0, "gap": 0.8, "staleness": 0.3, "unlocks": 0.5 },        // §5.1。domain.DefaultWeights()
   "nextActions": { "limit": 5 }
@@ -815,7 +816,7 @@ CLI と画面が共通で読む。秘密情報は入らないのでコミット�
 
 - **API キーをどこにも置かない。** v1 はサーバから LLM を呼ばない。v2 で戻すときも必ずバックエンドだけが持つ（§10.9）
 - **学習ログの本文はリポジトリに置かない。** ログには職場・実務・転職の話が混ざりうる。置くのは判定（どの項目が・どのレベルに・なぜ）だけ
-- **`rationale` と `evidenceRef` は技術的な事実だけ。** 所属先・企業名・人名・転職活動・人事評価を含めない（§3.3）。
+- **`rationale` と `evidenceRefs` は技術的な事実だけ。** 所属先・企業名・人名・転職活動・人事評価を含めない（§3.3）。
   指示書で縛り、コミット前の `git diff` で目視する。**リポジトリを Public にする直前に `data/judgments/` 全件を読み直す**
 - **`sources.local.json` はコミットしない。** ローカルのディレクトリ構成を公開しない
 - **`data/judgments/` と `data/state.json` は実物をコミットする。** これは `../CLAUDE.md`「実データをコミットしない」の

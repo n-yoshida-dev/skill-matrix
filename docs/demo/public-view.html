@@ -1,0 +1,257 @@
+<!-- 公開ビューのデモ（2026-09-25）。SPEC.md §7.3 の参照実装。ブラウザで直接開ける単体 HTML。データは backend/testdata から起こしたダミーで、実際の学習記録ではない -->
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>理解度台帳</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #f7f8fb; --rule: #dfe4ee; --rule-strong: #b8c1d3; --ink: #16213a; --dim: #5f6a80; --empty: #e9edf4;
+    --l1: #86b6ef; --l2: #5598e7; --l3: #2a78d6; --l4: #1c5cab; --l5: #104281;
+    --on-light: #16213a; --on-dark: #ffffff;
+    --accent: #b8432a;
+    --panel: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #121620; --rule: #262d3c; --rule-strong: #3a4459; --ink: #e8ecf4; --dim: #98a2b8; --empty: #1f2634;
+      --l1: #9ec5f4; --l2: #5598e7; --l3: #2a78d6; --l4: #1c5cab; --l5: #184f95;
+      --accent: #e8825f; --panel: #181e2b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #121620; --rule: #262d3c; --rule-strong: #3a4459; --ink: #e8ecf4; --dim: #98a2b8; --empty: #1f2634;
+    --l1: #9ec5f4; --l2: #5598e7; --l3: #2a78d6; --l4: #1c5cab; --l5: #184f95;
+    --accent: #e8825f; --panel: #181e2b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: "IBM Plex Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif; font-size: 15px; line-height: 1.7; }
+  .num { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  .page { max-width: 920px; margin: 0 auto; padding-block: 0 64px; padding-inline: 20px; }
+
+  .top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding-block: 22px 0; font-size: 14px; color: var(--dim); }
+  .top a { text-decoration: none; border-bottom: 1px solid var(--rule-strong); }
+  .top a:hover { border-bottom-color: var(--ink); color: var(--ink); }
+
+  h1 { font-size: clamp(28px, 4.6vw, 40px); font-weight: 700; line-height: 1.25; letter-spacing: -.01em; margin: 40px 0 12px; text-wrap: balance; }
+  .thesis { max-width: 46em; margin: 0; font-size: 16px; text-wrap: pretty; line-break: strict; }
+  .thesis + .thesis { margin-top: 6px; color: var(--dim); font-size: 14px; }
+
+  .domain { margin-top: 44px; padding-top: 22px; border-top: 1px solid var(--rule); }
+  .domain-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; }
+  .domain-head h2 { font-size: 20px; font-weight: 700; margin: 0; }
+  .domain-head .goal { color: var(--dim); font-size: 14px; }
+  .domain-head .count { margin-left: auto; font-size: 13px; color: var(--dim); white-space: nowrap; }
+  .cells { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 14px; }
+  .cell { min-height: 74px; border: 0; border-radius: 6px; background: var(--empty); color: var(--dim); cursor: pointer; display: grid; grid-template-rows: auto 1fr; gap: 6px; padding: 8px 10px 9px; position: relative; text-align: left; }
+  .cell .n { font-size: 11px; line-height: 1; opacity: .8; }
+  .cell .lv { position: absolute; top: 8px; right: 10px; font-size: 11px; line-height: 1; }
+  .cell .name { font-size: 13px; line-height: 1.4; font-weight: 500; align-self: end; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .cell:not([class*=" l"]) .name { font-weight: 400; }
+  .cell.l1 { background: var(--l1); color: var(--on-light); }
+  .cell.l2 { background: var(--l2); color: var(--on-dark); }
+  .cell.l3 { background: var(--l3); color: var(--on-dark); }
+  .cell.l4 { background: var(--l4); color: var(--on-dark); }
+  .cell.l5 { background: var(--l5); color: var(--on-dark); }
+  .cell:hover { outline: 2px solid var(--rule-strong); outline-offset: 2px; }
+  .cell[aria-expanded="true"] { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cell[aria-expanded="true"]::after { content: ""; position: absolute; left: 50%; bottom: -14px; width: 10px; height: 10px; background: var(--panel); border-left: 1px solid var(--rule-strong); border-top: 1px solid var(--rule-strong); transform: translateX(-50%) rotate(45deg); }
+
+  .detail { margin-top: 14px; background: var(--panel); border: 1px solid var(--rule-strong); border-radius: 8px; padding: 18px 20px 16px; display: grid; gap: 14px; grid-template-columns: 1fr; }
+  @media (min-width: 680px) { .detail { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px 32px; } }
+  .detail[hidden] { display: none; }
+  .detail h3 { font-size: 17px; font-weight: 700; margin: 0; line-height: 1.4; }
+  .detail .key { color: var(--dim); font-size: 13px; }
+  .detail .level { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+  .detail .swatch { width: 14px; height: 14px; border-radius: 3px; background: var(--empty); flex: none; }
+  .detail .outcome { margin-top: 12px; font-size: 14px; }
+  .detail .outcome span { color: var(--dim); }
+  .evidence { display: grid; gap: 12px; }
+  .evidence .head { font-size: 13px; color: var(--dim); }
+  .ev { display: grid; grid-template-columns: 6.5em 1fr; gap: 2px 14px; font-size: 14px; }
+  .ev .d { color: var(--dim); font-size: 13px; padding-top: 2px; }
+  .ev .t { font-weight: 500; }
+  .ev .r { color: var(--ink); }
+  .ev .r.dim { color: var(--dim); }
+  .detail .close { justify-self: start; background: none; border: 0; padding: 0; color: var(--dim); font-size: 13px; cursor: pointer; text-decoration: underline; }
+  .detail .close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .scale { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--rule); }
+  .scale h2, .how h2 { font-size: 16px; font-weight: 700; margin: 0 0 12px; }
+  .steps { display: flex; flex-wrap: wrap; gap: 8px; }
+  .step { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; flex: 1 1 130px; font-size: 13px; }
+  .step i { display: block; width: 24px; height: 24px; border-radius: 4px; background: var(--empty); }
+  .step b { display: block; font-weight: 500; }
+  .step span { color: var(--dim); }
+
+  .how { margin-top: 40px; }
+  .how ol { margin: 0; padding-left: 1.4em; max-width: 40em; font-size: 14px; }
+  .how li { margin-bottom: 6px; }
+  .how li span { color: var(--dim); }
+
+  .foot { margin-top: 56px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--dim); display: flex; flex-wrap: wrap; gap: 6px 24px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .detail { animation: open .18s ease-out; }
+    @keyframes open { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+
+<div class="page">
+  <div class="top">
+    <span>n-yoshida-dev</span>
+    <a href="https://github.com/n-yoshida-dev" target="_blank" rel="noopener">GitHub</a>
+  </div>
+
+  <h1>理解度台帳</h1>
+  <p class="thesis">学習ログを AI が読んで理解度を判定し、ルールで検証したうえで履歴に残しています。自己申告ではレベルが上がりません。</p>
+  <p class="thesis" id="summary"></p>
+
+  <div id="domains"></div>
+
+  <section class="scale">
+    <h2>色の読み方</h2>
+    <div class="steps" id="scale"></div>
+  </section>
+
+  <section class="how">
+    <h2>どうやって決まるか</h2>
+    <ol>
+      <li>学習した日に、やったこと・理解したことを文章で書く <span>（ログ本文はここには載せていません）</span></li>
+      <li>AI がそのログを読み、どの項目にどれくらいの理解が示されたかを、根拠の種類つきで提案する</li>
+      <li>提案は機械的に検証される <span>（1 回に上がれるのは 1 段まで。「読んだ」「聞いた」「業務でやったことがある」だけでは上がらない）</span></li>
+      <li>通った判定だけが履歴に残り、この表の色になる</li>
+    </ol>
+  </section>
+
+  <div class="foot">
+    <span>このページはデモです。ロードマップと判定はダミーデータで、実際の学習記録ではありません。</span>
+    <span>更新 2026-09-25</span>
+  </div>
+</div>
+
+<script>
+// ===== データ（data/roadmap.json と data/state.json に相当。ダミー） =====
+const roadmap = {
+  domains: [
+    { key: "go", name: "Go", goal: "Go で Web API を設計・実装・テストできる", items: [
+      { key: "go-01", name: "基本構文（変数・型・関数・struct・slice/map）", outcome: "Go のコードを読んで型と値の流れを追える" },
+      { key: "go-02", name: "メソッド・インターフェース・埋め込み", outcome: "型に振る舞いを持たせ、インターフェースで実装を差し替えられる" },
+      { key: "go-03", name: "エラーハンドリング（error のラップと判別）", outcome: "エラーを握りつぶさず、呼び出し側が判断できる形で返せる" },
+      { key: "go-04", name: "標準ライブラリでの HTTP サーバ", outcome: "ルーティングとミドルウェアを自分で組み立てられる" },
+      { key: "go-05", name: "テスト（table driven test）", outcome: "境界値を並べたテストを自分で設計できる" },
+    ]},
+    { key: "react", name: "React", goal: "型安全な React アプリを設計し、サーバ状態を適切に扱える", items: [
+      { key: "react-01", name: "コンポーネントと props / state", outcome: "状態をどこに置くべきかを説明できる" },
+      { key: "react-02", name: "副作用と useEffect の使いどころ", outcome: "useEffect が不要な場面を見分けられる" },
+      { key: "react-03", name: "サーバ状態の管理（TanStack Query）", outcome: "" },
+      { key: "react-04", name: "フォームとバリデーション（React Hook Form + Zod）", outcome: "入力値の検証をフロントとバックエンドで二重に持てる" },
+    ]},
+    { key: "infra", name: "インフラと CI", goal: "自分のアプリをコンテナで動かし、CI で品質を守れる", items: [
+      { key: "infra-01", name: "Docker と Docker Compose", outcome: "開発環境をコンテナで再現できる" },
+      { key: "infra-02", name: "GitHub Actions で lint / test を回す", outcome: "壊れた変更が main に入らない状態を作れる" },
+    ]},
+  ],
+};
+const state = {
+  "go-01": { level: 2, events: [
+    { loggedAt: "2026-08-01", appliedLevel: 1, evidenceType: "drill", rationale: "章末の確認問題を見直さずに全問答えられた。ゼロ値の考え方を自分の言葉で言い直している" },
+    { loggedAt: "2026-08-03", appliedLevel: 2, evidenceType: "self_explanation", rationale: "継承が無い理由と埋め込みの違いを説明して伝わった" },
+  ]},
+  "go-02": { level: 2, events: [
+    { loggedAt: "2026-08-03", appliedLevel: 1, evidenceType: "implementation", rationale: "通知処理をインターフェース越しに差し替える練習を実装した" },
+    { loggedAt: "2026-09-10", appliedLevel: 2, evidenceType: "self_explanation", rationale: "「実装すると宣言しない」設計の利点を Java の interface と比較して説明した" },
+  ]},
+  "go-03": { level: 0, events: [
+    { loggedAt: "2026-08-05", appliedLevel: 0, evidenceType: "explained_to", rationale: "記事を読んだだけで手は動かしていない" },
+  ]},
+  "go-04": { level: 2, events: [
+    { loggedAt: "2026-08-08", appliedLevel: 1, evidenceType: "unaided_implementation", rationale: "標準ライブラリだけでルーティングと認証ミドルウェアを組み、テストも書いた" },
+    { loggedAt: "2026-09-20", appliedLevel: 2, evidenceType: "implementation", rationale: "ミドルウェアの合成順を変えてログ出力を確かめる実装。資料を見ながら" },
+  ]},
+  "go-05": { level: 1, events: [
+    { loggedAt: "2026-06-15", appliedLevel: 1, evidenceType: "drill", rationale: "table driven test の構造を確認質問に答えて説明できた" },
+  ]},
+  "react-01": { level: 2, events: [
+    { loggedAt: "2026-07-28", appliedLevel: 1, evidenceType: "drill", rationale: "props と state の違いを確認質問に答えて区別できた" },
+    { loggedAt: "2026-08-12", appliedLevel: 2, evidenceType: "self_explanation", rationale: "状態を親に持ち上げる判断基準を自分の言葉で書いている" },
+  ]},
+  "react-02": { level: 1, events: [
+    { loggedAt: "2026-08-12", appliedLevel: 1, evidenceType: "implementation", rationale: "useEffect を外した形に書き換えた。AI に手伝ってもらいながら" },
+  ]},
+  "react-03": { level: 0, events: [] },
+  "react-04": { level: 0, events: [
+    { loggedAt: "2026-09-01", appliedLevel: 0, evidenceType: "self_report", rationale: "業務で入力検証を書いた経験がある、との自己申告のみ" },
+  ]},
+  "infra-01": { level: 3, events: [
+    { loggedAt: "2026-07-20", appliedLevel: 1, evidenceType: "drill", rationale: "イメージとコンテナの違い、ボリュームの役割を確認質問に答えられた" },
+    { loggedAt: "2026-08-10", appliedLevel: 2, evidenceType: "implementation", rationale: "Postgres 付きの開発環境を Compose で立て、down -v で作り直した" },
+    { loggedAt: "2026-09-05", appliedLevel: 3, evidenceType: "implementation", rationale: "同じ構成を別アプリでも組み直せた" },
+  ]},
+  "infra-02": { level: 1, events: [
+    { loggedAt: "2026-09-12", appliedLevel: 1, evidenceType: "implementation", rationale: "テンプレートの CI を読んで lint / test のステップを足した" },
+  ]},
+};
+const LEVELS = ["未着手", "基礎を確認した", "自分の言葉で説明できる", "資料を見れば実装できる", "自力で実装しレビューできる", "別の場面でも使える"];
+const EVIDENCE = { drill: "確認質問に答えた", self_explanation: "自分の言葉で説明した", implementation: "実装した", unaided_implementation: "ガイドなしで実装した", cross_context: "別の場面で使った", explained_to: "説明を受けた", self_report: "自己申告" };
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+// タイルには括弧の補足を外した短い名前を出す。正式名は詳細に出る
+const shortName = (name) => name.replace(/（[^）]*）/g, "").trim();
+
+// 要約の一文
+{
+  const all = roadmap.domains.flatMap((d) => d.items);
+  const withEvidence = all.filter((it) => state[it.key].level >= 1).length;
+  const canBuild = all.filter((it) => state[it.key].level >= 3).length;
+  document.getElementById("summary").textContent = `${roadmap.domains.length} 分野 ${all.length} 項目のうち、根拠のある項目が ${withEvidence}。そのうち実装まで届いているものが ${canBuild}。`;
+}
+
+// 分野ごとの行
+const root = document.getElementById("domains");
+for (const d of roadmap.domains) {
+  const done = d.items.filter((it) => state[it.key].level >= 1).length;
+  const sec = document.createElement("section"); sec.className = "domain"; sec.dataset.domain = d.key;
+  sec.innerHTML = `<div class="domain-head"><h2>${esc(d.name)}</h2><span class="goal">${esc(d.goal)}</span><span class="count">${d.items.length} 項目中 ${done} に根拠</span></div>
+    <div class="cells">${d.items.map((it) => { const st = state[it.key]; return `<button class="cell ${st.level >= 1 ? "l" + st.level : ""}" data-key="${it.key}" aria-expanded="false" aria-controls="detail-${d.key}"><span class="n num">${esc(it.key)}</span><span class="lv num">${st.level >= 1 ? "L" + st.level : "未着手"}</span><span class="name">${esc(shortName(it.name))}</span></button>`; }).join("")}</div>
+    <div class="detail" id="detail-${d.key}" hidden></div>`;
+  root.appendChild(sec);
+}
+
+// 升目を押すと、その行の下に根拠が開く
+root.addEventListener("click", (e) => {
+  const btn = e.target.closest(".cell"); if (!btn) return;
+  const sec = btn.closest(".domain"); const panel = sec.querySelector(".detail");
+  const wasOpen = btn.getAttribute("aria-expanded") === "true";
+  for (const b of root.querySelectorAll(".cell")) b.setAttribute("aria-expanded", "false");
+  for (const p of root.querySelectorAll(".detail")) p.hidden = true;
+  if (wasOpen) return;
+  btn.setAttribute("aria-expanded", "true");
+  panel.innerHTML = detailHTML(btn.dataset.key);
+  panel.hidden = false;
+  panel.querySelector(".close").addEventListener("click", () => { panel.hidden = true; btn.setAttribute("aria-expanded", "false"); btn.focus(); });
+});
+
+function detailHTML(key) {
+  const it = roadmap.domains.flatMap((d) => d.items).find((x) => x.key === key); const st = state[key];
+  const promoted = st.events.filter((ev) => ev.appliedLevel >= 1);
+  const other = st.events.filter((ev) => ev.appliedLevel === 0);
+  let evidence = "";
+  if (promoted.length) {
+    evidence = `<div class="head">レベルが上がった根拠</div>` + [...promoted].reverse().map((ev) => `<div class="ev"><div class="d num">${esc(ev.loggedAt)}</div><div><div class="t">L${ev.appliedLevel}　${esc(EVIDENCE[ev.evidenceType])}</div><div class="r">${esc(ev.rationale)}</div></div></div>`).join("");
+  } else if (other.length) {
+    evidence = `<div class="head">まだレベルは上がっていません</div>` + other.map((ev) => `<div class="ev"><div class="d num">${esc(ev.loggedAt)}</div><div><div class="t">${esc(EVIDENCE[ev.evidenceType])}</div><div class="r dim">${esc(ev.rationale)}。これだけではレベルは上がらない扱いです</div></div></div>`).join("");
+  } else {
+    evidence = `<div class="head">まだ手をつけていません</div>`;
+  }
+  return `<div><div class="key num">${esc(it.key)}</div><h3>${esc(it.name)}</h3>
+      <div class="level"><span class="swatch" style="${st.level >= 1 ? `background:var(--l${st.level})` : ""}"></span><span><span class="num">L${st.level}</span>　${LEVELS[st.level]}</span></div>
+      <div class="outcome"><span>身につくと</span><br>${it.outcome ? esc(it.outcome) : "<span>（未記入）</span>"}</div></div>
+    <div class="evidence">${evidence}<button class="close" type="button">閉じる</button></div>`;
+}
+
+// 色の読み方
+document.getElementById("scale").innerHTML = LEVELS.map((name, l) => `<div class="step"><i style="${l >= 1 ? `background:var(--l${l})` : ""}"></i><div><b class="num">L${l}</b><span>${esc(name)}</span></div></div>`).join("");
+</script>
+</head></html>
