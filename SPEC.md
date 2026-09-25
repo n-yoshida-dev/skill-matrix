@@ -519,7 +519,7 @@ go -C backend run ./cmd/skillmatrix verify --data ../data   # 検証だけ。sta
 
 | モード | やること | 終了コード 1 になる条件 |
 |---|---|---|
-| `recalc` | `roadmap.json` の検査（§2）→ `judgments/` を順に読み、形の検査と V1〜V8 → `state.json` を書き出す → 要約（分野ごとの進捗、変わった項目、違反、次にやること Top 5）を端末に出す | `roadmap.json` にエラー / 判定ファイルが読めない（外枠が壊れている・ファイル名と `loggedAt` の不一致・未知のフィールド） |
+| `recalc` | `roadmap.json` の検査（§2）→ `judgments/` を順に読み、形の検査と V1〜V8 → `state.json` を書き出す → 要約（分野ごとの進捗、変わった項目、違反、次にやること Top 5）を端末に出す | `roadmap.json` にエラー / 判定ファイルが読めない（外枠が壊れている・ファイル名と `loggedAt` の不一致・**外枠の**未知のフィールド。判定1件の中の問題は `rejected` に記録して続行。§3.3） |
 | `verify` | `recalc` と同じ検証を走らせ、**書き出す代わりに、コミットされた `state.json` と再計算結果をバイト単位で比べる** | `recalc` の条件に加えて：`rejected` が空でない / `state.json` が一致しない / `state.json` が無い |
 
 - 違反は「どのファイルの何件目の、どの項目の、どのルールか」を一覧で出す。V4〜V7 は記録されるが `verify` を失敗にはしない
@@ -734,6 +734,8 @@ CLI と画面が共通で読む。秘密情報は入らないのでコミット�
 戻すときに v1 の §3・§4 と突き合わせて直す。
 **棚上げしたコードのコメント（`cmd/server` / `cmd/worker` / `internal/{store,httpapi,worker,config}` / `internal/llm/{anthropic,prompt,stub}.go` / `migrations/`）と
 `KNOWLEDGE.md` の過去の記録は旧番号のまま。** §3 → §10.1、§4.1 → §10.2、§4.2 → §10.3、§4.6 → §10.4、§4.7 → §10.5、§4.8 → §10.6、§6 → §10.7、§8.3 → §10.8、§9 → §10.9 と読み替える。
+v1 の中核である `internal/domain` にも旧番号の参照が残っている（`types.go` の `evidenceOrder` のプロンプトキャッシュの注記 §4.2 → §10.3、
+`apply.go` / `types.go` の「保留分は `assessment_events` に書かず」→ v1 では `state.json` の `deferred`）。2-1 で `EvidenceRef` を足すときに直す。
 
 ### 10.1 データモデル（PostgreSQL）
 
