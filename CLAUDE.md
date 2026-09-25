@@ -33,17 +33,23 @@
 - **API キーをどこにも置かない。** v1 は Claude API を呼ばない（判定は Claude Code / ChatGPT のサブスクリプション内）。
   v2 でバックエンドを戻すときも、Claude API は必ずバックエンドから呼び、フロントエンドに `ANTHROPIC_API_KEY` を持たせない。
   `.env` はコミットせず `.env.example` だけ置く（棚上げ中の `backend/.env.example` はそのまま）
-- **学習ログの本文をリポジトリに置かない。** 正本は `~/workspace/study`（Private）。判定は `evidenceRef` で出どころを指すだけ（`SPEC.md` §3.3）。
+- **学習ログの本文をリポジトリに置かない。** 正本は `~/workspace/study`（Private）。判定は `evidenceRefs` で出どころを指すだけ（`SPEC.md` §3.3）。
   **判定（`data/judgments/`）と理解度（`data/state.json`）は実物をコミットする。** これは `../CLAUDE.md`「実データをコミットしない」の
-  意図した例外で、条件は3つ：本文を置かない／`rationale` と `evidenceRef` は技術的な事実だけ（所属先・企業名・人名・転職活動・人事評価を書かない）／
+  意図した例外で、条件は3つ：本文を置かない／`rationale` と `evidenceRefs` は技術的な事実だけ（所属先・企業名・人名・転職活動・人事評価を書かない）／
   Public にする直前に全件を目で読む（`SPEC.md` §9）。`backend/testdata/` は引き続きダミーだけ
+- **`data/roadmap.json` の文字列（`verifyBy` / `outcome` / `goal` / `description`）にも同じ縛りを掛ける。** 所属先・企業名・人名・転職活動・人事評価を書かず、
+  `verifyBy` は技術的な検証条件だけを書く（「面接想定で説明する」ではなく「ADR を見ずに設計理由とトレードオフを自分の言葉で説明できる」）。
+  転職・面接の文脈は study 側に残す（`logs/decisions.md` 2026-09-25「習熟度の正本を…移す」）
+- **習熟度の正本はこのリポジトリ。** `~/workspace/study/learner-profile/skill-map.md` は移行後に凍結する（更新しない）。
+  レベルは「印」（`evidencedLevels`）から導出した `verifiedLevel` で、**実装の根拠（3）は基礎理解（1・2）を含意しない**。
+  `[3]` だけの項目を「基礎からやり直し」とは扱わず、既存の実装について L1/L2 を確認する行動を出す（`docs/skill-map-migration.md`、`logs/decisions.md` 2026-09-25）
 - **`data/judgments/` は追記のみ、`data/state.json` は手で編集しない。** コミット後の訂正は既存ファイルを触らず `source: "manual"` の判定ファイルを足す
   （コミット前は `recalc` の結果を見て直してよい。`SPEC.md` §4.7）。
   `state.json` は CLI の `recalc` が書き、CI の `verify` が再計算結果との一致を見る（`SPEC.md` §3.2・§6）
 - **ロードマップ定義（分野・詳細項目の一覧）をコードに直書きしない。**
   マスタデータ（`data/roadmap.json`）に分離し、`source`（出典 URL 等）と `checkedAt` を記録する
 - **判定基準を AI への指示書に書き写さない。** `prompts/judge.md` はレベルの基準を `data/roadmap.json` の `levels` から、
-  根拠の種類と上限を `backend/internal/domain/types.go` から読ませる（`SPEC.md` §4.2）。基準の正本は1か所
+  根拠の種類と印（付けられるレベル）を `backend/internal/domain/types.go` から読ませる（`SPEC.md` §4.2）。基準の正本は1か所
 - **理解度スコアの算出ロジックは純粋関数として分離する。** Go 側（`internal/domain`）は DB・HTTP・LLM クライアントを import しない。
   AI の出力（判定結果）は入力として受け取るだけにして、検証・集計・進捗率の計算は単体テスト可能に保つ。
   「今日」に依存する計算（鮮度・次にやること）は TypeScript 側の純粋関数に置き、DOM・ファイル読み込みを import しない（`SPEC.md` §5）
