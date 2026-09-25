@@ -48,22 +48,31 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
 - [x] `CLAUDE.md`（このリポジトリ）の「守ること」を見直す（2026-09-25 完了。冒頭の説明文も自分専用版に合わせた）
   完了条件：「API キーをリポジトリに入れない」「Claude API は必ずバックエンドから呼ぶ」など、前提が変わった項目が新しい方針と矛盾していない。棚上げした内容は消さずに「v2 で戻す」と分かる形で残っている
 
-### 2-1. 土台（自分専用版）
+### 2-1. 土台（自分専用版。skill-map.md からの移行を含む）
 
-置き場所と粒度は 2026-09-23 に決まった（`logs/decisions.md`）。着手順は上から。
+置き場所と粒度は 2026-09-23 に決まった（`logs/decisions.md`）。**2026-09-25 に判定モデルを「2 本の梯子」へ変え、
+`skill-map.md` からの移行を v1 の土台に組み込んだ（`logs/decisions.md` 2026-09-25 の 4 件）。設計・手順・対応表・期待表は
+`docs/skill-map-migration.md`（以下「移行計画」）。段階 A（決定の記録・TODO の分割）は 2026-09-25 に完了。** 着手順は上から。
 
-- [ ] `domain.Judgment` に `EvidenceRef` を足す（根拠の出どころを指す文字列。例 `study:<リポジトリ内のパス>`）
-  完了条件：`domain.Judgment` と `llm.ProposedJudgment` に `EvidenceRef` があり、`llm.Output.DomainJudgments` が引き渡す。**必須（空文字不可）** で、書式（`<種別>:<識別子>`）の検査は形の検査（`llm.ParseOutput`）が行い、単体テストがある。`ApplyJudgment` の判定ロジックは `EvidenceRef` を見ない（出どころは記録であって判定材料ではない）。SPEC.md §3.3 / §4.5
-  書式は `<種別>:<識別子>`。**種別は列挙しない**（`study:` / `cert:` / `repo:` / `work:` は例。別セッションのリポジトリ棚卸しで増える可能性がある。2026-09-25）
-- [ ] 判定結果と理解度の JSON をリポジトリに置く
-  完了条件：`data/roadmap.json`・`data/judgments/YYYY-MM-DD-<短い名前>.json`（ダミー2〜3件）・`data/state.json` が置かれ、`backend/testdata/` と同じく実データを含まない。ファイルの形が SPEC.md に書いてある。**学習ログ本文は置かない**（`evidenceRef` で指すだけ）
-- [ ] 検証と再計算の CLI を作る（`backend/cmd/`。JSON を読み、形の検査 → V1〜V8 → `ApplyJudgment` → 理解度を書き出す）
-  完了条件：`recalc` と `verify` の2モードがある。`recalc` は `data/state.json` を書き出す。`verify` は書き出さず、違反があれば終了コード 1 と違反の一覧（どの項目のどのルールか）を出し、**さらに `state.json` が再計算結果と一致しなければ終了コード 1**。DB・HTTP・LLM クライアントを import しない。単体テストがある
+- [ ] `SPEC.md` を 2 本の梯子モデルへ書き換える（移行計画の段階 B。§7 の表のとおり）
+  完了条件：§0（正本の移行）・§1（印と `verifiedLevel`、`learning_activity`、`preState` の導出）・§2（`moduleRefs`、公開前提の縛り）・§3.3（`schemaVersion: 2`、`source: migration`、`evidenceRefs`、`confidence` の条件、`occurredAt`、`repo:` `log:`）・§3.4（`verifiedLevel` / `evidencedLevels` / `marked`）・§3.5（`logs` と `repos`）・§4.2・§4.4・§4.5（V4 欠番）・§5（`Action.PendingLevels`）・§7 が書き換わり、`docs/spec-guide.md` と食い違わない
+- [ ] `internal/domain` と `internal/llm/output.go` を 2 本の梯子モデルへ変更する（段階 C-1。移行計画 §3）
+  完了条件：`ItemState` に `VerifiedLevel`（導出）と `Evidenced`、`Judgment` に `Source` / `EvidenceRefs` / `HasConfidence`、`EvidenceLearningActivity`、`evidenceLadder`（Base / Top）がある。V4（`MaxLevelStep` / `ViolationLevelJump`）が消え、V5 は梯子の範囲、V6 は `proposedLevel == 0`、V7 は `source: ai` のときだけ。印がある項目の `preState` は常に `none`。導出（`[3]`→0、`[1,3]`→1、`[1,2,3]`→3、`[1,2,3,4]`→4）・不合格報告・鮮度の更新条件・source 別の V7 がテストにある。`ParseOutput` が `evidenceRefs`（配列・1 件以上・書式）と `confidence` の有無（`ai` なら必須、他は禁止）を検査する。棚上げ中の `store` は改名に機械的に追従するだけ（挙動は変えない）。`EvidenceRefs` は判定材料にしない
+- [ ] 検証と再計算の CLI を作る（段階 C-2。`backend/cmd/skillmatrix`。JSON を読み、形の検査 → V1〜V8 → `ApplyJudgment` → 理解度を書き出す）
+  完了条件：`recalc` と `verify` の2モードがある。`recalc` は `data/state.json`（移行計画 §4.2 の形）を書き出す。`verify` は書き出さず、違反があれば終了コード 1 と違反の一覧（どの項目のどのルールか）を出し、**さらに `state.json` が再計算結果と一致しなければ終了コード 1**。処理順はファイル名の昇順・配列の順。DB・HTTP・LLM クライアントを import しない。単体テストがある。`backend/testdata/` のダミー判定を `schemaVersion: 2` に更新してある
 - [ ] その CLI を CI で走らせる（`verify` モード）
   完了条件：`.github/workflows/ci.yml` に組み込まれ、JSON をわざと壊した PR と、`state.json` だけ古い PR の両方で CI が赤くなることを一度確かめてある
+- [ ] `data/roadmap.json` を自分の実物として作る（段階 D。移行計画 §8.3 の対応表から起こす。8 分野・約 40 項目）
+  完了条件：`verify` が通る。項目 key はハイフン区切りでカリキュラムに依存しない（`go-syntax-basics`）。`moduleRefs` でモジュールと対応付けてある。`verifyBy` / `outcome` / `goal` / `description` を「所属|企業|面接|転職|人事」で grep して 0 件。`data/state.json` は全項目 0 の初期値で置く。**`backend/testdata/` のダミーとは別物**（ロードマップの定義は個人データではない）
 - [ ] 根拠の出どころの設定ファイル `sources.local.json` を用意する（`.example` だけコミット）
-  完了条件：`sources.local.json.example` に study のパスを書く形が示されている。実ファイルはコミットされていない。
+  完了条件：`sources.local.json.example` が `logs`（既定の置き場 `learning-logs/`）と `repos`（`n-yoshida-dev/study` → ローカルパスと `logsGlob`）の 2 キーの形（移行計画 §4.1）。実ファイルはコミットされていない。
   **`.gitignore` は追記不要**（`*.local.json` が既に `.gitignore:18` にあり、`.example` は guard-secrets の末尾一致に掛からずコミットできる。PR #32 のレビューで確認）
+- [ ] 【study 側】`skill-map.md` を凍結し、参照先を skill-matrix へ切り替える（段階 E。`~/workspace/study` で作業する。段階 D の後）
+  完了条件：`learner-profile/skill-map.md` 冒頭に更新停止の注記（文面は移行計画 §8.1）。`learner-profile/README.md` の正本分担表、`CLAUDE.md` の「skill-map.md を確認する」「learner-profile へ反映する」、`.claude/rules/teaching.md`、`.claude/rules/learning-ops.md`（「skill-map レベル 2 以上」→ `verifiedLevel`）、`.claude/skills/kickoff/SKILL.md` の参照先が skill-matrix になっている。study 内で `skill-map.md` を「更新先」として指す記述が 0 件。**凍結コミットのハッシュを控える**（移行判定の `evidenceRefs` が指す）
+- [ ] `skill-map.md` から移行判定を作り `data/judgments/` に置く（段階 F。段階 E の直後、同じ日か翌日に）
+  完了条件：`prompts/migrate-skill-map.md`（移行計画 §8.2 を指示にしたもの。通常の `judge.md` には混ぜない）がある。`data/judgments/YYYY-MM-DD-migration-<domain>.json` が 7 本（java-spring 13 件・db 3・go 4・react 4・devops 9・baas-auth 5・ai-collab 2）。`recalc` 後の `state.json` が移行計画 §8.4 の期待表と一致し、その表が PR 本文にある。`data/` を「所属|企業|面接|転職|人事」で grep して 0 件。`evidenceRefs` の 1 件目が凍結コミットの `skill-map.md` の行を指し、統合前の study のハッシュを書いていない。CI 緑
+- [ ] 【study / personal-ai-context 側】正本の切り替えを終える（段階 G。段階 F の後）
+  完了条件：`personal-ai-context/learning/technical-skills.md` と `learning-history.md` のリンク先が skill-matrix。study に `go-react/logs/` があり、`CLAUDE.md` に「学習ログは `logs/` に追記し、習熟度は skill-matrix の判定経由でのみ更新する。`state.json` は読むだけで編集しない。読めなければ習熟度不明として支援レベルを下げない」が書いてある。**凍結後の学習ログ 1 件から `/judge-log` で通常判定を 1 本作り、`state.json` が動いた**（2-4 の `judge.md` と `judge-log` が先に要る）
 - [x] `CLAUDE.md` に「`apps-workflow:handoff` を誰が実行するか」を正しく書く（当初は「ユーザー起動限定なのでユーザーに頼む」を追記する予定だったが、2026-09-18 の apps-workflow v1.4.2 で限定が外れたため、逆の内容＝Claude が自分で呼ぶ、に改めた。KNOWLEDGE.md 2026-09-14 / 2026-09-18）
   完了条件：`CLAUDE.md` の「セッション開始時にすること」節に、区切りでは Claude が handoff を自分で呼ぶこと、ユーザー起動限定は `pr-check` だけであることが書かれ、`../CLAUDE.md` と矛盾しない
 
@@ -90,7 +99,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   完了条件：`llm.New` が `LLM_PROVIDER=stub` で LLM を呼ばない実装を返し、同じ入力に同じ判定を返す。その判定が `domain.ApplyJudgments` を違反なしで通る。返す JSON を差し替えた stub で V1・V2・V4 が記録される。形の崩れた判定は捨てずに `Rejected` に残る（KNOWLEDGE.md 2026-09-19）
   **2026-09-23 に「棚上げ（コードとテストは残す）」と決定。** v1 の手順書と README には登場させない（`logs/decisions.md`）
 - [ ] AI への指示書 `prompts/judge.md` を用意する（`internal/llm/prompt.go` の文面を流用する）
-  完了条件：Claude Code / ChatGPT にそのファイルを読ませるだけで判定の JSON が出てくる。役割・根拠の種類・昇格ルール・禁止事項・出力の形が載っている。**レベルの基準と根拠の上限は書き写さず、`data/roadmap.json` の `levels` と `backend/internal/domain/types.go` を読ませる**。禁止事項に「**`rationale` と `evidenceRef` に**所属先・企業名・人名・転職活動・人事評価に関する記述を含めない」がある。`evidenceRef` の書式（`<種別>:<識別子>`）と、`sources.local.json` から根拠の出どころを読む手順が載っている。到達状態（`outcome`）の下書きもこの指示書で作れる
+  完了条件：Claude Code / ChatGPT にそのファイルを読ませるだけで判定の JSON が出てくる。役割・根拠の種類・印の付き方・禁止事項・出力の形が載っている。**レベルの基準と根拠の印は書き写さず、`data/roadmap.json` の `levels` と `backend/internal/domain/types.go` を読ませる**。禁止事項に「**`rationale` と `evidenceRefs` に**所属先・企業名・人名・転職活動・人事評価に関する記述を含めない」がある。`evidenceRefs` の書式（`repo:<owner>/<repo>@<commit>/<path>#L<n>`・`log:<path>`）と、`sources.local.json` から根拠の出どころを読む手順が載っている。**2026-09-25 追加**：`unaided_implementation` は AI から具体的なコード提示や逐次ガイドを受けていない場合だけ／不合格は `proposedLevel: 0`／`confidence` は必ず書く（`source: ai`）。到達状態（`outcome`）の下書きもこの指示書で作れる
 - [ ] `.claude/skills/judge-log/SKILL.md` を作る（`prompts/judge.md` を読ませる薄い入口）
   完了条件：`/judge-log` で呼べ、`prompts/judge.md` と `sources.local.json` を読み、未判定の学習ログを探して `data/judgments/` に新しいファイルを1つ書くところまで進む。**既存の判定ファイルは書き換えない**。判定基準や禁止事項をこのファイルに書き写していない（`prompts/judge.md` へのリンクだけ）
 
@@ -99,7 +108,8 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 - [ ] 画面の土台を作る（テンプレートの初期画面を外し、ルーティングと JSON の読み込みを置く）
   完了条件：`frontend/src` からテンプレートのデモ画面が消え、2-1 で置いた JSON を型付きで読み込んで各画面へ渡せる。サーバ通信が無いので TanStack Query は入れない（既定スタックから外れる点は PLAN.md に書く）
   **`data/` は `frontend/` の外にあるので、dev サーバで読むのに `vite.config.ts` の `server.fs.allow` が要る可能性がある**（PR #32 のレビューで指摘。着手時に実機で確かめる）
-- [ ] マトリクス画面（可変長グリッド＋サマリー帯、色＝レベル／枠線＝要再確認）
+- [ ] マトリクス画面（可変長グリッド＋サマリー帯、色＝`verifiedLevel`／枠線＝要再確認／角の印＝上位の根拠あり。移行計画 §6）
+  完了条件：升目の塗りは `verifiedLevel`。`evidencedLevels` の最上段が `verifiedLevel` より上の升目に角の印が付き、ツールチップに「Verified n / 根拠の印 … / 未確認 …」が出る。サマリー帯に「実装根拠あり・理解未確認」の列がある
 - [ ] 学習パス画面・一列表示（依存順の縦一列、済／今ここ／この先、到達状態の表示）
 - [ ] 学習パス画面・スキルツリー表示（SPEC §7.2）
   - [ ] `features/path/layout.ts`：段・列の配置を純粋関数で計算（Vitest）
@@ -107,8 +117,9 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   - [ ] 他分野の前提をゴーストノードで置き、クリックでその分野へ移動
   - [ ] 一列／ツリーの切り替えと、選択の記憶
 - [ ] 項目詳細画面（レベル遷移の履歴と根拠、到達状態の表示）
-  完了条件：ある項目のレベルがいつ・何を根拠に上がったかが、`rationale` と `evidenceRef` で読める。**この画面から編集はしない**（2026-09-23 決定。静的サイトは書き込み先を持たず、更新は AI ツールが `data/judgments/` にファイルを足す形で行う）
+  完了条件：見出しに Verified Level／付いている印／未確認の段の 3 行がある。ある項目の印がいつ・どの根拠で付いたかが、`events[].marked`・`rationale`・`evidenceRefs` で読める。**この画面から編集はしない**（2026-09-23 決定。静的サイトは書き込み先を持たず、更新は AI ツールが `data/judgments/` にファイルを足す形で行う）
 - [ ] 次にやること Top N の表示（到達状態と次の確認方法をセットで）
+  完了条件：`PendingLevels` がある項目は文言が「既存の実装について L1/L2 を短いドリル・自己説明で確認する」になり、`verifyBy` はその下に添える（`[3]` の項目を「基礎からやり直し」と見せない。移行計画 §6）
 
 ### 2-6. 仕上げ
 
@@ -119,10 +130,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   完了条件：クローン直後の人が README だけで「学習ログを AI に判定させる → JSON を更新する → 画面で見る」を一周できる。画面のスクリーンショットがある
 - [ ] `DefaultWeights()` の重みを実データの手触りで調整する（今は仮置き。v1 が動いてから、と本人合意済み）
   完了条件：「次にやること Top N」の並びを本人が見て違和感が無い。変えた重みと理由が KNOWLEDGE.md にあり、単体テストが更新されている
-- [ ] `~/workspace/study/learner-profile/skill-map.md` との関係を決める（2026-09-23 に判明）
-  skill-map.md は同じ5段階モデルで手で維持されている理解度台帳で、**skill-matrix はこれを自動化するアプリ**。
-  2つ並立すると必ずずれる。方針の案は「画面が実用になるまで skill-map.md が正本のまま並行運転 → 実用になったら
-  skill-map.md を『skill-matrix を見よ』に畳む」。**畳むかどうかはユーザー判断**（study 側の運用が変わるため）
+- [x] `~/workspace/study/learner-profile/skill-map.md` との関係を決める（2026-09-23 に判明 → **2026-09-25 に決定。skill-matrix を正本にし、移行する。** `logs/decisions.md` 2026-09-25 の 4 件。手順は 2-1 の段階 B〜G に分割済み）
   完了条件：どちらを正本にするかが `logs/decisions.md` にあり、畳む場合は study 側の変更内容（どのファイルをどう書き換えるか）がタスクとして起きている
 - [ ] 画面を GitHub Pages に公開する
   完了条件：`main` への push で静的サイトがビルドされて Pages に上がり、URL を開くとマトリクスが見える。**Public にする直前に、`data/judgments/` 全件の `rationale` と `evidenceRef` を目で読み、固有名詞（所属先・企業名・人名）が混ざっていないことを確かめる**（2026-09-23 決定の残リスク。`logs/decisions.md`）
