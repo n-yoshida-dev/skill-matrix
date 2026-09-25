@@ -11,6 +11,7 @@ import {
   summarizeOverall,
   topEvidenced,
 } from './summary'
+import { DEFAULT_REPO_URL } from '../../data/load'
 import './public.css'
 
 // 公開ビュー（SPEC.md §7.3）。採用担当者など初めて見る人向けの 1 画面。
@@ -117,14 +118,14 @@ export function PublicView({ data }: Props) {
         </ol>
       </section>
 
+      {/* フッターはリポジトリへのリンクだけ（SPEC.md §7.3。個人のリンクは README に限る） */}
       <footer className="foot">
         <span>
           Built with{' '}
-          <a href="https://github.com/n-yoshida-dev/skill-matrix" target="_blank" rel="noopener">
+          <a href={data.settings.site?.repoUrl ?? DEFAULT_REPO_URL} target="_blank" rel="noopener">
             skill-matrix
           </a>
         </span>
-        {data.roadmap.description ? <span>{data.roadmap.description}</span> : null}
       </footer>
     </>
   )

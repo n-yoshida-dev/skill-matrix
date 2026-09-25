@@ -19,6 +19,7 @@ export function PlanView({ data }: Props) {
         読み込んでいるデータ：{data.roadmap.name}（{data.roadmap.domains.length} 分野 {total} 項目、
         判定の保留 {data.state.deferred.length} 件、棄却 {data.state.rejected.length} 件）
       </p>
+      {data.roadmap.description ? <p>{data.roadmap.description}</p> : null}
     </>
   )
 }

@@ -14,6 +14,9 @@ function assertSchema(name: string, actual: unknown, expected: number): void {
   }
 }
 
+/** リポジトリの URL。settings.json の site.repoUrl が無いときの既定（このリポジトリ自身） */
+export const DEFAULT_REPO_URL = 'https://github.com/n-yoshida-dev/skill-matrix'
+
 /** ロードマップ・理解度・設定を読み込んで、画面に渡す形にまとめる */
 export function loadData(): AppData {
   assertSchema('data/roadmap.json', roadmapJson.schemaVersion, 1)

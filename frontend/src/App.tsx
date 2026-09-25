@@ -1,5 +1,5 @@
 import { NavLink, Route, Routes } from 'react-router'
-import { loadData } from './data/load'
+import { DEFAULT_REPO_URL, loadData } from './data/load'
 import { PublicView } from './features/public/PublicView'
 import { PlanView } from './features/plan/PlanView'
 
@@ -19,7 +19,7 @@ function App() {
             理解度台帳
           </NavLink>
           <NavLink to="/plan">作業ビュー</NavLink>
-          <a href="https://github.com/n-yoshida-dev/skill-matrix" target="_blank" rel="noopener">
+          <a href={data.settings.site?.repoUrl ?? DEFAULT_REPO_URL} target="_blank" rel="noopener">
             GitHub
           </a>
         </nav>

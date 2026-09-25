@@ -105,6 +105,8 @@ export interface Settings {
   staleness?: { freshWithinDays?: number; agingWithinDays?: number }
   weights?: { readiness?: number; gap?: number; staleness?: number; unlocks?: number }
   nextActions?: { limit?: number }
+  /** 画面のフッターとヘッダが指すリポジトリ（v1.5 のテンプレート利用者は自分のものに変える） */
+  site?: { repoUrl?: string }
 }
 
 /** 画面に渡す一式 */
