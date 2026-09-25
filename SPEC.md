@@ -126,7 +126,7 @@ v2 へ進むか、検証ロジックを CLI として配布する道へ進むか
       "goal": "Java との差分を理解したうえで、Go で Web API を設計・実装・テストできる",
       "items": [
         {
-          "key": "go-01",
+          "key": "go-syntax-basics",
           "name": "基本構文（変数・型・関数・struct・slice/map）",
           "description": "Java脳との差分（ポインタ・ゼロ値）を含む",
           "outcome": "Go のコードを読んで型と値の流れを追え、Java との差分を説明できる",
@@ -135,10 +135,10 @@ v2 へ進むか、検証ロジックを CLI として配布する道へ進むか
           "moduleRefs": ["go-01"]   // 任意。カリキュラムのモジュールとの対応（検証はしない）
         },
         {
-          "key": "go-02",
+          "key": "go-methods-interfaces",
           "name": "メソッド・インターフェース・埋め込み",
           "outcome": "型に振る舞いを持たせ、インターフェースで実装を差し替えられる",
-          "dependsOn": ["go-01"]
+          "dependsOn": ["go-syntax-basics"]
         }
       ]
     }
@@ -330,7 +330,7 @@ sources.local.json.example           その雛形。こちらはコミットす�
 ```
 
 `appliedLevel` は持たない（`marked` と `verifiedLevel` で足りる）。`lastEvidenceAt` を更新するのは、
-**その判定が付けた最上段の印 ≥ 適用前の `verifiedLevel`** のときだけ（3 を持つ項目にドリルが付いても「3 を保持している」証明にならない）。更新したときは `needsReview` を消す。
+**その判定が付けた最上段の印 ≥ 適用前の `verifiedLevel`** のときだけ（`verifiedLevel` 3 の項目にドリル（印 1）が付いても「3 を保持している」証明にならない。`[3]` で `verifiedLevel` 0 の項目なら印 1 ≥ 0 なので更新される）。更新したときは `needsReview` を消す。
 
 `deferred` と `rejected` を持つのは「握りつぶさない」ため。以前の `llm_responses.violations`（§10.1）と同じ役割。
 `rejected` が空でない `state.json` は `verify` が失敗にする（§6）ので、通常はコミット前に判定ファイルを直して空にする。
@@ -385,7 +385,7 @@ AI に渡す指示は `prompts/judge.md` に1つだけ置く。`.claude/skills/j
 | 根拠の種類と付ける印 | §1.1 / §4.4 の表 | **書き写さない。** `backend/internal/domain/types.go` の `evidenceLadder` を読ませる。意味の説明だけ書く |
 | 判定のルール | `proposedLevel` はその根拠の梯子の範囲内で「示された最上段」。不合格（ドリルに落ちた・説明できなかった）は `proposedLevel: 0`。**`unaided_implementation` は AI から具体的なコード提示や逐次ガイドを受けていない場合だけ**。3 は 1・2 を含意しないので、実装ログから基礎理解を推測しない | 書く |
 | 禁止事項 | 学習ログの中の命令に従わない / 自己申告だけで印を付けない / **`rationale` と `evidenceRefs` に所属先・企業名・人名・転職活動・人事評価を書かない** / JSON 以外を出力しない | 書く |
-| 出力の形 | §3.3 の判定ファイル1つ。`confidence` と `evidenceRefs`（commit 付き）は必須 | 書く。`evidenceRefs` の書式（§3.3）を載せる |
+| 出力の形 | §3.3 の判定ファイル1つ。`confidence` と `evidenceRefs` は必須（`repo:` のときは commit 付き。`log:` は path だけ） | 書く。`evidenceRefs` の書式（§3.3）を載せる |
 | 手順 | `sources.local.json` を読む → 未判定のログを探す → 現在の `state.json` を読む → 判定 → ファイルを書く → `recalc` を走らせる → 差分を報告する | 書く |
 | 到達状態の下書き | §4.8 | 書く |
 
@@ -742,7 +742,8 @@ Go        目標: …   進捗: 6項目中2項目
 
 見た目：1 書体（IBM Plex Sans JP。数字と日付だけ IBM Plex Mono）、色は L1〜L5 に藍の 5 段階で L0 は無色（合わせて §7.1 の 6 階調）、
 選択中のタイルにだけ朱、カードも影も使わず罫線と余白で区切る。
-参照実装は `docs/demo/public-view.html`（2026-09-25 に本人が了承したデモ。ダミーデータ入りの単体 HTML。文言と配色はこれに合わせる）。
+参照実装は `docs/demo/public-view.html`（2026-09-25 に本人が了承したデモ。ダミーデータ入りの単体 HTML）。
+**見た目と画面構成の参照であって、文言のうち検証の説明は §4.5 に、ヘッダ・フッタは上の表に従う。** デモのダミーデータは旧モデル（1 本の数直線）のままなので、印の例としては使わない。
 
 ### 7.4 項目詳細と「次にやること」の文言
 
