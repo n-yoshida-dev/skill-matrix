@@ -236,16 +236,17 @@ sources.local.json.example           その雛形。こちらはコミットす�
   | 種別（例） | 識別子の例 | 指すもの |
   |---|---|---|
   | `study` | `study:go/2026-09-20-tour-basics.md` | 学習ログ（`sources.local.json` の study のパスからの相対パス） |
-  | `cert` | `cert:応用情報技術者/2026-04-合格` | 資格 |
-  | `repo` | `repo:n-yoshida-dev/skill-matrix@13a3e7b` | 他リポジトリの実装・コミット |
-  | `work` | `work:2026-Q2/API設計` | 業務での経験 |
+  | `cert` | `cert:<資格名>/<年月>-合格` | 資格 |
+  | `repo` | `repo:<所有者>/<リポジトリ>@<コミット>` | 他リポジトリの実装・コミット |
+  | `work` | `work:<期間>/<担当>` | 業務での経験 |
 
   種別が増えたら（例：`article:` 書いた記事、`review:` レビュー実績）そのまま使ってよい。上の表は `prompts/judge.md` にも「例」として載せる
 - **`rationale` と `evidenceRef` には技術的な事実だけを書く。** 所属先・企業名・人名・転職活動・人事評価に関する記述を含めない
   （どちらもコミットされ、公開される前提のため）。機械で検査できないので、コミット前の `git diff` で目視する（§9）
 - `source: "manual"` の判定も同じ検証（V1〜V8）を通す。人の申告でも根拠の種類で到達できるレベルの上限は変わらない。
   `confidence` は 1.0 と書く（V7 で保留にならない）
-- 定義にないフィールドはエラー（§2 と同じ理由）
+- 定義にないフィールドはエラー（§2 と同じ理由）。**外枠**（`schemaVersion` / `loggedAt` / `source` / `judge` / `judgments` / `unmatched` 以外のキー）にあればファイル全体をエラーにして CLI が止まり、
+  **`judgments[i]` の中**にあればその1件だけを棄却して `rejected` に記録する（§4.5 の形の検査。他の判定は生かす）
 
 ### 3.4 理解度 `data/state.json`
 
@@ -403,6 +404,7 @@ AI に渡す指示は `prompts/judge.md` に1つだけ置く。`.claude/skills/j
 | 必須の欄（`itemKey` / `proposedLevel` / `evidenceType` / `evidenceRef` / `rationale` / `confidence`）が揃っている | 棄却して記録 |
 | `rationale` が空でない | 棄却して記録 |
 | `evidenceRef` が §3.3 の書式（`<種別>:<識別子>`） | 棄却して記録 |
+| 定義にないフィールドが無い（判定1件の中。外枠はファイル単位のエラー。§3.3） | 棄却して記録 |
 | `confidence` が 0〜1 の範囲内 | 棄却して記録 |
 
 **配点の分配はしない。** 1つのログが複数項目にまたがる場合も、項目ごとに独立して判定させる。合計制約は設けない（LLM が苦手で、意味もない）。
@@ -730,6 +732,8 @@ CLI と画面が共通で読む。秘密情報は入らないのでコミット�
 2026-09-23 に棚上げした分。**消さない。** 実装済みのコードは `backend/` に残っている（`TODO.md` フェーズ3）。
 戻す条件は `logs/decisions.md` 2026-09-23「見直す条件」。ここは棚上げ時点の内容で、v1 の変更（`evidenceRef` の追加など）は反映していない。
 戻すときに v1 の §3・§4 と突き合わせて直す。
+**棚上げしたコードのコメント（`cmd/server` / `cmd/worker` / `internal/{store,httpapi,worker,config}` / `internal/llm/{anthropic,prompt,stub}.go` / `migrations/`）と
+`KNOWLEDGE.md` の過去の記録は旧番号のまま。** §3 → §10.1、§4.1 → §10.2、§4.2 → §10.3、§4.6 → §10.4、§4.7 → §10.5、§4.8 → §10.6、§6 → §10.7、§8.3 → §10.8、§9 → §10.9 と読み替える。
 
 ### 10.1 データモデル（PostgreSQL）
 

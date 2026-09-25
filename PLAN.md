@@ -74,7 +74,8 @@ v2「他人にも使わせる」で戻す（`SPEC.md` §10）。
 
 - **サーバと DB を持たない。** データはリポジトリ内の JSON（`data/`）。判定は Claude Code / ChatGPT が行い、
   検証と理解度の再計算は Go の CLI（`backend/cmd/`）が行う。画面は JSON を読むだけの静的サイトで、GitHub Pages に置く
-- **サーバ通信が無いので TanStack Query を入れない。** JSON はビルド時に取り込む
+- **サーバ通信が無いので TanStack Query を入れない。** JSON はビルド時に取り込む。
+  **入力フォームが無いので React Hook Form / Zod も入れない**（画面は読み取り専用）
 - **Claude API をサーバから呼ばない。** API キーはどこにも置かない。判定はサブスクリプション内の Claude Code / ChatGPT で済ませる
 - **PostgreSQL・GitHub OAuth・非同期キュー・Claude API クライアントは、実装済みだが v1 では使わない。**
   消さずに `backend/internal/{store,httpapi,worker,llm}` に残し、v2 で戻す
