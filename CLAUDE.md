@@ -37,7 +37,8 @@
   **判定（`data/judgments/`）と理解度（`data/state.json`）は実物をコミットする。** これは `../CLAUDE.md`「実データをコミットしない」の
   意図した例外で、条件は3つ：本文を置かない／`rationale` と `evidenceRef` は技術的な事実だけ（所属先・企業名・人名・転職活動・人事評価を書かない）／
   Public にする直前に全件を目で読む（`SPEC.md` §9）。`backend/testdata/` は引き続きダミーだけ
-- **`data/judgments/` は追記のみ、`data/state.json` は手で編集しない。** 判定の訂正は既存ファイルを触らず `source: "manual"` の判定ファイルを足す。
+- **`data/judgments/` は追記のみ、`data/state.json` は手で編集しない。** コミット後の訂正は既存ファイルを触らず `source: "manual"` の判定ファイルを足す
+  （コミット前は `recalc` の結果を見て直してよい。`SPEC.md` §4.7）。
   `state.json` は CLI の `recalc` が書き、CI の `verify` が再計算結果との一致を見る（`SPEC.md` §3.2・§6）
 - **ロードマップ定義（分野・詳細項目の一覧）をコードに直書きしない。**
   マスタデータ（`data/roadmap.json`）に分離し、`source`（出典 URL 等）と `checkedAt` を記録する
@@ -49,7 +50,8 @@
 - **AI の出力を信用しきらない。** 形の検査（`internal/llm/output.go`）と意味の検査（V1〜V8）を通し、
   想定外の項目 ID・範囲外レベルは弾いて `state.json` の `rejected` / `deferred` / `events[].violations` に残す。握りつぶし禁止
 - ロジックを変更したら、対応する単体テストを同時に更新する
-- **棚上げしたコード（`SPEC.md` §10 の一覧）は消さない。** v1 の作業でそれらを直す必要が出たら、直さずに棚上げの範囲を見直す
+- **棚上げしたコード（`SPEC.md` §10 の一覧）は消さない。** テストを緑に保つための最小限の追随（型に 1 フィールド足す等）はしてよい。
+  それ以上の手直しが要るなら、直さずに棚上げの範囲を見直す。Go 側の `Staleness` / `NextActions` 等は参照実装として残す（`SPEC.md` §5）
 
 ## Claude Code の設定
 
