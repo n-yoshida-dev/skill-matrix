@@ -38,7 +38,7 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
   (3) 手元の `recalc` と CI の `verify` の両方。`verify` は `state.json` が再計算結果と一致するかまで見る
   (4) **学習ログ本文は置かない。** 正本は `~/workspace/study`（Private）。判定に `evidenceRef` を持たせて出どころを指す。`rationale` と `evidenceRef` は置くが、どちらも技術的な事実だけに縛る。判定 JSON は実物をコミットし、リポジトリは公開できる
   (5) stub は棚上げ（コードとテストは残す）。`internal/llm/output.go` は v1 の中核として残る
-- [ ] `PLAN.md` と `SPEC.md` を新しい方針へ書き換える
+- [x] `PLAN.md` と `SPEC.md` を新しい方針へ書き換える（2026-09-25 完了。棚上げ分は SPEC.md §10 にまとめた。コードのコメントが指す §3.2 / §4.4 / §4.5 / §4.7 は意味を保って同じ番号に置いた）
   完了条件：SPEC.md §3（DB スキーマ）・§4.1（非同期ジョブ）・§4.2（プロンプト構成）・§4.5（検証の置き場所）・§6（API）・§8.3（環境変数）が新しい方針に沿って書き換わっているか「v2 へ棚上げ」と明示されていて、v1 のデータ配置と判定の流れが読める。
   `PLAN.md`「技術的な方針」に、既定スタック（`../CLAUDE.md`）から外れる点＝サーバと DB を持たないこと、サーバ通信が無いので TanStack Query を入れないことが書いてある。`docs/spec-guide.md` も食い違っていない。
   **`PLAN.md`「やらないこと」の2行も直す**（PR #32 のレビューで判明）：「判定の入力は学習ログのテキストのみ」と「GitHub リポジトリ連携」は、`evidenceRef` が `cert:` / `work:` / `repo:` を根拠として認める決定とずれている。判定の入力はログ本文のままだが、**根拠の出どころはログに限らない**ことを書き分ける
@@ -50,8 +50,8 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
 置き場所と粒度は 2026-09-23 に決まった（`logs/decisions.md`）。着手順は上から。
 
 - [ ] `domain.Judgment` に `EvidenceRef` を足す（根拠の出どころを指す文字列。例 `study:<リポジトリ内のパス>`）
-  完了条件：`domain.Judgment` と `llm.ProposedJudgment` に `EvidenceRef` があり、`llm.Output.DomainJudgments` が引き渡す。空文字を許すか必須にするかを決めて単体テストがある。`ApplyJudgment` の判定ロジックは `EvidenceRef` を見ない（出どころは記録であって判定材料ではない）
-  書式は `<種別>:<識別子>`（`study:<パス>` / `cert:<資格名>/<年月>-合格` / `repo:<リポジトリ>@<コミット>` / `work:<期間>/<担当>`）
+  完了条件：`domain.Judgment` と `llm.ProposedJudgment` に `EvidenceRef` があり、`llm.Output.DomainJudgments` が引き渡す。**必須（空文字不可）** で、書式（`<種別>:<識別子>`）の検査は形の検査（`llm.ParseOutput`）が行い、単体テストがある。`ApplyJudgment` の判定ロジックは `EvidenceRef` を見ない（出どころは記録であって判定材料ではない）。SPEC.md §3.3 / §4.5
+  書式は `<種別>:<識別子>`。**種別は列挙しない**（`study:` / `cert:` / `repo:` / `work:` は例。別セッションのリポジトリ棚卸しで増える可能性がある。2026-09-25）
 - [ ] 判定結果と理解度の JSON をリポジトリに置く
   完了条件：`data/roadmap.json`・`data/judgments/YYYY-MM-DD-<短い名前>.json`（ダミー2〜3件）・`data/state.json` が置かれ、`backend/testdata/` と同じく実データを含まない。ファイルの形が SPEC.md に書いてある。**学習ログ本文は置かない**（`evidenceRef` で指すだけ）
 - [ ] 検証と再計算の CLI を作る（`backend/cmd/`。JSON を読み、形の検査 → V1〜V8 → `ApplyJudgment` → 理解度を書き出す）
@@ -128,6 +128,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 ## フェーズ3：v2「他人にも使わせる」（保留・合計に含めない）
 
 2026-09-23 に v1 を自分専用へ絞り込んだときに棚上げした分。**コードもタスクも消さない。**
+以下で参照している `SPEC.md §3`・`§6`・`§8.3` は棚上げ時点の節番号で、2026-09-25 の書き換えで `§10.1`・`§10.7`・`§10.8` へ移った。
 戻す条件は `logs/decisions.md` 2026-09-23 の「見直す条件」＝自分専用の画面まで到達し、実際に使って「他人にも使わせたい」と思えたとき。
 そう思わなければ CLI 配布へ進み、ここは畳む。
 
