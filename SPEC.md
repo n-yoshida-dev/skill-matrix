@@ -27,8 +27,9 @@
 
 v2 へ進むか、検証ロジックを CLI として配布する道へ進むかは、自分専用版を実際に使ってから決める（`logs/decisions.md` 2026-09-23「見直す条件」）。
 
-**`~/workspace/study/learner-profile/skill-map.md`**（同じ5段階モデルの手動台帳）との関係は未決。
-画面が実用になるまで並行運転し、畳むかどうかはユーザー判断（`TODO.md` 2-6）。
+**習熟度の正本はこのリポジトリ。** `~/workspace/study/learner-profile/skill-map.md`（同じ5段階モデルの手動台帳）は
+2026-09-25 の決定で skill-matrix へ移行して凍結する（`logs/decisions.md` 2026-09-25「習熟度の正本を…移す」。手順は `docs/skill-map-migration.md` §8）。
+移行が済むまでの間だけ skill-map.md が最新で、移行判定（`source: "migration"`。§3.3）で写し取る。
 
 ---
 
@@ -47,6 +48,27 @@ v2 へ進むか、検証ロジックを CLI として配布する道へ進むか
 | 4 | 自力実装・レビュー | 独力で実装でき、他者のコードをレビューできる |
 | 5 | 別文脈へ応用 | 学んだ文脈と異なる場面で使える |
 
+**レベルは「印」から導出する（2026-09-25 決定。`logs/decisions.md`「レベルは『印』から導出する」）。**
+項目は `evidencedLevels`（1〜5 それぞれに「その段の基準を満たす根拠が付いた」印の集合。例 `[1, 3]`）を持ち、
+`verifiedLevel` は「1 から途切れずに印が付いている最上段」として導出する。`[3]` なら 0、`[1, 3]` なら 1、`[1, 2, 3]` なら 3。
+
+印の付き方は 2 本の梯子に分かれる。**理解の梯子（1 → 2）と実装の梯子（3 → 4 → 5）は独立で、3 は 1・2 を含意しない。**
+実装に触れた事実から基礎理解を推測しない（実装の直後でも基礎の説明に失点する実例があった）。
+
+| evidenceType | 付ける印 | `preState` |
+|---|---|---|
+| `drill` | {1} | |
+| `self_explanation` | {1, 2} | |
+| `implementation` | {3} | |
+| `unaided_implementation` | {3, 4} | |
+| `cross_context` | {3, 4, 5} | |
+| `learning_activity` | なし | `learning` |
+| `explained_to` | なし | `explained_only` |
+| `self_report` | なし | `self_reported` |
+
+`[3]` だけの項目（実装の根拠はあるが基礎理解が未確認）を「初心者なので基礎から」とは扱わない。
+画面（§7.4）と `verifyBy`（§2）は「既存の実装について L1 / L2 を短いドリル・自己説明で確認する」を次の行動として出す。
+
 ### 1.2 段階前の状態（`preState`）
 
 レベルとは別軸のフラグ。**「レベル 0.5」ではなく「根拠の種類がまだ弱い」ことを表す。**
@@ -54,11 +76,13 @@ v2 へ進むか、検証ロジックを CLI として配布する道へ進むか
 | preState | 意味 |
 |---|---|
 | `none` | 特記なし |
-| `learning` | 未確認（学習中）。学習は始めたが習熟度を判定できる根拠がない |
-| `explained_only` | 説明済み・理解未確認。説明を受けて質問は出なかったが確認していない |
-| `self_reported` | 実務経験あり・横断評価未実施。自己申告のみ |
+| `learning` | 未確認（学習中）。学習は始めたが習熟度を判定できる根拠がない。根拠の種類 `learning_activity` が立てる |
+| `explained_only` | 説明済み・理解未確認。説明を受けて質問は出なかったが確認していない。`explained_to` が立てる |
+| `self_reported` | 実務経験あり・横断評価未実施。自己申告のみ。`self_report` が立てる |
 
-`preState` は level 0 のときだけでなく、どのレベルでも併存しうる。
+**`preState` は印（`evidencedLevels`）が無いときだけ意味を持つ。** 印が 1 つでもある項目の `preState` は常に `none`（導出値）。
+印がある項目に後から `explained_to` / `learning_activity` が来ても、イベントは履歴に残すが現在の `preState` は変えない
+（「実装根拠あり＋説明を受けた」を独立に持ちたくなったら別のフラグを検討する。v1 ではやらない）。
 
 ### 1.3 時間経過による減衰
 
@@ -102,18 +126,19 @@ v2 へ進むか、検証ロジックを CLI として配布する道へ進むか
       "goal": "Java との差分を理解したうえで、Go で Web API を設計・実装・テストできる",
       "items": [
         {
-          "key": "go-01",
+          "key": "go-syntax-basics",
           "name": "基本構文（変数・型・関数・struct・slice/map）",
           "description": "Java脳との差分（ポインタ・ゼロ値）を含む",
           "outcome": "Go のコードを読んで型と値の流れを追え、Java との差分を説明できる",
           "dependsOn": [],
-          "verifyBy": "Tour Basics 完了後にドリル"
+          "verifyBy": "Tour Basics 完了後にドリル",
+          "moduleRefs": ["go-01"]   // 任意。カリキュラムのモジュールとの対応（検証はしない）
         },
         {
-          "key": "go-02",
+          "key": "go-methods-interfaces",
           "name": "メソッド・インターフェース・埋め込み",
           "outcome": "型に振る舞いを持たせ、インターフェースで実装を差し替えられる",
-          "dependsOn": ["go-01"]
+          "dependsOn": ["go-syntax-basics"]
         }
       ]
     }
@@ -123,7 +148,11 @@ v2 へ進むか、検証ロジックを CLI として配布する道へ進むか
 
 制約：
 
-- `key` は同一ロードマップ内で一意。`^[a-z0-9][a-z0-9-]{0,63}$`
+- `key` は同一ロードマップ内で一意。`^[a-z0-9][a-z0-9-]{0,63}$`。カリキュラムのモジュール番号に依存させない（`go-syntax-basics` のように内容で付ける）
+- `item.moduleRefs` は任意の文字列配列（各 64 文字以内。検証はしない）。カリキュラムのモジュール（`go-01` 等）との対応を持つ
+- **`verifyBy` / `outcome` / `goal` / `description` に所属先・企業名・人名・転職活動・人事評価を書かない**（`rationale` と同じ縛り。§9）。
+  `verifyBy` は技術的な検証条件だけを書く（「面接想定で説明する」ではなく「ADR を見ずに設計理由とトレードオフを自分の言葉で説明できる」）。
+  印が `[3]` で止まっている項目の `verifyBy` は、教材のやり直しではなく「既存の実装について短いドリルか自己説明で 1・2 を確認する」と書く（§1.1）
 - `dependsOn` は同一ロードマップ内の `item.key` のみ参照可。**循環参照は検証時（§6 の CLI）に弾く**
 - `levels` は 1〜5 を必ず全て含む。`criteria` は**AI への指示書（§4.2）がそのまま参照する**ため、判定基準の正本はここ1か所
 - 上限：domains 50、1 domain あたり items 100、1 ロードマップあたり items 500
@@ -195,31 +224,34 @@ sources.local.json.example           その雛形。こちらはコミットす�
   「なぜこの升目が濃いのか」を根拠つきで説明できる
 - **判定は追記のみ。** AI がやるのは新しいファイルを1個作るだけで、既存の判定を壊しようがない。
   `git diff` も「新規1ファイル」で読める。訂正したいときも既存ファイルは触らず、新しい判定ファイルを足す（§4.7）
-- **処理順は決定的。** ファイル名の昇順（＝日付順）、ファイル内は配列の順で適用する。順序が変わると V4（昇格幅）の
+- **処理順は決定的。** ファイル名の昇順（＝日付順）、ファイル内は配列の順で適用する。順序が変わると `lastEvidenceAt` の更新（§3.4）や `preState` の
   クランプ結果が変わるため、順序はファイル名だけで決まるようにする
 - **`state.json` は同じ入力から常に同じバイト列になる。** 生成日時のような「今」に依存する値を入れない。
   CI の `verify`（§6）はこの性質を使い、コミットされた `state.json` が再計算結果とバイト単位で一致するかを見る
-- **学習ログ本文はリポジトリに置かない。** 正本は `~/workspace/study`（Private）。判定は `evidenceRef` で出どころを指すだけ。
+- **学習ログ本文はリポジトリに置かない。** 正本は `~/workspace/study`（Private）。判定は `evidenceRefs` で出どころを指すだけ。
   これにより判定は実物をコミットでき、リポジトリを Public にできる（§9）
 
 ### 3.3 判定ファイル `data/judgments/YYYY-MM-DD-<短い名前>.json`
 
-学習ログ1件（または資格・業務など根拠1件）につき1ファイル。
+学習ログ1件（または移行なら分野1つ）につき1ファイル。
 
 ```jsonc
 {
-  "schemaVersion": 1,
-  "loggedAt": "2026-09-20",             // 根拠が生じた日（学習した日）。ファイル名の日付と一致させる
-  "source": "ai",                       // "ai"（AI の判定）| "manual"（人が書いた判定・上書き）
-  "judge": "claude-code",               // 任意。判定した AI ツール名（"chatgpt" 等）。manual なら省略
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-01",             // 判定を書いた日。ファイル名の日付と一致させる
+  "source": "ai",                       // "ai"（AI の判定）| "manual"（人が書いた判定・訂正）| "migration"（skill-map.md からの写し）
+  "judge": "claude-code",               // 任意。判定した AI ツール名（"chatgpt" 等）。ai 以外なら省略
   "judgments": [
     {
-      "itemKey": "go-01",
-      "proposedLevel": 2,
+      "itemKey": "go-syntax-basics",
       "evidenceType": "self_explanation",
-      "evidenceRef": "study:go/2026-09-20-tour-basics.md",
+      "proposedLevel": 2,               // この根拠が示す最上段（§1.1 の梯子の範囲内）。0 は不合格の報告
+      "occurredAt": "2026-09-28",       // 任意。根拠が生じた日。省略時は loggedAt（移行と、まとめ書きのために持つ）
+      "evidenceRefs": [                 // 1 件以上必須
+        "repo:n-yoshida-dev/study@a1b2c3d/go-react/logs/2026-09-28.md#L10-L30"
+      ],
       "rationale": "naked return の可読性の問題に自分の言葉で触れている",
-      "confidence": 0.8
+      "confidence": 0.8                 // source が ai のときだけ必須。manual / migration では書かない
     }
   ],
   "unmatched": ["ロードマップのどの項目にも対応づけられなかった記述の要約"]   // 無ければ []
@@ -228,23 +260,31 @@ sources.local.json.example           その雛形。こちらはコミットす�
 
 制約：
 
-- ファイル名は `^\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]{0,63}\.json$`。`loggedAt` はファイル名の日付と一致する
+- ファイル名は `^\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]{0,63}\.json$`。`loggedAt` はファイル名の日付と一致する。移行は `YYYY-MM-DD-migration-<domain>.json`
 - `judgments` の各要素は §4.3 の出力そのもの。1件の形の検査と V1〜V8 は §4.5
-- **`evidenceRef` は必須（空文字不可）。** 書式は `<種別>:<識別子>`。種別は `^[a-z][a-z0-9-]*$`、識別子は空でない文字列。
-  **種別の一覧は決めない。** 検証は書式だけを見て、種別の列挙は検査しない。種別の例：
+- `proposedLevel` は「この根拠が示す最上段」。根拠の種類の梯子の範囲内（`self_explanation` なら 1 か 2、`unaided_implementation` なら 3 か 4）か、
+  **0 ＝ 不合格の報告**（ドリルに落ちた、説明できなかった）。指示書には常に書かせる。省略時の既定（上限にするか必須にするか）は CLI の実装で決める（`docs/skill-map-migration.md` §9）
+- **`evidenceRefs` は 1 件以上必須。** 各要素は `<種別>:<識別子>`。種別は `^[a-z][a-z0-9-]*$`。**種別の一覧は決めない**（検証は書式だけ）が、Git 由来はすべて次の 1 つの文法に統一する：
 
-  | 種別（例） | 識別子の例 | 指すもの |
+  | 種別 | 形 | 例 |
   |---|---|---|
-  | `study` | `study:go/2026-09-20-tour-basics.md` | 学習ログ（`sources.local.json` の study のパスからの相対パス） |
-  | `cert` | `cert:<資格名>/<年月>-合格` | 資格 |
-  | `repo` | `repo:<所有者>/<リポジトリ>@<コミット>` | 他リポジトリの実装・コミット |
-  | `work` | `work:<期間>/<担当>` | 業務での経験 |
+  | `repo` | `repo:<owner>/<repo>@<commit>[/<path>[#L<n>[-L<m>]]]`（GitHub の `blob/<commit>/<path>` と同じ並び） | `repo:n-yoshida-dev/study@a1b2c3d/go-react/logs/2026-09-28.md#L10` |
+  | `log` | `log:<path>`（コミットされない `learning-logs/` 用。v1.5 のテンプレート利用者の既定） | `log:learning-logs/2026-10-01.md` |
+  | `cert` / `work` | 書式だけ予約。**v1 では使わない**（`work:` は経歴が分かる。`cert:` は対応する根拠の種類が無い） | |
 
-  種別が増えたら（例：`article:` 書いた記事、`review:` レビュー実績）そのまま使ってよい。上の表は `prompts/judge.md` にも「例」として載せる
-- **`rationale` と `evidenceRef` には技術的な事実だけを書く。** 所属先・企業名・人名・転職活動・人事評価に関する記述を含めない
+  commit を含めるのは、指し先を不変にするため（後からファイルが書き換わっても根拠が消えない）。`verify` は書式だけを見て、到達可能かは見ない（study は Private）。
+  種別が増えたら（`article:` 等）そのまま使ってよい（`logs/decisions.md` 2026-09-25「`evidenceRef` は配列 `evidenceRefs` にし…」）
+- **`rationale` と `evidenceRefs` には技術的な事実だけを書く。** 所属先・企業名・人名・転職活動・人事評価に関する記述を含めない
   （どちらもコミットされ、公開される前提のため）。機械で検査できないので、コミット前の `git diff` で目視する（§9）
-- `source: "manual"` の判定も同じ検証（V1〜V8）を通す。人の申告でも根拠の種類で到達できるレベルの上限は変わらない。
-  `confidence` は 1.0 と書く（V7 で保留にならない）
+- `source` ごとの扱い（V4 は廃止。§4.5）：
+
+  | `source` | 誰が | `confidence` | V7（保留） |
+  |---|---|---|---|
+  | `ai` | Claude Code / ChatGPT | **必須**（0〜1） | 適用 |
+  | `manual` | 人（訂正・自己入力） | **書かない**（あれば形の検査で棄却） | 適用しない |
+  | `migration` | skill-map.md からの写し（1 回きり。`docs/skill-map-migration.md` §8） | **書かない** | 適用しない |
+
+  `manual` / `migration` も V1〜V3・V5・V6・V8 は通す。人の申告でも根拠の種類で付けられる印は変わらない
 - 定義にないフィールドはエラー（§2 と同じ理由）。**外枠**（`schemaVersion` / `loggedAt` / `source` / `judge` / `judgments` / `unmatched` 以外のキー）にあればファイル全体をエラーにして CLI が止まり、
   **`judgments[i]` の中**にあればその1件だけを棄却して `rejected` に記録する（§4.5 の形の検査。他の判定は生かす）
 
@@ -254,27 +294,28 @@ sources.local.json.example           その雛形。こちらはコミットす�
 
 ```jsonc
 {
-  "schemaVersion": 1,
-  "items": [                            // ロードマップの全項目を定義順に。未着手も level 0 で入る
+  "schemaVersion": 2,
+  "items": [                            // ロードマップの全項目を定義順に。未着手も入る
     {
-      "itemKey": "go-01",
-      "level": 2,
-      "preState": "none",
-      "needsReview": false,             // 降格提案があった（V6）
-      "lastEvidenceAt": "2026-09-20",   // 根拠がまだ無ければ null
+      "itemKey": "java-junit",
+      "verifiedLevel": 0,               // 導出値。1 から途切れずに印が付いている最上段（§1.1）
+      "evidencedLevels": [3],           // 印。昇順
+      "preState": "none",               // 印があれば常に none（§1.2）
+      "needsReview": false,             // 不合格の報告があった（V6）
+      "lastEvidenceAt": "2026-08-05",   // 根拠がまだ無ければ null
       "events": [                       // この項目に適用した判定の履歴。適用順
         {
-          "file": "2026-09-20-tour-basics.json",
-          "index": 0,                   // そのファイルの judgments 配列内の位置
-          "loggedAt": "2026-09-20",
-          "source": "ai",
-          "proposedLevel": 2,
-          "appliedLevel": 2,            // 検証後に適用した値（V4 / V5 でクランプされうる）
-          "evidenceType": "self_explanation",
-          "evidenceRef": "study:go/2026-09-20-tour-basics.md",
-          "rationale": "naked return の可読性の問題に自分の言葉で触れている",
-          "confidence": 0.8,
-          "violations": []              // 記録された違反（V4 / V5 / V6）。§4.5
+          "file": "2026-10-01-migration-java-spring.json",
+          "index": 1,                   // そのファイルの judgments 配列内の位置
+          "occurredAt": "2026-08-05",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [3],                // この判定が付けた印（V5 で切り詰めた後）
+          "evidenceRefs": ["repo:n-yoshida-dev/study@<凍結コミット>/learner-profile/skill-map.md#L42", "repo:n-yoshida-dev/orgflow@6647ba8"],
+          "rationale": "...",
+          "confidence": null,           // source が ai 以外は null
+          "violations": []              // 記録された違反（V5 / V6）。§4.5
         }
       ]
     }
@@ -288,6 +329,9 @@ sources.local.json.example           その雛形。こちらはコミットす�
 }
 ```
 
+`appliedLevel` は持たない（`marked` と `verifiedLevel` で足りる）。`lastEvidenceAt` を更新するのは、
+**その判定が付けた最上段の印 ≥ 適用前の `verifiedLevel`** のときだけ（`verifiedLevel` 3 の項目にドリル（印 1）が付いても「3 を保持している」証明にならない。`[3]` で `verifiedLevel` 0 の項目なら印 1 ≥ 0 なので更新される）。更新したときは `needsReview` を消す。
+
 `deferred` と `rejected` を持つのは「握りつぶさない」ため。以前の `llm_responses.violations`（§10.1）と同じ役割。
 `rejected` が空でない `state.json` は `verify` が失敗にする（§6）ので、通常はコミット前に判定ファイルを直して空にする。
 
@@ -298,15 +342,15 @@ AI が学習ログを自分で読みに行くための設定。ローカルの�
 
 ```jsonc
 {
-  "study": {
-    "path": "/home/<user>/workspace/study",   // 学習ログの正本（Private リポジトリ）の場所
-    "logsGlob": "**/logs/*.md"                // 学習ログとして読むファイルのパターン
+  "logs": { "path": "learning-logs" },        // 既定の置き場（リポジトリ内・.gitignore 済み。v1.5 のテンプレート利用者向け）
+  "repos": {                                  // リポジトリ名 → ローカルパスと、学習ログとして読むファイルのパターン
+    "n-yoshida-dev/study": { "path": "/home/<user>/workspace/study", "logsGlob": "**/logs/*.md" }
   }
 }
 ```
 
-`study` 以外の出どころ（`repo:` の別リポジトリなど）が要るようになったら同じ形でキーを足す。
-無ければ AI はユーザーに場所を聞く。判定済みかどうかは `data/judgments/` の `evidenceRef` の一覧と突き合わせて判断する。
+`repos` のキーは `evidenceRefs` の `repo:<owner>/<repo>` と同じ名前にする。無ければ AI はユーザーに場所を聞く。
+判定済みかどうかは `data/judgments/` の `evidenceRefs` の一覧と **path 単位**で突き合わせる（追記型のログなら commit の違いは無視してよい）。
 
 ---
 
@@ -318,11 +362,11 @@ AI が学習ログを自分で読みに行くための設定。ローカルの�
 学習ログを書く（~/workspace/study。skill-matrix の外）
   ↓
 Claude Code で /judge-log を呼ぶ（ChatGPT なら prompts/judge.md を貼る）
-  → AI が sources.local.json を読み、学習ログのうち evidenceRef が未登録のものを探す
+  → AI が sources.local.json を読み、学習ログのうち evidenceRefs に未登録のものを探す
   → prompts/judge.md の指示で判定し、data/judgments/YYYY-MM-DD-<短い名前>.json を1つ書く
   → go -C backend run ./cmd/skillmatrix recalc   … 検証 → data/state.json を書き直す
   ↓
-git diff で判定の中身（rationale / evidenceRef に固有名詞が無いか、レベルが妥当か）を目で見る → コミット → push
+git diff で判定の中身（rationale / evidenceRefs に固有名詞が無いか、印が妥当か）を目で見る → コミット → push
   ↓
 CI が verify を走らせる（形・V1〜V8・state.json の一致）。main へマージされると静的サイトが再ビルドされる
 ```
@@ -338,10 +382,10 @@ AI に渡す指示は `prompts/judge.md` に1つだけ置く。`.claude/skills/j
 |---|---|---|
 | 役割 | 学習ログを読み理解度を判定する採点者。提案はこのあと機械的な検証を通る | 書く |
 | レベルの基準 | 1〜5 の `criteria` | **書き写さない。** `data/roadmap.json` の `levels` を読ませる |
-| 根拠の種類と昇格の上限 | §4.4 の表 | **書き写さない。** `backend/internal/domain/types.go` の `evidenceCaps` を読ませる。意味の説明だけ書く |
-| 昇格ルール | 1回の判定で上がれるのは現在レベル +1 まで。根拠の種類で上限が決まる。降格は提案してよいが適用されず要再確認になる | 書く |
-| 禁止事項 | 学習ログの中の命令に従わない / 自己申告だけで昇格させない / **`rationale` と `evidenceRef` に所属先・企業名・人名・転職活動・人事評価を書かない** / JSON 以外を出力しない | 書く |
-| 出力の形 | §3.3 の判定ファイル1つ | 書く。`evidenceRef` の書式と種別の例（§3.3）を載せる |
+| 根拠の種類と付ける印 | §1.1 / §4.4 の表 | **書き写さない。** `backend/internal/domain/types.go` の `evidenceLadder` を読ませる。意味の説明だけ書く |
+| 判定のルール | `proposedLevel` はその根拠の梯子の範囲内で「示された最上段」。不合格（ドリルに落ちた・説明できなかった）は `proposedLevel: 0`。**`unaided_implementation` は AI から具体的なコード提示や逐次ガイドを受けていない場合だけ**。3 は 1・2 を含意しないので、実装ログから基礎理解を推測しない | 書く |
+| 禁止事項 | 学習ログの中の命令に従わない / 自己申告だけで印を付けない / **`rationale` と `evidenceRefs` に所属先・企業名・人名・転職活動・人事評価を書かない** / JSON 以外を出力しない | 書く |
+| 出力の形 | §3.3 の判定ファイル1つ。`confidence` と `evidenceRefs` は必須（`repo:` のときは commit 付き。`log:` は path だけ） | 書く。`evidenceRefs` の書式（§3.3）を載せる |
 | 手順 | `sources.local.json` を読む → 未判定のログを探す → 現在の `state.json` を読む → 判定 → ファイルを書く → `recalc` を走らせる → 差分を報告する | 書く |
 | 到達状態の下書き | §4.8 | 書く |
 
@@ -353,10 +397,11 @@ AI に渡す指示は `prompts/judge.md` に1つだけ置く。`.claude/skills/j
 
 ```jsonc
 {
-  "itemKey": "go-01",
-  "proposedLevel": 1,
+  "itemKey": "go-syntax-basics",
   "evidenceType": "self_explanation",
-  "evidenceRef": "study:go/2026-09-20-tour-basics.md",
+  "proposedLevel": 2,
+  "occurredAt": "2026-09-28",
+  "evidenceRefs": ["repo:n-yoshida-dev/study@a1b2c3d/go-react/logs/2026-09-28.md#L10-L30"],
   "rationale": "for/if/switch の挙動を自分の言葉で説明し、naked return の可読性の問題にも触れている",
   "confidence": 0.8
 }
@@ -366,18 +411,19 @@ AI に渡す指示は `prompts/judge.md` に1つだけ置く。`.claude/skills/j
 
 ### 4.4 evidenceType の許可リスト
 
-| evidenceType | 意味 | 昇格の可否 |
+| evidenceType | 意味 | 付ける印（梯子の下端〜上限） |
 |---|---|---|
-| `drill` | ドリル・確認質問への回答 | L1 まで昇格可 |
-| `self_explanation` | 自分の言葉での説明 | L2 まで昇格可 |
-| `implementation` | 実装した | L3 まで昇格可 |
-| `unaided_implementation` | ガイドなしの実装・レビュー実績 | L4 まで昇格可 |
-| `cross_context` | 学んだ文脈と別の場面で使った | L5 まで昇格可 |
-| `explained_to` | 説明を受けた | **昇格させない。** `preState='explained_only'` にするのみ |
-| `self_report` | 自己申告 | **昇格させない。** `preState='self_reported'` にするのみ |
+| `drill` | ドリル・確認質問への回答 | {1} |
+| `self_explanation` | 自分の言葉での説明 | {1, 2} |
+| `implementation` | 実装した（AI や資料の助けを借りて） | {3} |
+| `unaided_implementation` | ガイドなしの実装・レビュー実績 | {3, 4} |
+| `cross_context` | 学んだ文脈と別の場面で使った | {3, 4, 5} |
+| `learning_activity` | 学習を始めた（読んだ・写経した） | **印なし。** `preState='learning'` にするのみ |
+| `explained_to` | 説明を受けた | **印なし。** `preState='explained_only'` にするのみ |
+| `self_report` | 自己申告 | **印なし。** `preState='self_reported'` にするのみ |
 
-`explained_to` と `self_report` を昇格させないのは、既存モデルの「説明済み ≠ 理解」「根拠のない昇格をしない」を機械化したもの。
-正本は `backend/internal/domain/types.go` の `evidenceCaps`。
+下 3 つに印を付けないのは、既存モデルの「説明済み ≠ 理解」「根拠のない昇格をしない」を機械化したもの。
+正本は `backend/internal/domain/types.go` の `evidenceLadder`（各種類の下端 `Base` と上限 `Top`）。
 
 ### 4.5 検証ルール（純粋関数）
 
@@ -388,11 +434,18 @@ AI に渡す指示は `prompts/judge.md` に1つだけ置く。`.claude/skills/j
 | V1 | `itemKey` がそのロードマップに存在する | 棄却 | `rejected` |
 | V2 | `proposedLevel` が 0〜5 の整数 | 棄却 | `rejected` |
 | V3 | `evidenceType` が許可リストにある | 棄却 | `rejected` |
-| V4 | 昇格幅は現在レベル +1 まで | +1 にクランプして適用（一気飛び禁止） | `events[].violations` |
-| V5 | `evidenceType` がそのレベルの昇格に足りている（4.4 の表） | 到達可能な上限にクランプして適用 | `events[].violations` |
-| V6 | `proposedLevel` が現在レベル未満（降格提案） | **レベルは下げず** `needsReview=true` を立てる | `events[].violations` |
-| V7 | `confidence` が閾値（既定 0.5）未満 | 適用せず保留 | `deferred` |
-| V8 | 1ファイルあたりの判定件数が上限（既定 20）以内 | 超過分を棄却 | `rejected` |
+| V4 | （欠番。「昇格幅は +1 まで」は 2026-09-25 に廃止） | ― | ― |
+| V5 | `proposedLevel` がその根拠の梯子の範囲内（4.4 の表） | 上限超えは上限へ、下端未満（0 以外）は下端へ切り詰めて適用 | `events[].violations` |
+| V6 | `proposedLevel` が 0（不合格の報告） | 印を付けず `needsReview=true` を立てる | `events[].violations` |
+| V7 | `confidence` が閾値（既定 0.5）未満。**`source: ai` のときだけ** | 適用せず保留 | `deferred` |
+| V8 | 1ファイルあたりの判定件数が上限（既定 20）以内。移行も免除しない | 超過分を棄却 | `rejected` |
+
+V4 を廃止した理由：1 件の根拠が同じ梯子の下位を同時に証明するのは自然（`unaided_implementation` → {3, 4}）で、
+自力実装の明確な証拠があってももう 1 回実証を要求するのは根拠モデルとして不自然。AI の過大評価の歯止めは
+指示書（§4.2 の `unaided_implementation` の条件・`confidence` 必須・`rationale` と `evidenceRefs` 必須）と `git diff` の目視へ移した。
+
+適用の規則（`ApplyJudgment`）：(1) 印を付ける（4.4 の集合を `proposedLevel` で上限を切った範囲）→ (2) `verifiedLevel` を導出し直す →
+(3) 印があれば `preState` は `none`、無ければ根拠の種類が立てる値 → (4) `lastEvidenceAt` は §3.4 の条件で更新 → (5) `proposedLevel` が 0 なら印を付けず `needsReview`。
 
 **V1〜V8 の前に、形の検査を通す**（`internal/llm` の `ParseOutput`。V1〜V8 は意味の検査で `internal/domain` が担当し、同じ検査を2か所に書かない）。
 形の崩れた判定はその1件だけを棄却し（`rejected`）、同じファイルの他の判定は生かす。
@@ -401,15 +454,16 @@ AI に渡す指示は `prompts/judge.md` に1つだけ置く。`.claude/skills/j
 | 形の検査 | 違反時の扱い |
 |---|---|
 | 型が合っている（`proposedLevel` が整数、など） | 棄却して記録 |
-| 必須の欄（`itemKey` / `proposedLevel` / `evidenceType` / `evidenceRef` / `rationale` / `confidence`）が揃っている | 棄却して記録 |
+| 必須の欄（`itemKey` / `proposedLevel` / `evidenceType` / `evidenceRefs` / `rationale`）が揃っている | 棄却して記録 |
 | `rationale` が空でない | 棄却して記録 |
-| `evidenceRef` が §3.3 の書式（`<種別>:<識別子>`） | 棄却して記録 |
+| `evidenceRefs` が 1 件以上の配列で、各要素が §3.3 の書式（`<種別>:<識別子>`） | 棄却して記録 |
+| `confidence` は `source: ai` なら必須で 0〜1 の範囲内、それ以外の `source` なら**存在してはいけない** | 棄却して記録 |
+| `occurredAt` があれば `YYYY-MM-DD` | 棄却して記録 |
 | 定義にないフィールドが無い（判定1件の中。外枠はファイル単位のエラー。§3.3） | 棄却して記録 |
-| `confidence` が 0〜1 の範囲内 | 棄却して記録 |
 
 **配点の分配はしない。** 1つのログが複数項目にまたがる場合も、項目ごとに独立して判定させる。合計制約は設けない（LLM が苦手で、意味もない）。
 
-**`EvidenceRef` は記録であって判定材料ではない。** `ApplyJudgment` は `EvidenceRef` を見ない（形の検査だけが見る）。
+**`EvidenceRefs` は記録であって判定材料ではない。** `ApplyJudgment` は `EvidenceRefs` を見ない（形の検査だけが見る）。
 
 ### 4.6 判定の主体とコスト
 
@@ -428,7 +482,7 @@ v1 の判定は **Claude Code / ChatGPT** が行う。どちらもサブスク�
 以前の「手動上書き API」と「反映モード（auto / confirm）」はこれで置き換える（§10.5）。
 
 V7 で保留になった判定は `state.json` の `deferred` に残り、項目詳細画面に「レビュー待ち」として出る。
-採用したいときは同じ内容を `source: "manual"`・`confidence: 1.0` で書いた判定ファイルを足す。採用しないなら放置してよい（適用されない）。
+採用したいときは同じ内容を `source: "manual"`（`confidence` 無し）で書いた判定ファイルを足す。採用しないなら放置してよい（適用されない）。
 
 ### 4.8 到達状態（`outcome`）の AI 下書き
 
@@ -504,6 +558,8 @@ priority = w.Readiness * readiness   // 依存項目がすべて L1 以上なら
 > こちらは項目ごとに値が違うので、実際に順位を動かす。
 
 `Action` には `item.verifyBy`（次の確認方法）と `item.outcome`（身につくと何ができるか）をそのまま載せる。
+加えて `PendingLevels`（印はあるが `verifiedLevel` に届いていない段。例：`[3]` の項目なら `[3]`、未確認は 1・2）を持ち、画面はこれで文言を変える（§7.4）。
+`gap` は `verifiedLevel` から計算する（変更なし）。
 **「次に何をやるか」だけでなく「やると何ができるようになるか」を毎回同時に見せる**ため。
 
 ---
@@ -522,8 +578,8 @@ go -C backend run ./cmd/skillmatrix verify --data ../data   # 検証だけ。sta
 | `recalc` | `roadmap.json` の検査（§2）→ `judgments/` を順に読み、形の検査と V1〜V8 → `state.json` を書き出す → 要約（分野ごとの進捗、変わった項目、違反、次にやること Top 5）を端末に出す | `roadmap.json` にエラー / 判定ファイルが読めない（外枠が壊れている・ファイル名と `loggedAt` の不一致・**外枠の**未知のフィールド。判定1件の中の問題は `rejected` に記録して続行。§3.3） |
 | `verify` | `recalc` と同じ検証を走らせ、**書き出す代わりに、コミットされた `state.json` と再計算結果をバイト単位で比べる** | `recalc` の条件に加えて：`rejected` が空でない / `state.json` が一致しない / `state.json` が無い |
 
-- 違反は「どのファイルの何件目の、どの項目の、どのルールか」を一覧で出す。V4〜V7 は記録されるが `verify` を失敗にはしない
-  （+2 の提案をクランプする、確信度の低い提案を保留にする、はモデルの想定どおりの動きで、修正を要求するものではない）
+- 違反は「どのファイルの何件目の、どの項目の、どのルールか」を一覧で出す。V5〜V7 は記録されるが `verify` を失敗にはしない
+  （梯子の範囲に切り詰める、不合格の報告、確信度の低い提案を保留にする、はモデルの想定どおりの動きで、修正を要求するものではない）
 - `rejected` で失敗にするのは、ロードマップに無い項目や範囲外のレベルが**コミットされた判定ファイルに残っている**のは
   直すべき不備だから。コミット前に `recalc` で気づいて直す。CI はその取りこぼしを止める
 - `state.json` の一致まで見るのは「AI が判定ファイルを書いたのに `recalc` を走らせ忘れた」「`state.json` を手でいじった」を止めるため
@@ -538,11 +594,21 @@ CI では `verify` を `main` と全 PR で走らせる。**`state.json` は生�
 
 静的サイト。**すべて読み取り専用。** 更新は `data/` へのファイル追加で行い、画面からは何も書き込まない。
 
+**入口は 2 つ**（2026-09-25 決定。`logs/decisions.md`「画面は『公開ビュー』と『作業ビュー』の 2 つの入口に分ける」）。
+見る人の問いが違うので、同じ `state.json` を別の絞り込みで見せる。
+
+| 入口 | 見る人 | 答える問い | 画面 |
+|---|---|---|---|
+| **公開ビュー**（トップ `/`） | 採用担当者など初めて見る人 | 何をどこまでできるか。それは信用できるか | §7.3 の 1 画面 |
+| **作業ビュー**（`/plan` 配下） | 自分 | 次に何をやるか。どこが古いか。どの判定が保留か | 下の 3 画面 |
+
+作業ビューの画面：
+
 | 画面 | 内容 |
 |---|---|
-| ダッシュボード（マトリクス） | サマリー帯（分野 × レベルの到達項目数）＋ 可変長グリッドのマトリクス ＋ 次にやること Top 5 ＋ 目標日の逼迫度（設定されていれば） |
+| ダッシュボード（マトリクス） | サマリー帯（分野 × `verifiedLevel` の到達項目数、実装根拠あり・理解未確認の件数）＋ 可変長グリッドのマトリクス ＋ 次にやること Top 5 ＋ 目標日の逼迫度（設定されていれば） |
 | **学習パス** | **分野を選ぶと、項目が依存順に縦一列で並ぶ。済 / 今ここ / この先と到達状態を見せる（§7.2）** |
-| 項目詳細 | レベル遷移の履歴（`state.json` の `events`）、各遷移の根拠（`rationale` / `evidenceRef`）、レビュー待ち（`deferred`）、次の確認方法、到達状態。**編集はしない** |
+| 項目詳細 | 見出しに 3 行（Verified Level／付いている印／未確認の段）、印の履歴（`state.json` の `events[].marked`）、各判定の根拠（`rationale` / `evidenceRefs`）、レビュー待ち（`deferred`）、次の確認方法、到達状態（§7.4）。**編集はしない** |
 
 以前のログイン・ログ投稿・ログ一覧・ロードマップ管理の画面は v2（§10.7）。
 
@@ -558,7 +624,9 @@ Java/Spring  ■ ■ ■ ■ ■ ■ ■ ■    (8項目)
 
 分野ごとに詳細項目が異なるため、共通の列軸を持つ真の行列にすると疎行列になる。上部に「分野 × レベルの到達項目数」のサマリー帯を置いて一覧性を補う。
 
-**二重符号化**：升目の**色の濃さ = レベル（0〜5 の6階調）**、**枠線・斜線 = 要再確認**（`staleness` が `stale`、または `needsReview=true`）。`preState` はツールチップで表示する。
+**二重符号化**：升目の**色の濃さ = `verifiedLevel`（0〜5 の6階調）**、**枠線・斜線 = 要再確認**（`staleness` が `stale`、または `needsReview=true`）。
+**角の印 = 上位の根拠あり**（`evidencedLevels` の最上段が `verifiedLevel` より上。例：`[3]` で `verifiedLevel` 0）。
+ツールチップに「Verified 0 / 根拠の印 3 / 未確認 1, 2」と `preState` を出す。
 
 配色は `dataviz` の指針に従い、light / dark 両テーマで判別できる連続スケールを使う。
 
@@ -632,7 +700,7 @@ Go        目標: …   進捗: 6項目中2項目
   |---|---|---|
   | 未解放 | `ready=false`（前提に L0 がある） | 灰色・鍵マーク。線も薄く |
   | 解放済み・未着手 | `ready=true` かつレベル0 | 枠を強調。`current` の項目は「今ここ」ラベル |
-  | 習得済み | レベル1以上 | 塗りの濃さ = レベル（6階調）。`stale` / `needsReview` は枠線・斜線（§7.1 と同じ符号化） |
+  | 習得済み | `verifiedLevel` 1以上 | 塗りの濃さ = `verifiedLevel`（6階調）。`stale` / `needsReview` は枠線・斜線、上位の根拠ありは角の印（§7.1 と同じ符号化） |
   | 深掘り候補 | 習得済みかつ「次にやること」Top N に入っている | 習得済みの上にバッジ |
 
 - 1分野の項目が30を超えて線が交差して読めなくなったら、その時点で React Flow + dagre への切り替えを検討する
@@ -654,6 +722,37 @@ Go        目標: …   進捗: 6項目中2項目
 - `outcome` が空の項目は「未記入」と分かるように出す（一列表示では行を詰めて、ツリー表示ではノード内で）。
   埋めるのは §4.8 の手順で、画面からは頼めない
 - 常に上部に `domain.goal` と進捗を出す。「あと何個でどうなるか」が視界から消えないようにする
+
+### 7.3 公開ビュー（採用担当者向け。トップ `/`）
+
+1 画面で完結する。答えるのは「何をどこまでできるか」「それは信用できるか」の 2 つだけ。
+
+| 要素 | 内容 |
+|---|---|
+| ヘッダ | 画面の切り替え（理解度台帳／作業ビュー）とリポジトリへのリンクだけ。個人名・プロフィールへのリンクは置かない（個人のリンクは README に限る。2026-09-25 決定） |
+| 見出しと 2 文 | 「学習ログを AI が判定し、ルールで検証して履歴に残している。自己申告では上がらない」の 1 文と、「N 分野 M 項目のうち根拠のある項目が X、実装まで届いているものが Y」の 1 文 |
+| 分野ごとの行 | 分野名、`goal`、「M 項目中 X に根拠」、その下に項目のタイル |
+| **タイル** | 項目キー・`verifiedLevel`（0 は「未着手」と文字で）・項目名（括弧の補足を外し 2 行まで）を**常時表示**。幅 150px 程度で横幅に合わせて折り返す。塗りは §7.1 と同じ 6 階調。**押さなくても何の項目か分かる**ことを優先する（2026-09-25 決定） |
+| 根拠（タイルを押すと、その行の直下に開く） | 項目名、レベル名、`outcome`、印が付いた判定を新しい順に「日付・根拠の種類・`rationale` の一文」。印が付かなかった判定は「これだけでは上がらない扱い」と正直に出す。`[3]` の項目は「実装の根拠はあるが基礎の確認が未了」と出す |
+| 色の読み方 | L0〜L5 の 6 段を名前つきで 1 行 |
+| どうやって決まるか | 4 段の手順（ログを書く → AI が判定 → 機械的な検証 → 履歴に残る）。ここは本当に手順なので番号を付ける |
+| フッター | 「Built with skill-matrix」でリポジトリへリンクするだけ（2026-09-25 決定。個人の宣伝リンクは README に限る） |
+
+**出さないもの**：`preState`、鮮度（`staleness`）、要再確認の枠線、保留（`deferred`）、棄却（`rejected`）、優先度と次にやること、検証ルールの記号（V5 等）、
+`evidenceRefs` の生の文字列、`confidence`。これらは作業ビューにある。載せる項目を増やしたくなったら「採用担当者が 10 秒で読めるか」で判断する。
+
+見た目：1 書体（IBM Plex Sans JP。数字と日付だけ IBM Plex Mono）、色は L1〜L5 に藍の 5 段階で L0 は無色（合わせて §7.1 の 6 階調）、
+選択中のタイルにだけ朱、カードも影も使わず罫線と余白で区切る。
+参照実装は `docs/demo/public-view.html`（2026-09-25 に本人が了承したデモ。ダミーデータ入りの単体 HTML）。
+**見た目と画面構成の参照であって、文言のうち検証の説明は §4.5 に、ヘッダ・フッタは上の表に従う。** デモのダミーデータは旧モデル（1 本の数直線）のままなので、印の例としては使わない。
+
+### 7.4 項目詳細と「次にやること」の文言
+
+- 項目詳細の見出しは 3 行：**Verified Level n**／付いている印（`evidencedLevels`）／未確認の段（1〜最上段の印のうち印が無いもの）。
+  履歴は `events[].marked` で「いつ・どの根拠が・どの印を付けたか」を並べる
+- 「次にやること」で `PendingLevels` がある項目は、文言を **「既存の実装について L1 / L2 を短いドリル・自己説明で確認する」** にし、
+  `verifyBy` はその下に添える。`[3]` の項目を「基礎からやり直し」と見せない（§1.1）
+- 一列表示・ツリー表示のノードにも、上位の根拠ありのバッジを出す（`done` の判定は `verifiedLevel` ≥ 1 のまま。`current` の判定は変えない）
 
 ---
 
@@ -677,6 +776,7 @@ backend/
 frontend/
   src/
     data/                   data/*.json の読み込みと型（Vite の別名で data/ を指す）
+    features/public/        公開ビュー（§7.3。タイルと根拠）
     features/matrix/        マトリクス・サマリー帯（rollup は純粋関数）
     features/path/          学習パス（一列表示・スキルツリー表示。build.ts / layout.ts は純粋関数）
     features/next/          次にやること Top N（priority.ts は純粋関数）
@@ -703,7 +803,7 @@ CLI と画面が共通で読む。秘密情報は入らないのでコミット�
 
 ```jsonc
 {
-  "rules":     { "confidenceThreshold": 0.5, "maxItemsPerLog": 20, "maxLevelStep": 1 },   // §4.5。domain.DefaultRules()
+  "rules":     { "confidenceThreshold": 0.5, "maxItemsPerLog": 20 },                       // §4.5。domain.DefaultRules()。maxLevelStep は V4 廃止で消えた
   "staleness": { "freshWithinDays": 30, "agingWithinDays": 90 },                          // §1.3。domain.DefaultStalenessConfig()
   "weights":   { "readiness": 1.0, "gap": 0.8, "staleness": 0.3, "unlocks": 0.5 },        // §5.1。domain.DefaultWeights()
   "nextActions": { "limit": 5 }
@@ -718,7 +818,7 @@ CLI と画面が共通で読む。秘密情報は入らないのでコミット�
 
 - **API キーをどこにも置かない。** v1 はサーバから LLM を呼ばない。v2 で戻すときも必ずバックエンドだけが持つ（§10.9）
 - **学習ログの本文はリポジトリに置かない。** ログには職場・実務・転職の話が混ざりうる。置くのは判定（どの項目が・どのレベルに・なぜ）だけ
-- **`rationale` と `evidenceRef` は技術的な事実だけ。** 所属先・企業名・人名・転職活動・人事評価を含めない（§3.3）。
+- **`rationale` と `evidenceRefs` は技術的な事実だけ。** 所属先・企業名・人名・転職活動・人事評価を含めない（§3.3）。
   指示書で縛り、コミット前の `git diff` で目視する。**リポジトリを Public にする直前に `data/judgments/` 全件を読み直す**
 - **`sources.local.json` はコミットしない。** ローカルのディレクトリ構成を公開しない
 - **`data/judgments/` と `data/state.json` は実物をコミットする。** これは `../CLAUDE.md`「実データをコミットしない」の

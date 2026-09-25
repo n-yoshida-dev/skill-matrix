@@ -54,21 +54,21 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
 `skill-map.md` からの移行を v1 の土台に組み込んだ（`logs/decisions.md` 2026-09-25 の 4 件）。設計・手順・対応表・期待表は
 `docs/skill-map-migration.md`（以下「移行計画」）。段階 A（決定の記録・TODO の分割）は 2026-09-25 に完了。** 着手順は上から。
 
-- [ ] `SPEC.md` を 2 本の梯子モデルへ書き換える（移行計画の段階 B。§7 の表のとおり）
+- [x] `SPEC.md` を 2 本の梯子モデルへ書き換える（移行計画の段階 B。§7 の表のとおり）（2026-09-25 完了。同じ PR で §7.3 公開ビュー・§7.4 を追加）
   完了条件：§0（正本の移行）・§1（印と `verifiedLevel`、`learning_activity`、`preState` の導出）・§2（`moduleRefs`、公開前提の縛り）・§3.3（`schemaVersion: 2`、`source: migration`、`evidenceRefs`、`confidence` の条件、`occurredAt`、`repo:` `log:`）・§3.4（`verifiedLevel` / `evidencedLevels` / `marked`）・§3.5（`logs` と `repos`）・§4.2・§4.4・§4.5（V4 欠番）・§5（`Action.PendingLevels`）・§7 が書き換わり、`docs/spec-guide.md` と食い違わない。
   `PLAN.md`「未確定」の skill-map の行と `KNOWLEDGE.md` 2026-08-10「移行しない」に「2026-09-25 の決定で置き換え」の注記がある。
   SPEC に写した後は SPEC が正本なので、段階 C 以降の完了条件にある「移行計画 §x」の参照を SPEC の節番号へ付け替えてある。
   `CLAUDE.md`「判定基準を指示書に書き写さない」の「根拠の種類と上限」を「根拠の種類と印」に直してある
-- [ ] `internal/domain` と `internal/llm/output.go` を 2 本の梯子モデルへ変更する（段階 C-1。移行計画 §3）
+- [ ] `internal/domain` と `internal/llm/output.go` を 2 本の梯子モデルへ変更する（段階 C-1。SPEC.md §1.1・§4.4・§4.5・§5。Go の型名の対応は移行計画 §3）
   完了条件：`ItemState` に `VerifiedLevel`（導出）と `Evidenced`、`Judgment` に `Source` / `EvidenceRefs` / `HasConfidence`、`EvidenceLearningActivity`、`evidenceLadder`（Base / Top）がある。V4（`MaxLevelStep` / `ViolationLevelJump`）が消え、V5 は梯子の範囲、V6 は `proposedLevel == 0`、V7 は `source: ai` のときだけ。印がある項目の `preState` は常に `none`。導出（`[3]`→0、`[1,3]`→1、`[1,2,3]`→3、`[1,2,3,4]`→4）・不合格報告・鮮度の更新条件・source 別の V7 がテストにある。`ParseOutput` が `evidenceRefs`（配列・1 件以上・書式）と `confidence` の有無（`ai` なら必須、他は禁止）を検査する。棚上げ中の `store` は改名に機械的に追従するだけ（挙動は変えない）。`EvidenceRefs` は判定材料にしない
 - [ ] 検証と再計算の CLI を作る（段階 C-2。`backend/cmd/skillmatrix`。JSON を読み、形の検査 → V1〜V8 → `ApplyJudgment` → 理解度を書き出す）
-  完了条件：`recalc` と `verify` の2モードがある。`recalc` は `data/state.json`（移行計画 §4.2 の形）を書き出す。`verify` は書き出さず、違反があれば終了コード 1 と違反の一覧（どの項目のどのルールか）を出し、**さらに `state.json` が再計算結果と一致しなければ終了コード 1**。処理順はファイル名の昇順・配列の順。DB・HTTP・LLM クライアントを import しない。単体テストがある。`backend/testdata/` のダミー判定を `schemaVersion: 2` に更新してある
+  完了条件：`recalc` と `verify` の2モードがある。`recalc` は `data/state.json`（SPEC.md §3.4 の形）を書き出す。`verify` は書き出さず、違反があれば終了コード 1 と違反の一覧（どの項目のどのルールか）を出し、**さらに `state.json` が再計算結果と一致しなければ終了コード 1**。処理順はファイル名の昇順・配列の順。DB・HTTP・LLM クライアントを import しない。単体テストがある。`backend/testdata/` のダミー判定を `schemaVersion: 2` に更新してある
 - [ ] その CLI を CI で走らせる（`verify` モード）
   完了条件：`.github/workflows/ci.yml` に組み込まれ、JSON をわざと壊した PR と、`state.json` だけ古い PR の両方で CI が赤くなることを一度確かめてある
 - [ ] `data/roadmap.json` を自分の実物として作る（段階 D。移行計画 §8.3 の対応表から起こす。8 分野・約 40 項目）
   完了条件：`verify` が通る。項目 key はハイフン区切りでカリキュラムに依存しない（`go-syntax-basics`）。`moduleRefs` でモジュールと対応付けてある。`verifyBy` / `outcome` / `goal` / `description` を「所属|企業|面接|転職|人事」で grep して 0 件。`data/state.json` は全項目 0 の初期値で置く。**`backend/testdata/` のダミーとは別物**（ロードマップの定義は個人データではない）
 - [ ] 根拠の出どころの設定ファイル `sources.local.json` を用意する（`.example` だけコミット）
-  完了条件：`sources.local.json.example` が `logs`（既定の置き場 `learning-logs/`）と `repos`（`n-yoshida-dev/study` → ローカルパスと `logsGlob`）の 2 キーの形（移行計画 §4.1）。実ファイルはコミットされていない。
+  完了条件：`sources.local.json.example` が `logs`（既定の置き場 `learning-logs/`）と `repos`（`n-yoshida-dev/study` → ローカルパスと `logsGlob`）の 2 キーの形（SPEC.md §3.5）。実ファイルはコミットされていない。
   **`.gitignore` は追記不要**（`*.local.json` が既に `.gitignore:18` にあり、`.example` は guard-secrets の末尾一致に掛からずコミットできる。PR #32 のレビューで確認）
 - [ ] 【study 側】`skill-map.md` を凍結し、参照先を skill-matrix へ切り替える（段階 E。`~/workspace/study` で作業する。段階 D の後）
   完了条件：`learner-profile/skill-map.md` 冒頭に更新停止の注記（文面は移行計画 §8.1）。`learner-profile/README.md` の正本分担表、`CLAUDE.md` の「skill-map.md を確認する」「learner-profile へ反映する」、`.claude/rules/teaching.md`、`.claude/rules/learning-ops.md`（「skill-map レベル 2 以上」→ `verifiedLevel`）、`.claude/skills/kickoff/SKILL.md` の参照先が skill-matrix になっている。study 内で `skill-map.md` を「更新先」として指す記述が 0 件。**凍結コミットのハッシュを控える**（移行判定の `evidenceRefs` が指す）
@@ -108,10 +108,15 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 
 ### 2-5. 画面（当初の目的の本体。ここが v1 のゴール）
 
+**2026-09-25 に画面を「公開ビュー（`/`）」と「作業ビュー（`/plan`）」の 2 つの入口に分けた（`logs/decisions.md`、SPEC.md §7）。最初に作る画面は公開ビュー。**
+
 - [ ] 画面の土台を作る（テンプレートの初期画面を外し、ルーティングと JSON の読み込みを置く）
-  完了条件：`frontend/src` からテンプレートのデモ画面が消え、2-1 で置いた JSON を型付きで読み込んで各画面へ渡せる。サーバ通信が無いので TanStack Query は入れない（既定スタックから外れる点は PLAN.md に書く）
+  完了条件：`frontend/src` からテンプレートのデモ画面が消え、`data/roadmap.json`（SPEC.md §2。`schemaVersion: 1`）・`data/state.json`（§3.4。`schemaVersion: 2`）・`data/settings.json`（§8.3）を型付きで読み込んで各画面へ渡せる。ハッシュルーティングで `/` と `/plan` が切り替わる。サーバ通信が無いので TanStack Query は入れない（既定スタックから外れる点は PLAN.md に書いてある）。
+  **2-1 の段階 D（実物のロードマップ）より先に着手するため、`data/` にはダミー（`backend/testdata/` と同じ内容を `schemaVersion: 2` にしたもの）を仮置きし、README に「段階 D で実物に差し替える」と書く。`state.json` は CLI が無い間は手書きで、段階 C-2 の `recalc` で生成し直す**
   **`data/` は `frontend/` の外にあるので、dev サーバで読むのに `vite.config.ts` の `server.fs.allow` が要る可能性がある**（PR #32 のレビューで指摘。着手時に実機で確かめる）
-- [ ] マトリクス画面（可変長グリッド＋サマリー帯、色＝`verifiedLevel`／枠線＝要再確認／角の印＝上位の根拠あり。移行計画 §6）
+- [ ] 公開ビュー（SPEC.md §7.3。採用担当者向け・タイル表示・押すと根拠）
+  完了条件：`/` を開くと、見出しと 2 文、分野ごとの行（分野名・`goal`・根拠のある項目数）、項目名が常時見えるタイル、押すとその行の直下に根拠（日付・根拠の種類・`rationale`）が出る。§7.3「出さないもの」が 1 つも出ていない。`[3]` の項目が「実装の根拠はあるが基礎の確認が未了」と出る。フッターはリポジトリへのリンクだけ。`docs/demo/public-view.html`（2026-09-25 のデモ）と同じ見た目・画面構成（文言は SPEC.md §7.3・§4.5 に従う）。Vitest で「出さないもの」が描画されないことを 1 本確かめる
+- [ ] マトリクス画面（作業ビュー。可変長グリッド＋サマリー帯、色＝`verifiedLevel`／枠線＝要再確認／角の印＝上位の根拠あり。SPEC.md §7.1）
   完了条件：升目の塗りは `verifiedLevel`。`evidencedLevels` の最上段が `verifiedLevel` より上の升目に角の印が付き、ツールチップに「Verified n / 根拠の印 … / 未確認 …」が出る。サマリー帯に「実装根拠あり・理解未確認」の列がある
 - [ ] 学習パス画面・一列表示（依存順の縦一列、済／今ここ／この先、到達状態の表示）
 - [ ] 学習パス画面・スキルツリー表示（SPEC §7.2）
@@ -122,7 +127,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 - [ ] 項目詳細画面（レベル遷移の履歴と根拠、到達状態の表示）
   完了条件：見出しに Verified Level／付いている印／未確認の段の 3 行がある。ある項目の印がいつ・どの根拠で付いたかが、`events[].marked`・`rationale`・`evidenceRefs` で読める。**この画面から編集はしない**（2026-09-23 決定。静的サイトは書き込み先を持たず、更新は AI ツールが `data/judgments/` にファイルを足す形で行う）
 - [ ] 次にやること Top N の表示（到達状態と次の確認方法をセットで）
-  完了条件：`PendingLevels` がある項目は文言が「既存の実装について L1/L2 を短いドリル・自己説明で確認する」になり、`verifyBy` はその下に添える（`[3]` の項目を「基礎からやり直し」と見せない。移行計画 §6）
+  完了条件：`PendingLevels` がある項目は文言が「既存の実装について L1/L2 を短いドリル・自己説明で確認する」になり、`verifyBy` はその下に添える（`[3]` の項目を「基礎からやり直し」と見せない。SPEC.md §7.4）
 
 ### 2-6. 仕上げ
 
