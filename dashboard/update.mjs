@@ -1,0 +1,458 @@
+#!/usr/bin/env node
+// 開発ダッシュボードのデータ生成。
+// リポジトリ内の正本（TODO.md / HANDOFF.md / logs/decisions.md / data/）と git / gh / bd の出力を読み、
+// dashboard/data.json を書き出す。ダッシュボード独自の状態は持たない（ここで作る JSON は毎回捨てて作り直す派生物）。
+//
+// 使い方:
+//   node dashboard/update.mjs            data.json を作り直す
+//   node dashboard/update.mjs --serve    作り直したうえで http://127.0.0.1:8787/ で配信する（/data.json は開くたびに再生成）
+//   オプション: --port <n> --host <addr>（既定 127.0.0.1。スマホから見るなら --host 0.0.0.0）--quiet
+//
+// 依存: Node 標準ライブラリだけ。git は必須。gh / bd / go は無ければその項目を「取得できず」にして続ける。
+
+import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
+import http from 'node:http'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const HERE = path.dirname(fileURLToPath(import.meta.url))
+const ROOT = path.resolve(HERE, '..')
+const OUT = path.join(HERE, 'data.json')
+const RECENT_DAYS = 14 // 「最近」の範囲。変更ファイル・決定の集計に使う
+
+// ---------- 小さな道具 ----------
+
+/** コマンドを同期実行して結果を返す。失敗しても例外にせず ok=false で返す（取得できない項目は画面に「取得できず」と出す） */
+function run(cmd, args, { cwd = ROOT, timeout = 30_000 } = {}) {
+  const r = spawnSync(cmd, args, { cwd, encoding: 'utf8', timeout })
+  if (r.error) return { ok: false, stdout: '', stderr: r.error.message, code: -1 }
+  return { ok: r.status === 0, stdout: r.stdout ?? '', stderr: r.stderr ?? '', code: r.status }
+}
+
+/** run の結果を JSON として読む。読めなければ null */
+function runJson(cmd, args, opts) {
+  const r = run(cmd, args, opts)
+  if (!r.ok) return { value: null, error: (r.stderr || r.stdout).trim().split('\n')[0] || `${cmd} が失敗` }
+  try {
+    return { value: JSON.parse(r.stdout), error: null }
+  } catch {
+    return { value: null, error: `${cmd} の出力が JSON でない` }
+  }
+}
+
+/** ファイルを読む。無ければ null */
+function readText(rel) {
+  const p = path.join(ROOT, rel)
+  return fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null
+}
+
+function readJson(rel) {
+  const t = readText(rel)
+  if (t == null) return null
+  try {
+    return JSON.parse(t)
+  } catch {
+    return null
+  }
+}
+
+// ---------- 正本ごとの読み取り ----------
+
+/** プロジェクト名は CLAUDE.md の先頭見出しから取る（worktree ではディレクトリ名が当てにならない） */
+function projectName() {
+  const m = (readText('CLAUDE.md') ?? '').match(/^# +(.+)$/m)
+  return m ? m[1].trim() : path.basename(ROOT)
+}
+
+/**
+ * TODO.md を apps-workflow の progress.sh と同じ規則で数える。
+ * `## ` 見出し = フェーズ。見出しに「確認待ち」を含む節は回答待ち、「保留」を含む節は保留として合計から外す。
+ * 字下げした子項目も 1 件と数える。未完タスクの一覧は先頭レベルだけを取る。
+ */
+function readTodo() {
+  const text = readText('TODO.md')
+  if (text == null) return null
+  const phases = []
+  const byName = new Map()
+  const ask = { open: 0, done: 0, items: [] }
+  const hold = { open: 0, done: 0 }
+  const openTasks = []
+  let kind = 'phase'
+  let section = '（見出しなし）'
+  let sub = ''
+  const phaseOf = (name) => {
+    if (!byName.has(name)) {
+      const p = { name, done: 0, open: 0 }
+      byName.set(name, p)
+      phases.push(p)
+    }
+    return byName.get(name)
+  }
+  text.split('\n').forEach((line, i) => {
+    let m
+    if ((m = line.match(/^## +(.+)$/))) {
+      section = m[1].trim()
+      kind = /確認待ち/.test(section) ? 'ask' : /保留/.test(section) ? 'hold' : 'phase'
+      sub = ''
+      if (kind === 'phase') phaseOf(section)
+      return
+    }
+    if ((m = line.match(/^### +(.+)$/))) {
+      sub = m[1].trim()
+      return
+    }
+    if ((m = line.match(/^([ \t]*)- \[([ xX])\] +(.*)$/))) {
+      const topLevel = m[1] === ''
+      const done = m[2] !== ' '
+      const body = m[3].trim()
+      if (kind === 'ask') {
+        done ? ask.done++ : ask.open++
+        if (!done && topLevel) ask.items.push({ line: i + 1, text: body })
+      } else if (kind === 'hold') {
+        done ? hold.done++ : hold.open++
+      } else {
+        const p = phaseOf(section)
+        done ? p.done++ : p.open++
+        if (!done && topLevel) openTasks.push({ line: i + 1, text: body, phase: section, section: sub })
+      }
+    }
+  })
+  const counted = phases.filter((p) => p.done + p.open > 0)
+  const total = counted.reduce((a, p) => ({ done: a.done + p.done, open: a.open + p.open }), { done: 0, open: 0 })
+  const current = counted.find((p) => p.open > 0) ?? null
+  return {
+    phases: phases.map((p) => ({ ...p, total: p.done + p.open })),
+    total: { ...total, total: total.done + total.open },
+    ask: { open: ask.open, done: ask.done },
+    hold,
+    currentPhase: current?.name ?? null,
+    currentSection: openTasks[0]?.section ?? null,
+    openTasks: openTasks.slice(0, 10),
+    askItems: ask.items,
+  }
+}
+
+/** HANDOFF.md から「現在地」「次にやること」の節を Markdown のまま取り出し、最終コミットからの遅れも添える */
+function readHandoff() {
+  const text = readText('HANDOFF.md')
+  if (text == null) return null
+  const sections = {}
+  let key = null
+  for (const line of text.split('\n')) {
+    const m = line.match(/^## +(.+)$/)
+    if (m) {
+      const title = m[1]
+      key = /現在地/.test(title) ? 'current' : /次/.test(title) && /やること|一手/.test(title) ? 'next' : null
+      if (key) sections[key] = { title, body: [] }
+      continue
+    }
+    if (key) sections[key].body.push(line)
+  }
+  for (const s of Object.values(sections)) s.body = s.body.join('\n').trim()
+  const last = run('git', ['log', '-1', '--format=%H%x09%cs%x09%s', '--', 'HANDOFF.md'])
+  let lastCommit = null
+  let commitsSince = null
+  if (last.ok && last.stdout.trim()) {
+    const [hash, date, subject] = last.stdout.trim().split('\t')
+    lastCommit = { hash: hash.slice(0, 7), date, subject }
+    const n = run('git', ['rev-list', '--count', `${hash}..HEAD`])
+    if (n.ok) commitsSince = Number(n.stdout.trim())
+  }
+  return { sections, lastCommit, commitsSince }
+}
+
+/** logs/decisions.md の見出し（`## YYYY-MM-DD 題`）から最近の合意を取る */
+function readDecisions() {
+  const text = readText('logs/decisions.md')
+  if (text == null) return []
+  const out = []
+  for (const m of text.matchAll(/^## +(\d{4}-\d{2}-\d{2}) +(.+)$/gm)) out.push({ date: m[1], title: m[2].trim() })
+  return out.sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 6)
+}
+
+/** git の状態：ブランチ、未コミット、push 前後、最近のコミット、最近よく変わったファイル */
+function readGit() {
+  const branch = run('git', ['rev-parse', '--abbrev-ref', 'HEAD']).stdout.trim()
+  const dirty = run('git', ['status', '--porcelain=v1'])
+    .stdout.split('\n')
+    .filter(Boolean)
+    .map((l) => ({ status: l.slice(0, 2).trim() || '??', path: l.slice(3) }))
+  let ahead = null
+  let behind = null
+  let upstream = null
+  const up = run('git', ['rev-parse', '--abbrev-ref', '@{upstream}'])
+  if (up.ok) {
+    upstream = up.stdout.trim()
+    const lr = run('git', ['rev-list', '--left-right', '--count', 'HEAD...@{upstream}'])
+    if (lr.ok) [ahead, behind] = lr.stdout.trim().split(/\s+/).map(Number)
+  }
+  const commits = run('git', ['log', '-12', '--format=%h%x09%cI%x09%s'])
+    .stdout.split('\n')
+    .filter(Boolean)
+    .map((l) => {
+      const [hash, date, subject] = l.split('\t')
+      const pr = subject.match(/\(#(\d+)\)\s*$/)
+      return { hash, date, subject: subject.replace(/\s*\(#\d+\)\s*$/, ''), pr: pr ? Number(pr[1]) : null }
+    })
+  const counts = new Map()
+  for (const p of run('git', ['log', `--since=${RECENT_DAYS}.days`, '--name-only', '--format='])
+    .stdout.split('\n')
+    .filter(Boolean)) {
+    counts.set(p, (counts.get(p) ?? 0) + 1)
+  }
+  const recentFiles = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12)
+    .map(([file, commits]) => ({ file, commits }))
+  return { branch, upstream, ahead, behind, dirty, commits, recentFiles, recentDays: RECENT_DAYS }
+}
+
+/** GitHub（gh CLI）：リポジトリ、開いている PR、最近の CI。gh が無い・未ログインなら error を入れて続ける */
+function readGithub() {
+  const repo = runJson('gh', ['repo', 'view', '--json', 'url,visibility,name'])
+  if (!repo.value) return { available: false, error: repo.error, repo: null, openPrs: [], runs: [] }
+  const prs = runJson('gh', [
+    'pr',
+    'list',
+    '--state',
+    'open',
+    '--json',
+    'number,title,url,headRefName,isDraft,updatedAt,statusCheckRollup',
+  ])
+  const openPrs = (prs.value ?? []).map((p) => {
+    const states = (p.statusCheckRollup ?? []).map((c) => (c.conclusion || c.state || '').toUpperCase())
+    const checks = states.some((s) => s === 'FAILURE' || s === 'ERROR' || s === 'CANCELLED')
+      ? 'failure'
+      : states.some((s) => s === 'PENDING' || s === 'IN_PROGRESS' || s === 'QUEUED' || s === '')
+        ? 'pending'
+        : states.length
+          ? 'success'
+          : 'none'
+    return { number: p.number, title: p.title, url: p.url, branch: p.headRefName, draft: p.isDraft, updatedAt: p.updatedAt, checks }
+  })
+  const list = runJson('gh', [
+    'run',
+    'list',
+    '--limit',
+    '8',
+    '--json',
+    'databaseId,status,conclusion,headBranch,event,displayTitle,createdAt,url',
+  ])
+  const runs = (list.value ?? []).map((r) => ({
+    id: r.databaseId,
+    status: r.status,
+    conclusion: r.conclusion,
+    branch: r.headBranch,
+    event: r.event,
+    title: r.displayTitle,
+    createdAt: r.createdAt,
+    url: r.url,
+    jobs: null,
+  }))
+  // ジョブ別（frontend / backend / 秘密情報）の結果は、main の最新と、それ以外の最新の 2 本だけ引く（gh の呼び出しを増やさない）
+  const detailTargets = [runs.find((r) => r.branch === 'main'), runs.find((r) => r.branch !== 'main')].filter(Boolean)
+  for (const r of detailTargets) {
+    const v = runJson('gh', ['run', 'view', String(r.id), '--json', 'jobs'])
+    if (v.value?.jobs) {
+      r.jobs = v.value.jobs
+        .filter((j) => !/検出/.test(j.name))
+        .map((j) => ({ name: j.name, status: j.status, conclusion: j.conclusion, url: j.url }))
+    }
+  }
+  return { available: true, error: prs.error ?? list.error ?? null, repo: repo.value, openPrs, runs }
+}
+
+/**
+ * Beads（`bd`）：このプロジェクトの epic（題名がプロジェクト名で始まる）配下の付箋。
+ * ラベル human のものが「人間の判断・作業待ち」。閉じたものは最近の分だけ残す
+ */
+function readBeads(name) {
+  const r = runJson('bd', ['list', '--json', '--all', '-n', '0'])
+  if (!r.value) return { available: false, error: r.error, epic: null, human: [], others: [], recentlyClosed: [] }
+  const all = r.value
+  const epic = all.find((x) => x.issue_type === 'epic' && (x.title ?? '').startsWith(name)) ?? null
+  const prefix = `[${name}]`
+  const mine = all.filter((x) => (epic && x.parent === epic.id) || (x.title ?? '').startsWith(prefix))
+  const since = Date.now() - RECENT_DAYS * 86_400_000
+  const slim = (x) => ({
+    id: x.id,
+    title: x.title,
+    status: x.status,
+    priority: x.priority,
+    labels: x.labels ?? [],
+    updatedAt: x.updated_at,
+    closedAt: x.closed_at ?? null,
+    blockedBy: (x.dependencies ?? []).filter((d) => d.type === 'blocks').map((d) => d.depends_on_id),
+  })
+  const open = mine.filter((x) => x.status !== 'closed').map(slim).sort((a, b) => a.priority - b.priority)
+  return {
+    available: true,
+    error: null,
+    epic: epic ? { id: epic.id, title: epic.title, status: epic.status } : null,
+    human: open.filter((x) => x.labels.includes('human')),
+    others: open.filter((x) => !x.labels.includes('human')),
+    recentlyClosed: mine
+      .filter((x) => x.status === 'closed' && x.closed_at && Date.parse(x.closed_at) >= since)
+      .map(slim),
+  }
+}
+
+/** このプロジェクト固有の指標：ロードマップと判定・理解度の JSON、CLI の verify */
+function readProjectData() {
+  const roadmap = readJson('data/roadmap.json')
+  const state = readJson('data/state.json')
+  const judgDir = path.join(ROOT, 'data/judgments')
+  const judgments = fs.existsSync(judgDir) ? fs.readdirSync(judgDir).filter((f) => f.endsWith('.json')).sort() : []
+  const levelCount = Array.isArray(roadmap?.levels) ? roadmap.levels.length : 5
+  const byLevel = Array.from({ length: levelCount + 1 }, () => 0)
+  let needsReview = 0
+  let pendingBase = 0
+  for (const it of state?.items ?? []) {
+    const v = Number(it.verifiedLevel) || 0
+    if (v >= 0 && v < byLevel.length) byLevel[v]++
+    if (it.needsReview) needsReview++
+    const top = Math.max(0, ...(it.evidencedLevels ?? []))
+    if (top > v) pendingBase++ // 上位の根拠はあるが基礎の確認が未了（[3] だけ等）
+  }
+  let verify = null
+  if (fs.existsSync(path.join(ROOT, 'backend/go.mod'))) {
+    const r = run('go', ['-C', 'backend', 'run', './cmd/skillmatrix', 'verify', '--data', '../data'], { timeout: 120_000 })
+    verify = {
+      ok: r.ok,
+      code: r.code,
+      output: (r.stdout + r.stderr).trim().split('\n').filter(Boolean).slice(-6),
+    }
+  }
+  return {
+    roadmap: roadmap
+      ? {
+          name: roadmap.name ?? null,
+          domains: roadmap.domains?.length ?? 0,
+          items: (roadmap.domains ?? []).reduce((a, d) => a + (d.items?.length ?? 0), 0),
+          checkedAt: roadmap.checkedAt ?? null,
+          levels: levelCount,
+        }
+      : null,
+    judgments: { count: judgments.length, latest: judgments.at(-1) ?? null },
+    state: state
+      ? {
+          items: state.items?.length ?? 0,
+          byLevel,
+          needsReview,
+          pendingBase,
+          deferred: state.deferred?.length ?? 0,
+          rejected: state.rejected?.length ?? 0,
+        }
+      : null,
+    verify,
+  }
+}
+
+/** 上に出す注意。正本の状態から機械的に導く（人が書き足す欄ではない） */
+function buildAlerts({ git, github, handoff, data, todo, beads }) {
+  const alerts = []
+  const mainRun = github.runs.find((r) => r.branch === 'main')
+  if (mainRun && mainRun.conclusion && mainRun.conclusion !== 'success') {
+    alerts.push({ level: 'error', text: `main の CI が ${mainRun.conclusion}`, href: mainRun.url })
+  }
+  for (const pr of github.openPrs) {
+    if (pr.checks === 'failure') alerts.push({ level: 'error', text: `PR #${pr.number} の CI が失敗`, href: pr.url })
+  }
+  if (data.verify && !data.verify.ok) {
+    const reason = data.verify.output.filter((l) => !/^exit status/.test(l)).at(-1) ?? '詳細は下'
+    alerts.push({ level: 'warn', text: `data/ の verify が失敗（${reason}）` })
+  }
+  if (handoff?.commitsSince != null && handoff.commitsSince >= 3) {
+    alerts.push({ level: 'warn', text: `HANDOFF.md が ${handoff.commitsSince} コミット前の状態（引き継ぎが遅れている）` })
+  }
+  const human = beads.human.length + (todo?.askItems.length ?? 0)
+  if (human > 0) alerts.push({ level: 'info', text: `人間の判断・作業待ちが ${human} 件` })
+  if (git.dirty.length > 0) alerts.push({ level: 'info', text: `未コミットの変更 ${git.dirty.length} ファイル（${git.branch}）` })
+  if (git.ahead > 0) alerts.push({ level: 'info', text: `未 push のコミット ${git.ahead} 件（${git.branch}）` })
+  if (!github.available) alerts.push({ level: 'warn', text: `GitHub の情報を取得できず（${github.error}）` })
+  if (!beads.available) alerts.push({ level: 'warn', text: `Beads の情報を取得できず（${beads.error}）` })
+  return alerts
+}
+
+/** 全部を集めて 1 つの JSON にする */
+export function collect() {
+  const name = projectName()
+  const todo = readTodo()
+  const handoff = readHandoff()
+  const git = readGit()
+  const github = readGithub()
+  const beads = readBeads(name)
+  const data = readProjectData()
+  const decisions = readDecisions()
+  return {
+    generatedAt: new Date().toISOString(),
+    project: { name, root: ROOT, repoUrl: github.repo?.url ?? null, visibility: github.repo?.visibility ?? null },
+    alerts: buildAlerts({ git, github, handoff, data, todo, beads }),
+    todo,
+    handoff,
+    git,
+    github: { available: github.available, error: github.error, openPrs: github.openPrs, runs: github.runs },
+    beads,
+    data,
+    decisions,
+  }
+}
+
+function writeData(quiet) {
+  const started = Date.now()
+  const d = collect()
+  fs.writeFileSync(OUT, JSON.stringify(d, null, 2) + '\n')
+  if (!quiet) {
+    const t = d.todo?.total
+    console.log(
+      `${path.relative(ROOT, OUT)} を更新（${Date.now() - started} ms）: ` +
+        `進捗 ${t ? `${t.done}/${t.total}` : '-'}、人間待ち ${d.beads.human.length + (d.todo?.askItems.length ?? 0)} 件、` +
+        `注意 ${d.alerts.length} 件、ブランチ ${d.git.branch}`,
+    )
+  }
+  return d
+}
+
+/** 配信モード。/data.json は開くたびに作り直す（連続アクセスは 10 秒だけ結果を使い回す） */
+function serve({ host, port, quiet }) {
+  let cache = { at: 0, body: '' }
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url, 'http://x')
+    if (url.pathname === '/data.json') {
+      if (Date.now() - cache.at > 10_000) {
+        writeData(quiet)
+        cache = { at: Date.now(), body: fs.readFileSync(OUT, 'utf8') }
+      }
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+      res.end(cache.body)
+      return
+    }
+    const file = url.pathname === '/' ? 'index.html' : path.basename(url.pathname)
+    const p = path.join(HERE, file)
+    if (!fs.existsSync(p) || !fs.statSync(p).isFile()) {
+      res.writeHead(404).end('not found')
+      return
+    }
+    const type = file.endsWith('.html') ? 'text/html' : file.endsWith('.json') ? 'application/json' : 'text/plain'
+    res.writeHead(200, { 'content-type': `${type}; charset=utf-8`, 'cache-control': 'no-store' })
+    res.end(fs.readFileSync(p))
+  })
+  server.listen(port, host, () => {
+    console.log(`ダッシュボード: http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/  （Ctrl+C で終了）`)
+  })
+}
+
+// ---------- 入口 ----------
+const argv = process.argv.slice(2)
+const flag = (k, def) => {
+  const i = argv.indexOf(k)
+  return i >= 0 ? argv[i + 1] : def
+}
+const quiet = argv.includes('--quiet')
+if (argv.includes('--serve')) {
+  writeData(quiet)
+  serve({ host: flag('--host', '127.0.0.1'), port: Number(flag('--port', '8787')), quiet })
+} else {
+  writeData(quiet)
+}

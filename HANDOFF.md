@@ -57,6 +57,9 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
 ## 3. 動作確認コマンド
 
 ```bash
+# 開発ダッシュボード（進捗・人間待ち・CI・現在地を 1 画面で。http://127.0.0.1:8787/）
+node dashboard/update.mjs --serve
+
 # 純粋関数と CLI のテスト（DB 不要）
 go -C backend test ./internal/... ./cmd/skillmatrix -cover
 
