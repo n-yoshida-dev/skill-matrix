@@ -735,3 +735,13 @@ dev サーバは既定で `frontend/` の外を配信しないので `server.fs.
 
 ハマり：`Judgment` に `EvidenceRefs []string` を足した時点で構造体が `==` で比べられなくなり、`llm.ProposedJudgment` の比較テストが
 コンパイルエラーになった（`reflect.DeepEqual` に変更）。`ItemState` に slice を足さないのは同じ理由。
+
+### 2026-09-26：`internal/store` の DB テストはローカルでスキップされ、CI だけで落ちる
+
+`store` のテストは `TEST_DATABASE_URL` が無ければスキップされる（CI では Postgres サービスが立つ）。
+段階 C-1 で `domain.Judgment` に `Source` / `HasConfidence` を足したとき、`store` のテストが組み立てる判定にそれを付けておらず、
+新しい V7 の規則（AI の判定に確信度が無ければ保留）で「イベント 0 件」になった。ローカルの `go test ./...` は緑のまま、CI だけが赤くなった。
+
+回避：`store` に触る PR は、コミット前に `docker compose up -d postgres` を立てて
+`TEST_DATABASE_URL='postgres://skillmatrix:skillmatrix@localhost:5432/skillmatrix?sslmode=disable' go test ./internal/store/` を回す
+（HANDOFF.md の動作確認コマンドに載せた。`../CLAUDE.md` への昇格は TODO 確認待ち）。
