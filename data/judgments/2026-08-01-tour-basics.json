@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-08-01",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "go-01",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "evidenceRefs": [
+        "repo:example/study@0000000/go/logs/2026-08-01-tour-basics.md#L3-L8"
+      ],
+      "rationale": "章末の確認問題を見直さずに全問答えられた",
+      "confidence": 0.85
+    }
+  ],
+  "unmatched": []
+}
