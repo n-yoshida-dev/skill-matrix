@@ -164,7 +164,7 @@
           "evidenceRefs": ["repo:example/study@0000000/go/logs/2026-09-20-middleware-chain.md"],
           "rationale": "table driven test の書き方の確認質問に答えられず、写経し直した",
           "confidence": 0.6,
-          "violations": [{ "code": "V6_downgrade", "detail": "不合格の報告。印は付けず needsReview=true" }]
+          "violations": [{ "code": "V6_failed_check", "detail": "不合格の報告。印は付けず needsReview=true" }]
         }
       ]
     },

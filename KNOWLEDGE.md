@@ -718,3 +718,20 @@ dev サーバは既定で `frontend/` の外を配信しないので `server.fs.
 もう 1 点：apps-workflow の `check-edited.sh`（PostToolUse）が frontend のファイル編集のたびに `npx eslint` を呼ぶが、
 このリポジトリの lint は oxlint（テンプレート由来）で eslint が無く、毎回「eslint 失敗（missing packages）」が出る。
 実害は無い（CI は `npm run lint` = oxlint）が、フックの側を「`package.json` の `lint` スクリプトを呼ぶ」に直すべき。claude-plugins 側の課題。
+
+### 2026-09-26：2 本の梯子モデルの実装で決めた細部（段階 C-1）
+
+移行計画 §9「実装時に決める細部」の答え。仕様の正本は SPEC.md §1.1・§3.3・§4.5。
+
+- **`ItemState.Evidenced` は `[LevelCount]bool`**（添字がレベル。0 は使わない）。ビット列にしなかったのは、配列なら `ItemState` を `==` で比べられ、
+  `Changed` の判定とテストの「状態が変わっていない」確認がそのまま使えるため
+- **`proposedLevel` は必須**（省略時の既定は設けない）。指示書に常に書かせる前提で、形の検査で欠落を弾く。印を付けない種類では値を無視する（SPEC §3.3）
+- **`Judgment.Source` が空なら ai 扱い**（古い呼び出し側との互換）。**AI の判定に `HasConfidence` が無ければ確信度 0 とみなして保留**（安全側。
+  形の検査を通っていれば起きない。PR #41 のレビューで「素通り」を指摘され、保留に倒した）
+- **V6 の識別子は `V6_failed_check`**（旧 `V6_downgrade`）。意味が「降格提案」から「不合格の報告」に変わったので名前も変えた
+- **`PreState` のゼロ値 `""` は印が付いても `"none"` に書き換えない。** 書き換えると印が付いただけの判定で `Changed` が立ってしまう。
+  `state.json` へ書き出す C-2 で `""` → `"none"` に正規化する（TODO C-2 の完了条件に足した）
+- `MaxLevel()` は `Ladder()` の上限を返す薄い包みとして残した。棚上げ中の stub / prompt が使っており、消すと「最小限の追随」を超える
+
+ハマり：`Judgment` に `EvidenceRefs []string` を足した時点で構造体が `==` で比べられなくなり、`llm.ProposedJudgment` の比較テストが
+コンパイルエラーになった（`reflect.DeepEqual` に変更）。`ItemState` に slice を足さないのは同じ理由。

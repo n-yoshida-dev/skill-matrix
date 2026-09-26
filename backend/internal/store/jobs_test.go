@@ -279,9 +279,9 @@ func TestSaveLLMResponse_読めた応答と読めなかった応答を別の列�
 
 func TestViolationsOf_domainの違反を保存用に移す(t *testing.T) {
 	got := ViolationsOf([]domain.Violation{{
-		Code:     domain.ViolationLevelJump,
+		Code:     domain.ViolationEvidenceTooWeak,
 		ItemKey:  "go-01",
-		Detail:   "2段階の昇格を1段に切り詰めた",
+		Detail:   "梯子の上限に切り詰めた",
 		Proposed: 3,
 		Applied:  1,
 	}})
@@ -289,7 +289,7 @@ func TestViolationsOf_domainの違反を保存用に移す(t *testing.T) {
 	if len(got) != 1 {
 		t.Fatalf("%d 件になった", len(got))
 	}
-	if got[0].Code != string(domain.ViolationLevelJump) || got[0].ItemKey != "go-01" {
+	if got[0].Code != string(domain.ViolationEvidenceTooWeak) || got[0].ItemKey != "go-01" {
 		t.Errorf("中身が違う: %+v", got[0])
 	}
 	if got[0].Proposed == nil || *got[0].Proposed != 3 || got[0].Applied == nil || *got[0].Applied != 1 {

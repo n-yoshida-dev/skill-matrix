@@ -87,8 +87,8 @@ func TestRollupDomain(t *testing.T) {
 
 	t.Run("レベルごとの内訳と進捗率を出す", func(t *testing.T) {
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: LevelCanExplain, LastEvidenceAt: now},
-			"go-02": {ItemKey: "go-02", Level: LevelBasicConfirmed, LastEvidenceAt: now},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: LevelCanExplain, LastEvidenceAt: now},
+			"go-02": {ItemKey: "go-02", VerifiedLevel: LevelBasicConfirmed, LastEvidenceAt: now},
 		}
 		got := RollupDomain(d, states, now, DefaultStalenessConfig())
 
@@ -103,8 +103,8 @@ func TestRollupDomain(t *testing.T) {
 
 	t.Run("古い根拠と降格提案を要再確認として数える", func(t *testing.T) {
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: LevelCanExplain, LastEvidenceAt: now.Add(-100 * day)},
-			"go-02": {ItemKey: "go-02", Level: LevelBasicConfirmed, LastEvidenceAt: now, NeedsReview: true},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: LevelCanExplain, LastEvidenceAt: now.Add(-100 * day)},
+			"go-02": {ItemKey: "go-02", VerifiedLevel: LevelBasicConfirmed, LastEvidenceAt: now, NeedsReview: true},
 		}
 		got := RollupDomain(d, states, now, DefaultStalenessConfig())
 
@@ -115,8 +115,8 @@ func TestRollupDomain(t *testing.T) {
 
 	t.Run("保存値が範囲外でも落ちない", func(t *testing.T) {
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: 99},
-			"go-02": {ItemKey: "go-02", Level: -5},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: 99},
+			"go-02": {ItemKey: "go-02", VerifiedLevel: -5},
 		}
 		got := RollupDomain(d, states, now, DefaultStalenessConfig())
 
@@ -162,7 +162,7 @@ func TestBuildSchedule(t *testing.T) {
 	t.Run("レベル1以上の項目は残りに数えない", func(t *testing.T) {
 		rm := testRoadmap()
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: LevelBasicConfirmed},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: LevelBasicConfirmed},
 		}
 		got := BuildSchedule(rm, states, now)
 
@@ -184,4 +184,21 @@ func TestBuildSchedule(t *testing.T) {
 			t.Errorf("ItemsPerDay = %v, want 0", got.ItemsPerDay)
 		}
 	})
+}
+
+// 「実装根拠あり・理解未確認」（印が VerifiedLevel より上にある項目）をサマリー帯の列として数える（SPEC.md §7.1）。
+func TestRollupDomain_PendingCount(t *testing.T) {
+	now := time.Date(2026, 8, 10, 12, 0, 0, 0, time.UTC)
+	rm := testRoadmap()
+	states := map[ItemKey]ItemState{
+		"go-01": stateWith("go-01", 3),       // 実装の根拠だけ。表示は 0
+		"go-02": stateWith("go-02", 1, 2, 3), // 途切れずに付いている
+	}
+	got := RollupDomain(rm.Domains[0], states, now, DefaultStalenessConfig())
+	if got.PendingCount != 1 {
+		t.Errorf("PendingCount = %d, want 1（go-01 だけ）", got.PendingCount)
+	}
+	if got.ByLevel[0] != 1 || got.ByLevel[3] != 1 {
+		t.Errorf("ByLevel = %v（表示レベルは 0 と 3 が 1 件ずつのはず）", got.ByLevel)
+	}
 }

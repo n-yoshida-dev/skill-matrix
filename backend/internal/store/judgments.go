@@ -165,7 +165,7 @@ SELECT i.key, st.level, st.pre_state, st.needs_review, st.last_evidence_at
 		var st domain.ItemState
 		var key string
 		var lastEvidenceAt sql.NullTime
-		if err := rows.Scan(&key, &st.Level, &st.PreState, &st.NeedsReview, &lastEvidenceAt); err != nil {
+		if err := rows.Scan(&key, &st.VerifiedLevel, &st.PreState, &st.NeedsReview, &lastEvidenceAt); err != nil {
 			return nil, fmt.Errorf("現在の理解度の読み出しに失敗しました: %w", err)
 		}
 		st.ItemKey = domain.ItemKey(key)
@@ -296,7 +296,7 @@ RETURNING id`
 	var eventID string
 	err := tx.QueryRowContext(ctx, q,
 		job.UserID, itemID, job.LogID,
-		int(a.Judgment.ProposedLevel), int(a.State.Level),
+		int(a.Judgment.ProposedLevel), int(a.State.VerifiedLevel),
 		dbPreState(a.State.PreState), string(a.Judgment.EvidenceType),
 		a.Judgment.Rationale, a.Judgment.Confidence, a.Judgment.OccurredAt.UTC(),
 	).Scan(&eventID)
@@ -327,7 +327,7 @@ ON CONFLICT (item_id) DO UPDATE SET
 		lastEvidenceAt = st.LastEvidenceAt.UTC()
 	}
 	_, err := tx.ExecContext(ctx, q,
-		itemID, userID, int(st.Level), dbPreState(st.PreState), st.NeedsReview, lastEvidenceAt, eventID,
+		itemID, userID, int(st.VerifiedLevel), dbPreState(st.PreState), st.NeedsReview, lastEvidenceAt, eventID,
 	)
 	if err != nil {
 		return fmt.Errorf("現在の理解度の更新に失敗しました: %w", err)

@@ -335,8 +335,8 @@ func TestProcessOne_API_に届く前の失敗は応答を残さない(t *testing
 func TestProcessOne_形の崩れた判定も違反として記録する(t *testing.T) {
 	// 1件目は正常、2件目は rationale が空。2件目だけが弾かれ、1件目は生きる
 	raw := `{"judgments":[
-	  {"itemKey":"go-01","proposedLevel":1,"evidenceType":"drill","rationale":"確認問題に答えた","confidence":0.8},
-	  {"itemKey":"go-02","proposedLevel":1,"evidenceType":"drill","rationale":"","confidence":0.8}
+	  {"itemKey":"go-01","proposedLevel":1,"evidenceType":"drill","evidenceRefs":["log:x.md"],"rationale":"確認問題に答えた","confidence":0.8},
+	  {"itemKey":"go-02","proposedLevel":1,"evidenceType":"drill","evidenceRefs":["log:x.md"],"rationale":"","confidence":0.8}
 	],"unmatched":[]}`
 	q := &fakeQueue{}
 	w := newTestWorker(t, q, llm.NewStubWithOutput([]byte(raw)), Config{})
@@ -401,8 +401,8 @@ func TestProcessOne_棄却された判定は反映へ渡さない(t *testing.T) 
 	// レベルが範囲外（V2）の判定をそのまま保存へ流すと、DB の制約違反で
 	// 同じログの正常な判定まで巻き戻る（2026-09-23 に PR #29 のレビューで判明）
 	raw := `{"judgments":[
-	  {"itemKey":"go-01","proposedLevel":9,"evidenceType":"drill","rationale":"範囲外のレベル","confidence":0.9},
-	  {"itemKey":"go-02","proposedLevel":1,"evidenceType":"drill","rationale":"確認問題に答えた","confidence":0.9}
+	  {"itemKey":"go-01","proposedLevel":9,"evidenceType":"drill","evidenceRefs":["log:x.md"],"rationale":"範囲外のレベル","confidence":0.9},
+	  {"itemKey":"go-02","proposedLevel":1,"evidenceType":"drill","evidenceRefs":["log:x.md"],"rationale":"確認問題に答えた","confidence":0.9}
 	],"unmatched":[]}`
 	q := &fakeQueue{}
 	w := newTestWorker(t, q, llm.NewStubWithOutput([]byte(raw)), Config{})

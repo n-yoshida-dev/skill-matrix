@@ -140,7 +140,7 @@ func buildStateBlock(req JudgmentRequest) string {
 
 	for _, it := range req.Roadmap.AllItems() {
 		st := req.States[it.Key]
-		fmt.Fprintf(&b, "- `%s`：現在のレベル %d", it.Key, st.Level)
+		fmt.Fprintf(&b, "- `%s`：現在のレベル %d", it.Key, st.VerifiedLevel)
 		if st.PreState != "" && st.PreState != domain.PreStateNone {
 			fmt.Fprintf(&b, " / 段階前の状態：%s", st.PreState)
 		}
@@ -218,6 +218,12 @@ func JudgmentOutputSchema() map[string]any {
 							"enum":        evidenceEnum,
 							"description": "判定の根拠の種類。",
 						},
+						"evidenceRefs": map[string]any{
+							"type":        "array",
+							"minItems":    1,
+							"items":       map[string]any{"type": "string"},
+							"description": "根拠の出どころ（<種別>:<識別子>）。1 件以上。",
+						},
 						"rationale": map[string]any{
 							"type":        "string",
 							"description": "ログ本文のどの記述をもとにそう判断したか。日本語で1〜2文。",
@@ -229,7 +235,7 @@ func JudgmentOutputSchema() map[string]any {
 							"description": "判定への確信度。確信が持てないときは低くする。",
 						},
 					},
-					"required":             []string{"itemKey", "proposedLevel", "evidenceType", "rationale", "confidence"},
+					"required":             []string{"itemKey", "proposedLevel", "evidenceType", "evidenceRefs", "rationale", "confidence"},
 					"additionalProperties": false,
 				},
 			},
