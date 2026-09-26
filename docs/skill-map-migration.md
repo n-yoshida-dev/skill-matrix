@@ -111,7 +111,7 @@
     {
       "itemKey": "go-syntax-basics",
       "evidenceType": "self_explanation",
-      "proposedLevel": 2,               // 省略時は根拠の上限。0 は不合格の報告
+      "proposedLevel": 2,               // 必須（省略は形の検査で棄却）。0 は不合格の報告
       "occurredAt": "2026-09-28",       // 任意。根拠が生じた日。省略時は loggedAt（移行と、まとめ書きのために持つ）
       "evidenceRefs": [                 // 1 件以上
         "repo:n-yoshida-dev/study@a1b2c3d/go-react/logs/2026-09-28.md#L10-L30"
@@ -378,6 +378,8 @@ verifiedLevel の分布：3 が 2 項目、1 が 7 項目、0 が残り。**上�
 ## 9. 実装時に決める細部（議論は不要。担当セッションが決めて KNOWLEDGE に書く）
 
 - `proposedLevel` を省略したときの既定を「上限」にするか「必須」にするか（形の検査の都合。指示書には常に書かせる）
+  → **決定済み：必須**（KNOWLEDGE.md 2026-09-26「段階 C-1」。SPEC.md §3.3）
 - `ItemState` の `Evidenced` を `[6]bool` にするかビット列にするか
+  → **決定済み：`[LevelCount]bool`**（同上）
 - サマリー帯の追加列の名前
 - `migrate-skill-map.md` の文面（§8.2 をそのまま指示にする）

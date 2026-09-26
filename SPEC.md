@@ -344,6 +344,8 @@ sources.local.json.example           その雛形。こちらはコミットす�
 - 日付は `YYYY-MM-DD`。`preState` のゼロ値（内部の `""`）は `"none"` にする
 - `index` は判定ファイルの `judgments` 配列での位置（0 始まり）。形の検査で弾いた要素があっても元の位置を書く
 - `deferred` / `rejected` はファイル名の昇順、ファイル内は `index` の昇順
+- 保留（V7）の `detail` は V7 の文面だけ。保留した判定に V5 の切り詰めが掛かっていても記録しない（適用していないので切り詰めも起きていない。
+  採用するときに足す `manual` の判定で改めて V5 を通る）
 - 形の検査で弾いた判定の `code` は `shape_rejected`（V1〜V8 とは別の層なので分ける。棚上げ中の `store.ShapeRejectedCode` と同じ値）。
   `itemKey` は読めればその値、読めなければ `""`
 
@@ -450,7 +452,7 @@ AI に渡す指示は `prompts/judge.md` に1つだけ置く。`.claude/skills/j
 | V5 | `proposedLevel` がその根拠の梯子の範囲内（4.4 の表） | 上限超えは上限へ、下端未満（0 以外）は下端へ切り詰めて適用 | `events[].violations` |
 | V6 | `proposedLevel` が 0（不合格の報告） | 印を付けず `needsReview=true` を立てる | `events[].violations` |
 | V7 | `confidence` が閾値（既定 0.5）未満。**`source: ai` のときだけ** | 適用せず保留 | `deferred` |
-| V8 | 1ファイルあたりの判定件数が上限（既定 20）以内。移行も免除しない | 超過分を棄却 | `rejected` |
+| V8 | 1ファイルあたりの判定件数が上限（既定 20）以内。移行も免除しない。数えるのは形の検査と V1 を通った判定だけ | 超過分を棄却 | `rejected` |
 
 V4 を廃止した理由：1 件の根拠が同じ梯子の下位を同時に証明するのは自然（`unaided_implementation` → {3, 4}）で、
 自力実装の明確な証拠があってももう 1 回実証を要求するのは根拠モデルとして不自然。AI の過大評価の歯止めは
