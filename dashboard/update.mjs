@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // 開発ダッシュボードのデータ生成。
 // リポジトリ内の正本（TODO.md / HANDOFF.md / logs/decisions.md / data/）と git / gh / bd の出力を読み、
-// dashboard/data.json を書き出す。ダッシュボード独自の状態は持たない（ここで作る JSON は毎回捨てて作り直す派生物）。
+// dashboard/data.js（`window.DASHBOARD_DATA = {...}` という 1 文の JS ファイル）を書き出す。JSON ではなく JS にしているのは、
+// index.html をブラウザでダブルクリックして開いても（file:// でも）読めるようにするため（fetch は file:// では使えない）。
+// ダッシュボード独自の状態は持たない（ここで作るデータは毎回捨てて作り直す派生物）。
 //
 // 使い方:
-//   node dashboard/update.mjs            data.json を作り直す
-//   node dashboard/update.mjs --serve    作り直したうえで http://127.0.0.1:8787/ で配信する（/data.json は開くたびに再生成）
+//   node dashboard/update.mjs            data.js を作り直す → dashboard/index.html をブラウザで開く
+//   node dashboard/update.mjs --serve    作り直したうえで http://127.0.0.1:8787/ で配信する（/data.js は開くたびに再生成）
 //   オプション: --port <n> --host <addr>（既定 127.0.0.1。スマホから見るなら --host 0.0.0.0）--quiet
 //
 // 依存: Node 標準ライブラリだけ。git は必須。gh / bd / go は無ければその項目を「取得できず」にして続ける。
@@ -18,7 +20,7 @@ import { fileURLToPath } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(HERE, '..')
-const OUT = path.join(HERE, 'data.json')
+const OUT = path.join(HERE, 'data.js')
 const RECENT_DAYS = 14 // 「最近」の範囲。変更ファイル・決定の集計に使う
 
 // ---------- 小さな道具 ----------
@@ -408,7 +410,7 @@ export function collect() {
 function writeData(quiet) {
   const started = Date.now()
   const d = collect()
-  fs.writeFileSync(OUT, JSON.stringify(d, null, 2) + '\n')
+  fs.writeFileSync(OUT, `window.DASHBOARD_DATA = ${JSON.stringify(d, null, 2)}\n`)
   if (!quiet) {
     const t = d.todo?.total
     console.log(
@@ -420,17 +422,17 @@ function writeData(quiet) {
   return d
 }
 
-/** 配信モード。/data.json は開くたびに作り直す（連続アクセスは 10 秒だけ結果を使い回す） */
+/** 配信モード。/data.js は開くたびに作り直す（連続アクセスは 10 秒だけ結果を使い回す） */
 function serve({ host, port, quiet }) {
   let cache = { at: 0, body: '' }
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://x')
-    if (url.pathname === '/data.json') {
+    if (url.pathname === '/data.js') {
       if (Date.now() - cache.at > 10_000) {
         writeData(quiet)
         cache = { at: Date.now(), body: fs.readFileSync(OUT, 'utf8') }
       }
-      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+      res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-store' })
       res.end(cache.body)
       return
     }
@@ -440,7 +442,7 @@ function serve({ host, port, quiet }) {
       res.writeHead(404).end('not found')
       return
     }
-    const type = file.endsWith('.html') ? 'text/html' : file.endsWith('.json') ? 'application/json' : 'text/plain'
+    const type = file.endsWith('.html') ? 'text/html' : file.endsWith('.js') ? 'text/javascript' : 'text/plain'
     res.writeHead(200, { 'content-type': `${type}; charset=utf-8`, 'cache-control': 'no-store' })
     res.end(fs.readFileSync(p))
   })

@@ -84,8 +84,10 @@
   <div class="alerts" id="alerts"></div>
   <div class="grid" id="grid"></div>
 </main>
+<!-- update.mjs が作る data.js（window.DASHBOARD_DATA）。JS にしてあるので、この HTML をダブルクリックで開いても読める -->
+<script src="data.js"></script>
 <script>
-// data.json を読んで描く。状態は持たない（表示するだけ）。配信モード（update.mjs --serve）では 60 秒ごとに読み直す
+// data.js のデータを描く。状態は持たない（表示するだけ）。配信モード（update.mjs --serve）では 60 秒ごとにページを読み直す
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 const inline = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
 const badge = (cls, text) => `<span class="badge b-${cls}">${esc(text)}</span>`
@@ -232,20 +234,15 @@ function render(d) {
   document.getElementById('grid').innerHTML = cards.join('')
 }
 
-async function load() {
-  try {
-    const res = await fetch('data.json', { cache: 'no-store' })
-    if (!res.ok) throw new Error(`data.json: HTTP ${res.status}`)
-    render(await res.json())
-    document.getElementById('err').hidden = true
-  } catch (e) {
-    const el = document.getElementById('err')
-    el.hidden = false
-    el.textContent = `data.json を読めません（${e.message}）。node dashboard/update.mjs --serve で起動してください`
-  }
+try {
+  if (!window.DASHBOARD_DATA) throw new Error('data.js が無い')
+  render(window.DASHBOARD_DATA)
+} catch (e) {
+  const el = document.getElementById('err')
+  el.hidden = false
+  el.textContent = `データを読めません（${e.message}）。先に node dashboard/update.mjs を実行してください`
 }
-load()
-if (location.protocol.startsWith('http')) setInterval(load, 60_000)
+if (location.protocol.startsWith('http')) setInterval(() => location.reload(), 60_000)
 </script>
 </body>
 </html>

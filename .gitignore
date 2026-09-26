@@ -32,7 +32,7 @@ CLAUDE.local.md
 .idea/
 
 # 開発ダッシュボードの生成物（node dashboard/update.mjs が作り直す）
-dashboard/data.json
+dashboard/data.js
 
 # ログ・一時ファイル
 *.log
