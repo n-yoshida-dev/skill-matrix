@@ -19,6 +19,8 @@ PRIVATE.md
 *.local.md
 data/private/
 secrets/
+# 学習ログの既定の置き場（SPEC.md §3.5）。本文はリポジトリに置かず、判定は evidenceRefs で指すだけ
+learning-logs/
 
 # Claude Code：個人環境ぶんだけ除外する
 # .claude/settings.json / rules / skills / agents / hooks はコミット対象
