@@ -35,6 +35,7 @@ CLAUDE.local.md
 
 # 開発ダッシュボードの生成物（node dashboard/update.mjs が作り直す）
 dashboard/data.js
+dashboard/data.js.tmp
 
 # ログ・一時ファイル
 *.log
