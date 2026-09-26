@@ -435,7 +435,12 @@ const served = location.protocol.startsWith('http')
 function repoRoot() {
   const fromData = window.DASHBOARD_DATA?.project?.root
   if (fromData) return fromData
-  if (location.protocol === 'file:') return decodeURIComponent(location.pathname).replace(/\/dashboard\/[^/]*$/, '')
+  if (location.protocol === 'file:') {
+    // Windows のブラウザで WSL のファイルを開くと file://wsl.localhost/<ディストリ名>/home/... になるので、先頭を落として WSL 側のパスにする
+    const p = decodeURIComponent(location.pathname)
+    const inWsl = /^wsl(\.localhost|\$)$/i.test(location.hostname)
+    return (inWsl ? p.replace(/^\/[^/]+/, '') : p).replace(/\/dashboard\/[^/]*$/, '')
+  }
   return '<リポジトリの場所>'
 }
 
@@ -451,13 +456,15 @@ function showHowto(reason) {
     '<p class="note">実行したターミナルは閉じずに置いておく。ターミナルを閉じる・PC を再起動すると止まるので、そのときはもう一度実行する。</p>'
   hint.hidden = false
   hint.querySelector('.copy').addEventListener('click', async (e) => {
+    // e.currentTarget は await の後では null に戻るので、先に取っておく
+    const btn = e.currentTarget
     try {
       await navigator.clipboard.writeText(cmd)
-      e.currentTarget.textContent = 'コピーしました'
+      btn.textContent = 'コピーしました'
     } catch {
       // file:// などでクリップボードが使えないときは、コマンドを選択状態にして手でコピーしてもらう
       getSelection().selectAllChildren(hint.querySelector('pre'))
-      e.currentTarget.textContent = '選択しました（Ctrl+C）'
+      btn.textContent = '選択しました（Ctrl+C）'
     }
   })
 }
@@ -476,15 +483,28 @@ document.getElementById('refresh').addEventListener('click', async (e) => {
   const btn = e.currentTarget
   btn.disabled = true
   btn.textContent = '更新中…（数秒）'
+  let res
   try {
-    const res = await fetch('/update', { method: 'POST' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    location.reload()
+    res = await fetch('/update', { method: 'POST' })
   } catch (err) {
+    // 応答自体が無い＝起動したプロセスが止まっている
     btn.disabled = false
     btn.textContent = '更新'
     showHowto(`更新できませんでした。起動したプロセスが止まっているようです（${err.message}）`)
+    return
   }
+  if (res.ok) {
+    location.reload()
+    return
+  }
+  // プロセスは動いているが作り直しに失敗した（500 の本文に理由がある）。起動し直しの案内ではなく理由を出す
+  btn.disabled = false
+  btn.textContent = '更新'
+  const body = await res.json().catch(() => ({}))
+  const hint = document.getElementById('hint')
+  hint.className = 'bad'
+  hint.hidden = false
+  hint.innerHTML = `<p><strong>更新に失敗しました（HTTP ${res.status}）</strong></p><p>${esc(body.error ?? '理由不明')}。起動したターミナルの出力も確認してください。</p>`
 })
 
 // 配信モードのときだけ、60 秒ごとに読み直す。先にプロセスが応答するか確かめ、止まっていたら
