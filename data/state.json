@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "items": [
     {
-      "itemKey": "go-01",
+      "itemKey": "go-syntax-basics",
       "verifiedLevel": 0,
       "evidencedLevels": [],
       "preState": "none",
@@ -11,7 +11,7 @@
       "events": []
     },
     {
-      "itemKey": "go-02",
+      "itemKey": "go-struct-slice-map-pointer",
       "verifiedLevel": 0,
       "evidencedLevels": [],
       "preState": "none",
@@ -20,7 +20,7 @@
       "events": []
     },
     {
-      "itemKey": "go-03",
+      "itemKey": "go-func-values-closure",
       "verifiedLevel": 0,
       "evidencedLevels": [],
       "preState": "none",
@@ -29,7 +29,7 @@
       "events": []
     },
     {
-      "itemKey": "go-04",
+      "itemKey": "go-methods",
       "verifiedLevel": 0,
       "evidencedLevels": [],
       "preState": "none",
@@ -38,7 +38,7 @@
       "events": []
     },
     {
-      "itemKey": "go-05",
+      "itemKey": "go-interfaces",
       "verifiedLevel": 0,
       "evidencedLevels": [],
       "preState": "none",
@@ -47,7 +47,7 @@
       "events": []
     },
     {
-      "itemKey": "react-01",
+      "itemKey": "go-error-handling",
       "verifiedLevel": 0,
       "evidencedLevels": [],
       "preState": "none",
@@ -56,7 +56,7 @@
       "events": []
     },
     {
-      "itemKey": "react-02",
+      "itemKey": "go-concurrency",
       "verifiedLevel": 0,
       "evidencedLevels": [],
       "preState": "none",
@@ -65,7 +65,7 @@
       "events": []
     },
     {
-      "itemKey": "react-03",
+      "itemKey": "go-net-http",
       "verifiedLevel": 0,
       "evidencedLevels": [],
       "preState": "none",
@@ -74,7 +74,7 @@
       "events": []
     },
     {
-      "itemKey": "react-04",
+      "itemKey": "go-testing",
       "verifiedLevel": 0,
       "evidencedLevels": [],
       "preState": "none",
@@ -83,7 +83,7 @@
       "events": []
     },
     {
-      "itemKey": "infra-01",
+      "itemKey": "react-render-flow",
       "verifiedLevel": 0,
       "evidencedLevels": [],
       "preState": "none",
@@ -92,7 +92,322 @@
       "events": []
     },
     {
-      "itemKey": "infra-02",
+      "itemKey": "react-jsx-ts-basics",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "react-components-destructuring",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "react-state-props-dataflow",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "react-hooks",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "react-data-fetching",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "react-routing-forms",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "react-ts-integration",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "java-rest-openapi",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "java-spring-security-jwt",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "java-tenant-switch",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "java-request-domain",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "java-app-logging",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "java-junit",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "java-test-infra-testcontainers",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "java-adr-design-docs",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "db-multitenant-schema",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "db-rbac-schema",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "db-flyway-migration",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "devops-pr-workflow",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "devops-ci-execution-model",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "devops-ci-github-actions",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "devops-required-checks",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "devops-branch-protection",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "devops-deploy-preview-production",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "devops-cicd-pipeline",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "baas-vs-custom-backend",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "baas-supabase-schema",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "auth-oauth-oidc",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "baas-rls",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "baas-supabase-js",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "ai-collab-agent-cycle",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "ai-collab-output-review",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "billing-stripe-overview",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "billing-stripe-flow",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "billing-stripe-tenant",
       "verifiedLevel": 0,
       "evidencedLevels": [],
       "preState": "none",

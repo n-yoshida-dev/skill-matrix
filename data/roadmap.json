@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "name": "サンプル学習ロードマップ（ダミー）",
-  "description": "画面の土台のためのダミー。段階 D で実物に差し替える（backend/testdata/roadmap-sample.json と同じ内容）",
-  "origin": "external",
-  "source": "https://roadmap.sh/golang",
-  "checkedAt": "2026-08-14",
+  "name": "Web アプリ開発の学習ロードマップ",
+  "description": "Go / React を軸に、Java / Spring Boot・データベース設計・CI/CD・BaaS と認証・AI 協働開発・課金を加えた 8 分野。項目の出どころは docs/skill-map-migration.md §8.3",
+  "origin": "manual",
+  "source": "https://github.com/n-yoshida-dev/skill-matrix/blob/main/docs/skill-map-migration.md",
+  "checkedAt": "2026-09-26",
   "levels": [
     {
       "level": 1,
@@ -39,146 +39,421 @@
       "goal": "Go で Web API を設計・実装・テストできる",
       "items": [
         {
-          "key": "go-01",
-          "name": "基本構文（変数・型・関数・struct・slice/map）",
-          "description": "ゼロ値とポインタの扱いを含む",
-          "outcome": "Go のコードを読んで型と値の流れを追える",
-          "dependsOn": [],
-          "verifyBy": "公式 Tour の Basics を終えてからドリルに答える",
-          "moduleRefs": [
-            "go-01"
-          ]
+          "key": "go-syntax-basics",
+          "name": "基本構文（変数・型・関数・制御構文）",
+          "description": ":=・複数戻り値・型なし定数・defer を含む。暗黙の型変換が無いなど Java との差分に注意",
+          "outcome": "Go のコードを読んで型と値の流れを追え、20 行程度の関数を書ける",
+          "verifyBy": "ゼロ値がある理由（初期化し忘れた変数をどう扱うか）を、Java の null と比べて自分の言葉で説明する（L2）",
+          "moduleRefs": ["go-01"]
         },
         {
-          "key": "go-02",
-          "name": "メソッド・インターフェース・埋め込み",
-          "outcome": "型に振る舞いを持たせ、インターフェースで実装を差し替えられる",
-          "dependsOn": [
-            "go-01"
-          ],
-          "verifyBy": "既存の処理をインターフェース越しに差し替えて書き直す",
-          "moduleRefs": [
-            "go-02"
-          ]
+          "key": "go-struct-slice-map-pointer",
+          "name": "struct・slice/map・ポインタ",
+          "description": "slice は裏にある配列への窓で、代入や引数渡しで共有される",
+          "outcome": "値がコピーされるか共有されるかを、slice・map・ポインタごとに予想して当てられる",
+          "dependsOn": ["go-syntax-basics"],
+          "verifyBy": "append で容量を超えたときに共有が切れる理由を、自分の言葉で説明する（L2）",
+          "moduleRefs": ["go-01"]
         },
         {
-          "key": "go-03",
-          "name": "エラーハンドリング（error のラップと判別）",
-          "outcome": "エラーを握りつぶさず、呼び出し側が判断できる形で返せる",
-          "dependsOn": [
-            "go-02"
-          ],
-          "verifyBy": "errors.Is / errors.As を使い分けるテストを書く",
-          "moduleRefs": [
-            "go-03"
-          ]
+          "key": "go-func-values-closure",
+          "name": "関数値・クロージャ",
+          "description": "関数を値として渡す（Java のラムダに近い）。クロージャは外側の変数を掴む",
+          "outcome": "関数を引数や戻り値にしたコードを読み、クロージャが掴んだ変数がいつ評価されるかを追える",
+          "dependsOn": ["go-syntax-basics"],
+          "verifyBy": "関数値を渡すコードと、クロージャが外の変数を掴むコードの出力を、実行前に予想するドリルに答える（L1）",
+          "moduleRefs": ["go-01"]
         },
         {
-          "key": "go-04",
-          "name": "標準ライブラリでの HTTP サーバ",
-          "outcome": "ルーティングとミドルウェアを自分で組み立てられる",
-          "dependsOn": [
-            "go-02",
-            "go-03"
-          ],
-          "verifyBy": "認証ミドルウェアを1つ自作してテストする",
-          "moduleRefs": [
-            "go-04"
-          ]
+          "key": "go-methods",
+          "name": "メソッド（値レシーバとポインタレシーバ）",
+          "description": "レシーバは「ドットの前の値を受け取る引数」。値レシーバはコピー、ポインタレシーバは共有",
+          "outcome": "元の値を変えたいかどうかで、値レシーバとポインタレシーバを選べる",
+          "dependsOn": ["go-struct-slice-map-pointer"],
+          "verifyBy": "値レシーバとポインタレシーバで結果が変わるコードの出力を、実行前に予想するドリルに答える（L1）",
+          "moduleRefs": ["go-02"]
         },
         {
-          "key": "go-05",
-          "name": "テスト（table driven test）",
-          "outcome": "境界値を並べたテストを自分で設計できる",
-          "dependsOn": [
-            "go-01"
-          ],
-          "verifyBy": "純粋関数1つに対して境界値のテストを書く",
-          "moduleRefs": [
-            "go-05"
-          ]
+          "key": "go-interfaces",
+          "name": "インターフェース・埋め込み",
+          "description": "インターフェースはメソッドの集合で、実装の宣言を書かない（メソッドがそろえば満たす）",
+          "outcome": "小さなインターフェースを定義し、複数の型をスライスにまとめて同じ操作で扱える",
+          "dependsOn": ["go-methods"],
+          "verifyBy": "インターフェースを学んだあと、暗黙の実装と nil を含むインターフェース値を問うドリルに答える（L1）",
+          "moduleRefs": ["go-02"]
+        },
+        {
+          "key": "go-error-handling",
+          "name": "エラーハンドリング（error・ラップ・panic）",
+          "description": "エラーは例外ではなく戻り値。%w で包むと errors.Is / errors.As で辿れる",
+          "outcome": "呼び出し側が「無い」と「壊れている」を区別できるエラーを設計できる",
+          "dependsOn": ["go-interfaces"],
+          "verifyBy": "エラー処理を学んだあと、errors.Is と errors.As の使い分けと panic を使う場面を問うドリルに答える（L1）",
+          "moduleRefs": ["go-03"]
+        },
+        {
+          "key": "go-concurrency",
+          "name": "並行処理（goroutine・channel・context）",
+          "description": "goroutine は軽い実行単位、channel は値を渡して同期する。context でキャンセルと期限を伝える",
+          "outcome": "複数の処理を並行で走らせ、タイムアウト付きで結果を集められる",
+          "dependsOn": ["go-error-handling", "go-func-values-closure"],
+          "verifyBy": "並行処理を学んだあと、main が goroutine より先に終わる例と、バッファの無い channel で止まる例の挙動を予想するドリルに答える（L1）",
+          "moduleRefs": ["go-04"]
+        },
+        {
+          "key": "go-net-http",
+          "name": "net/http で API サーバー",
+          "description": "http.Handler は 1 メソッドのインターフェース。ミドルウェアは Handler を包む Handler",
+          "outcome": "標準ライブラリだけで、JSON を返す API を 2〜3 エンドポイント書ける",
+          "dependsOn": ["go-interfaces", "go-error-handling", "go-concurrency"],
+          "verifyBy": "net/http を学んだあと、1 リクエストが待ち受け → 振り分け → Handler → レスポンスの書き込みと進む流れを追うドリルに答える（L1）",
+          "moduleRefs": ["go-05"]
+        },
+        {
+          "key": "go-testing",
+          "name": "テスト（testing・table-driven・httptest）",
+          "description": "_test.go と TestXxx の規約、t.Run でケースに名前を付ける。httptest は偽のリクエストと偽のサーバー",
+          "outcome": "API のハンドラに table-driven テストを書き、失敗メッセージから落ちたケースを特定できる",
+          "dependsOn": ["go-net-http"],
+          "verifyBy": "テストを学んだあと、table-driven テストの形と httptest の使いどころを問うドリルに答える（L1）",
+          "moduleRefs": ["go-06"]
         }
       ]
     },
     {
       "key": "react",
-      "name": "React",
-      "goal": "型安全な React アプリを設計し、サーバ状態を適切に扱える",
+      "name": "React / TypeScript",
+      "goal": "型の付いた React アプリで、状態の置き場所とデータ取得を設計して実装できる",
       "items": [
         {
-          "key": "react-01",
-          "name": "コンポーネントと props / state",
-          "outcome": "状態をどこに置くべきかを説明できる",
-          "dependsOn": [],
-          "verifyBy": "状態の持ち上げが必要な画面を1つ書く",
-          "moduleRefs": [
-            "react-01"
-          ]
+          "key": "react-render-flow",
+          "name": "起動の流れ（index.html → main.tsx → App）",
+          "outcome": "ブラウザが HTML を読んでから最初の画面が出るまでに、どのファイルがどの順で動くかを追える",
+          "verifyBy": "index.html・main.tsx・App のそれぞれが無いと何が起きるかを予想するドリルに答える（L1）",
+          "moduleRefs": ["react-01"]
         },
         {
-          "key": "react-02",
-          "name": "副作用と useEffect の使いどころ",
-          "outcome": "useEffect が不要な場面を見分けられる",
-          "dependsOn": [
-            "react-01"
-          ],
-          "verifyBy": "useEffect を使った処理を1つ、使わない形に書き換える",
-          "moduleRefs": [
-            "react-02"
-          ]
+          "key": "react-jsx-ts-basics",
+          "name": "JSX / TSX と TypeScript の基礎",
+          "description": "JSX は JavaScript の中に書く画面の記述。型の定義と分割代入を含む",
+          "outcome": "TSX のコードを読み、どこが JavaScript の式でどこが画面の記述かを区別できる",
+          "verifyBy": "JSX の中の {}・&&・アロー関数の戻り値を問うドリルに答える（L1）",
+          "moduleRefs": ["react-01"]
         },
         {
-          "key": "react-03",
-          "name": "サーバ状態の管理（TanStack Query）",
-          "outcome": "サーバ状態とクライアント状態を分けて設計できる",
-          "dependsOn": [
-            "react-02"
-          ],
-          "verifyBy": "一覧と詳細のキャッシュ更新を自分で設計する",
-          "moduleRefs": [
-            "react-03"
-          ]
+          "key": "react-components-destructuring",
+          "name": "コンポーネント・親子関係・分割代入",
+          "description": "配列の分割代入は順番で、オブジェクトの分割代入は名前で取り出す",
+          "outcome": "画面を部品に分け、親から子へ値を渡す形で組み立てられる",
+          "dependsOn": ["react-jsx-ts-basics"],
+          "verifyBy": "画面を部品に分けた理由と、親子で値を受け渡す流れを、自分の言葉で説明する（L2）",
+          "moduleRefs": ["react-01"]
         },
         {
-          "key": "react-04",
-          "name": "フォームとバリデーション（React Hook Form + Zod）",
-          "outcome": "入力値の検証をフロントとバックエンドで二重に持てる",
-          "dependsOn": [
-            "react-01"
-          ],
-          "verifyBy": "サーバのエラー応答をフォームに反映させる",
-          "moduleRefs": [
-            "react-04"
-          ]
+          "key": "react-state-props-dataflow",
+          "name": "state・props・部品間のデータの流れ",
+          "description": "state は React が預かる値、props は親から子への受け渡し。子から親の値を変えるには、関数を props で受け取る",
+          "outcome": "値を state にするかを判断し、使う部品と更新する部品の共通の親に置ける",
+          "dependsOn": ["react-components-destructuring"],
+          "verifyBy": "setX を続けて 2 回呼んだ直後の値と、map が返すものを問うドリルに、実行して確かめる形で答える（L1）",
+          "moduleRefs": ["react-01"]
+        },
+        {
+          "key": "react-hooks",
+          "name": "hooks（useEffect・useRef）",
+          "description": "useEffect は画面が描かれた後に外の世界（サーバー・ブラウザ）と同期するためのもの。依存配列は「この値が変わったらやり直す」",
+          "outcome": "画面の表示後にデータを取得し、依存配列と後片付けを理由付きで書ける",
+          "dependsOn": ["react-state-props-dataflow"],
+          "verifyBy": "hooks を学んだあと、描画 → Effect → state 更新 → 再描画の順番と、依存配列の有無による実行回数を問うドリルに答える（L1）",
+          "moduleRefs": ["react-02"]
+        },
+        {
+          "key": "react-data-fetching",
+          "name": "データ取得・非同期（fetch・TanStack Query）",
+          "description": "サーバーの状態は遠い・非同期・共有・古くなるので、画面の state とは分けて扱う",
+          "outcome": "取得・キャッシュ・再取得を TanStack Query に任せ、読み込み中とエラーを画面に出せる",
+          "dependsOn": ["react-hooks"],
+          "verifyBy": "データ取得を学んだあと、同じデータを 2 か所で使うときに素の fetch と TanStack Query で通信が何回起きるかを問うドリルに答える（L1）",
+          "moduleRefs": ["react-03"]
+        },
+        {
+          "key": "react-routing-forms",
+          "name": "ルーティング・フォーム",
+          "description": "URL と画面を対応させる（React Router）。制御されたフォームは入力値を state に持つ",
+          "outcome": "ログイン → 一覧 → 詳細の画面遷移と、入力チェック付きのフォームを作れる",
+          "dependsOn": ["react-data-fetching"],
+          "verifyBy": "ルーティングとフォームを学んだあと、Link と a の違いと、制御されたフォームの値の流れを問うドリルに答える（L1）",
+          "moduleRefs": ["react-04"]
+        },
+        {
+          "key": "react-ts-integration",
+          "name": "TypeScript との統合",
+          "description": "props・state・イベントの型、読み込み状態の判別可能ユニオン、OpenAPI からの型生成",
+          "outcome": "型エラーの文を読んで何と何が合わないかを言え、画面全体を型エラー 0 に保てる",
+          "dependsOn": ["react-routing-forms", "react-jsx-ts-basics"],
+          "verifyBy": "TypeScript との統合を学んだあと、型エラーの文からどこが何と合わないかを答えるドリルに答える（L1）",
+          "moduleRefs": ["react-05"]
         }
       ]
     },
     {
-      "key": "infra",
-      "name": "インフラ・CI",
-      "goal": "自分のアプリをコンテナで動かし、CI で品質を守れる",
+      "key": "java-spring",
+      "name": "Java / Spring Boot",
+      "goal": "Spring Boot で認証・例外・ログ・テストまで含めた Web API を作り、設計の判断を文書で説明できる",
       "items": [
         {
-          "key": "infra-01",
-          "name": "Docker と Docker Compose",
-          "outcome": "開発環境をコンテナで再現できる",
-          "dependsOn": [],
-          "verifyBy": "DB 付きの開発環境を Compose で1つ立てる",
-          "moduleRefs": [
-            "infra-01"
-          ]
+          "key": "java-rest-openapi",
+          "name": "REST API 設計・OpenAPI（契約先行）",
+          "description": "API の仕様を OpenAPI で先に決め、実装をそれに合わせる",
+          "outcome": "エンドポイントとエラー応答を OpenAPI で定義し、実装との食い違いを防ぐ手段を選べる",
+          "verifyBy": "契約先行で設計する理由と、実装との整合をどう保つかを問う確認問題に答える（L1）"
         },
         {
-          "key": "infra-02",
-          "name": "GitHub Actions で lint / test を回す",
-          "outcome": "壊れた変更が main に入らない状態を作れる",
-          "dependsOn": [
-            "infra-01"
-          ],
-          "verifyBy": "失敗するテストを含む PR で CI が赤くなることを確認する",
-          "moduleRefs": [
-            "infra-02"
-          ]
+          "key": "java-spring-security-jwt",
+          "name": "Spring Security と JWT 認証",
+          "description": "JWT の署名・発行者（issuer）・有効期限を検証して利用者を特定する。サーバーはセッションを持たない（STATELESS）",
+          "outcome": "トークンを検証して利用者を特定する API の認証を組み、設定の理由を説明できる",
+          "verifyBy": "既存の実装について、JWT の検証の流れ（署名・issuer・有効期限）と、CSRF 対策を無効にしてセッションを持たない理由を、コードを見ずに短いドリルか自己説明で確認する（L1・L2）"
+        },
+        {
+          "key": "java-tenant-switch",
+          "name": "テナントの選択（トークンの再発行による切り替え）",
+          "description": "利用者がそのテナントのメンバーであることを確かめてから、選んだテナントの ID を載せたトークンを発行し直す",
+          "outcome": "複数のテナントに属する利用者が、操作対象のテナントを安全に切り替えられる仕組みを作れる",
+          "dependsOn": ["java-spring-security-jwt", "db-multitenant-schema"],
+          "verifyBy": "既存の実装について、テナントの切り替えをトークンの再発行で表す設計の利点と欠点を、短いドリルか自己説明で確認する（L1・L2）"
+        },
+        {
+          "key": "java-request-domain",
+          "name": "申請ドメインの設計（状態遷移・版管理・承認ルート）",
+          "description": "下書き・提出・承認などの状態と、その間の遷移を決める。変更の履歴は版として残す",
+          "outcome": "申請の状態遷移を設計し、不正な遷移をどこでどう防ぐかを決められる",
+          "dependsOn": ["java-tenant-switch", "db-rbac-schema"],
+          "verifyBy": "既存の設計について、状態遷移の不正なパターン（下書き以外からの提出など）をどこでどう防ぐかを、短いドリルか自己説明で確認する（L1・L2）"
+        },
+        {
+          "key": "java-exception-http-status",
+          "name": "例外設計と HTTP ステータス（401 / 403 / 404 / 422）",
+          "description": "どの失敗にどのステータスを返すかと、検査の順序を決める",
+          "outcome": "失敗の種類ごとに、利用者が次に取るべき行動が分かるステータスを選べる",
+          "dependsOn": ["java-rest-openapi"],
+          "verifyBy": "新しいエンドポイントで 409 / 404 などのステータスをガイドなしで選び、理由を添えて実装する（L4）"
+        },
+        {
+          "key": "java-app-logging",
+          "name": "アプリケーションログ（SLF4J・ログレベル）",
+          "description": "ログレベルの振り分けと、スタックトレースを残すかどうかの判断。監査ログとは別のもの",
+          "outcome": "例外の種類ごとに、ログレベルとスタックトレースの有無をルールに沿って選べる",
+          "dependsOn": ["java-exception-http-status"],
+          "verifyBy": "既存の実装について、SLF4J と Logback の役割分担、INFO と WARN の振り分け基準、例外を最後の引数に渡すとスタックトレースが残る理由を、短いドリルか自己説明で確認する（L1・L2）"
+        },
+        {
+          "key": "java-junit",
+          "name": "単体テスト（JUnit・Mockito）",
+          "description": "モック・スタブ・verify・ArgumentCaptor で、呼び出しの有無と順序を確かめる",
+          "outcome": "Service の振る舞いを、依存をモックで切り離してテストできる",
+          "verifyBy": "既存のテストについて、モックとスタブの違いと、verify(never()) で何を保証しているかを、短いドリルか自己説明で確認する（L1・L2）"
+        },
+        {
+          "key": "java-test-infra-testcontainers",
+          "name": "結合テストの基盤（Testcontainers・Spring Boot のテスト構成）",
+          "description": "テスト用の DB をコンテナで立て、ローカルと CI で同じ仕組みを使う",
+          "outcome": "MockMvc と実際の HTTP のどちらで結合テストを書くかを、トランザクションを共有するかどうかを理由に選べる",
+          "dependsOn": ["java-junit", "db-flyway-migration"],
+          "verifyBy": "@Transactional のテストがロールバックされる仕組み、MockMvc と RANDOM_PORT の違い、コンテナを Spring に管理させる利点を問うドリルに答える（L1）"
+        },
+        {
+          "key": "java-adr-design-docs",
+          "name": "ADR・設計ドキュメント（OpenAPI・ER 図）",
+          "description": "1 つの ADR に 1 つの決定を書き、背景・制約・採用しなかった案を残す",
+          "outcome": "設計の決定を、背景・制約・採用しなかった案とともに文書に残し、後から説明できる",
+          "verifyBy": "新しい設計判断の ADR をガイドなしで書き、採用しなかった案がなぜ候補に挙がったかから説明する（L4）"
+        }
+      ]
+    },
+    {
+      "key": "db",
+      "name": "データベース設計",
+      "goal": "テナントの境界と権限を DB の制約で守るスキーマを設計し、マイグレーションで管理できる",
+      "items": [
+        {
+          "key": "db-multitenant-schema",
+          "name": "マルチテナントの DB 設計（共有 DB＋tenant_id）",
+          "description": "複合外部キー (id, tenant_id) で、別のテナントのデータが混ざるのを DB の制約で防ぐ",
+          "outcome": "テナントの境界を DB の制約で守るスキーマを設計できる",
+          "verifyBy": "既存のスキーマについて、複合外部キーが何の混入をどう防ぐかを具体例で答える、短いドリルか自己説明で確認する（L1・L2）"
+        },
+        {
+          "key": "db-rbac-schema",
+          "name": "RBAC（ロールによる権限）のスキーマ設計",
+          "description": "誰がどの範囲でどの操作をできるかを、ロールと割り当ての表で表す",
+          "outcome": "ロールと権限の表を設計し、アプリ側の認可の判定とつなげられる",
+          "dependsOn": ["db-multitenant-schema"],
+          "verifyBy": "既存のスキーマについて、ロールの有効範囲をどう表したかと、アプリ側の認可でどう使うかを、短いドリルか自己説明で確認する（L1・L2）"
+        },
+        {
+          "key": "db-flyway-migration",
+          "name": "マイグレーションと seed の管理（Flyway）",
+          "description": "スキーマの変更を番号付きのファイルで積み上げる。seed（初期データ）は環境ごとに入れ分ける",
+          "outcome": "スキーマの変更をマイグレーションで管理し、本番に開発用のデータが入らないよう設定できる",
+          "verifyBy": "既存の設定について、マイグレーションがいつ流れるかと、seed を環境で分けた理由を、短いドリルか自己説明で確認する（L1・L2）"
+        }
+      ]
+    },
+    {
+      "key": "devops",
+      "name": "CI/CD・GitHub 運用",
+      "goal": "PR・CI・ブランチ保護・デプロイを組み合わせて、壊れたコードが本番に届かない流れを作れる",
+      "items": [
+        {
+          "key": "devops-pr-workflow",
+          "name": "GitHub の PR 運用（ブランチ → PR → squash マージ）",
+          "outcome": "作業ごとにブランチを切り、PR で確認してから main に取り込む流れを回せる",
+          "verifyBy": "既存の運用について、squash マージを選ぶ理由と、マージ後に手元の main を同期する理由を、短いドリルか自己説明で確認する（L1・L2）"
+        },
+        {
+          "key": "devops-ci-execution-model",
+          "name": "CI の実行モデル（終了コードによる合否）",
+          "description": "CI はコマンドが終了して返す終了コードで合否を決める。終わらないコマンド（watch モード）は CI を止める",
+          "outcome": "ワークフローの各ステップが何を返し、それで合否がどう決まるかを追える",
+          "verifyBy": "vitest と vitest run の違いと、各ステップの終了コードで合否が決まる仕組みを問うドリルに答える（L1）"
+        },
+        {
+          "key": "devops-ci-github-actions",
+          "name": "CI の設定（GitHub Actions）",
+          "description": "lint・テスト・ビルドを PR ごとに自動で走らせるワークフローを書く",
+          "outcome": "リポジトリに合わせたワークフローを書き、実行する前に通るかを机上で確かめられる",
+          "dependsOn": ["devops-pr-workflow", "devops-ci-execution-model"],
+          "verifyBy": "既存のワークフローについて、トリガーの選び方と、ビルドツールの実行位置・ランタイムのバージョンが合っているかの確かめ方を、短いドリルか自己説明で確認する（L1・L2）"
+        },
+        {
+          "key": "devops-required-checks",
+          "name": "必須ステータスチェックの選定",
+          "description": "落ちたときにコードのせいだと断定できるチェックだけを必須にする",
+          "outcome": "どのチェックを必須にするかを、失敗の原因を特定できるかどうかで選べる",
+          "dependsOn": ["devops-ci-github-actions"],
+          "verifyBy": "ジョブを分けたときに、バッジ（ワークフロー単位）と必須チェック（ジョブ単位）がどちら向きにずれるかを、自分の言葉で説明する（L2）"
+        },
+        {
+          "key": "devops-branch-protection",
+          "name": "ブランチ保護（Ruleset）",
+          "description": "main への直接 push・force push・削除を禁止し、PR と必須チェックを通させる",
+          "outcome": "保護の各項目を、何を防ぐためかを理由に選んで設定できる",
+          "dependsOn": ["devops-required-checks"],
+          "verifyBy": "force push とは何か、削除の禁止が何を対象にするか、PR を必須にすることが最も効く理由（必須チェックは PR に働くので、直接 push は CI を迂回する）を、自分の言葉で説明する（L2）"
+        },
+        {
+          "key": "devops-deploy-preview-production",
+          "name": "デプロイ基盤（プレビューと本番の分離）",
+          "description": "PR ごとのプレビュー環境と、main から出す本番環境を分ける",
+          "outcome": "検証前のコードを本番に出さずに、PR ごとに動く画面を確かめられる流れを作れる",
+          "dependsOn": ["devops-pr-workflow"],
+          "verifyBy": "GitHub とホスティングサービスの連携で、どちらがどちらを呼んでデプロイが始まるかを、自分の言葉で説明する（L2）"
+        },
+        {
+          "key": "devops-cicd-pipeline",
+          "name": "CI/CD パイプライン（テストから自動デプロイまで）",
+          "outcome": "PR の検査から本番への自動デプロイまでを、1 つの流れとして組める",
+          "dependsOn": ["devops-ci-github-actions", "devops-deploy-preview-production"],
+          "verifyBy": "既存のパイプラインについて、PR から本番に届くまでの各段階で何が確かめられているかを、短いドリルか自己説明で確認する（L1・L2）"
+        }
+      ]
+    },
+    {
+      "key": "baas-auth",
+      "name": "BaaS・認証",
+      "goal": "BaaS と外部 ID 連携を使い、他人のデータが見えない・書けない仕組みを説明して実装できる",
+      "items": [
+        {
+          "key": "baas-vs-custom-backend",
+          "name": "BaaS とバックエンド自作の使い分け",
+          "description": "BaaS が自動で用意するのは CRUD まで。業務ルール・例外処理・監査ログには別の置き場所が要る",
+          "outcome": "処理ごとに、BaaS に任せるか、サーバー側の関数や自前の API に置くかを選べる",
+          "verifyBy": "BaaS だけでは足りない処理の例を挙げ、置き場所の選び方を自分の言葉で説明する（L2）"
+        },
+        {
+          "key": "baas-supabase-schema",
+          "name": "BaaS（Supabase）でのスキーマ設計",
+          "description": "Postgres の DDL・CHECK 制約・外部キーを、Supabase のマイグレーションで管理する",
+          "outcome": "BaaS の上でも、制約と索引まで含めたテーブルを設計できる",
+          "dependsOn": ["baas-vs-custom-backend"],
+          "verifyBy": "既存の DDL について、制約に名前を付ける理由と、外部キーに索引を張る理由を、短いドリルか自己説明で確認する（L1・L2）"
+        },
+        {
+          "key": "auth-oauth-oidc",
+          "name": "外部 ID 連携（OAuth 2.0 / OIDC）",
+          "description": "外部の ID 提供者が本人確認を行い、アプリはその結果を受け取る。クライアント ID は公開してよい名札で、シークレットはサーバー間だけで使う",
+          "outcome": "外部 ID でのログインを組み込み、登場人物の役割分担を説明できる",
+          "verifyBy": "認可コードフローの登場人物と、ID トークンとアクセストークンの違いを問うドリルに答える（L1）"
+        },
+        {
+          "key": "baas-rls",
+          "name": "行レベルセキュリティ（RLS）",
+          "description": "DB が行ごとに読み書きの可否を判定する。USING は読める行、WITH CHECK は書ける行を決める",
+          "outcome": "他人のデータが返らない・書けないことを、DB のポリシーで保証できる",
+          "dependsOn": ["baas-supabase-schema", "auth-oauth-oidc"],
+          "verifyBy": "なぜ他人の行が返らないかを、ログインのトークンと RLS のポリシーを結び付けて答えるドリルに答える（L1）"
+        },
+        {
+          "key": "baas-supabase-js",
+          "name": "BaaS のデータアクセス（supabase-js・型生成）",
+          "description": "クライアントから直接 DB を読み書きする。型は DB の定義から生成する",
+          "outcome": "RLS を前提に、クライアントからの読み書きと型の生成を組み込める",
+          "dependsOn": ["baas-rls"],
+          "verifyBy": "利用者の ID を偽って書き込んだらどこで弾かれるかを問うドリルに答える（L1）"
+        }
+      ]
+    },
+    {
+      "key": "ai-collab",
+      "name": "AI 協働開発",
+      "goal": "AI に作業を依頼し、出力を検証・レビューしてから取り込める",
+      "items": [
+        {
+          "key": "ai-collab-agent-cycle",
+          "name": "AI への実装依頼と検証のサイクル",
+          "description": "調査・実装を依頼し、差分を確かめてから取り込む",
+          "outcome": "AI に作業を依頼し、計画のレビューからコミットまでを自分で主導できる",
+          "verifyBy": "既存の進め方について、依頼の前に何を決め、差分のどこを確かめてから取り込むかを、短いドリルか自己説明で確認する（L1・L2）"
+        },
+        {
+          "key": "ai-collab-output-review",
+          "name": "AI の出力のコードレビュー",
+          "outcome": "AI が書いた差分を読み、意図との食い違いや抜けを自分で指摘できる",
+          "dependsOn": ["ai-collab-agent-cycle"],
+          "verifyBy": "AI が書いた小さな差分を読み、問題点を指摘する確認問題に答える（L1）"
+        }
+      ]
+    },
+    {
+      "key": "billing",
+      "name": "課金（Stripe）",
+      "goal": "サブスク課金の流れを理解し、Webhook で課金状態をアプリのデータに反映できる",
+      "items": [
+        {
+          "key": "billing-stripe-overview",
+          "name": "サブスク課金の全体像（Stripe の登場人物・Webhook）",
+          "description": "Customer・Price・Subscription・Checkout Session などの役割。Webhook は順序の保証が無く、重複して届くこともある通知",
+          "outcome": "購入ボタンから権限の付与までの流れを、どこで何が起きるかとともに追える",
+          "verifyBy": "課金の全体像を学んだあと、登場人物の役割と、Webhook の署名検証・重複への備え（冪等性）を問うドリルに答える（L1）",
+          "moduleRefs": ["bill-01"]
+        },
+        {
+          "key": "billing-stripe-flow",
+          "name": "最小の課金フロー（Checkout から Webhook の受信まで）",
+          "outcome": "Checkout の作成と、署名検証・重複除外の付いた Webhook の受信を実装できる",
+          "dependsOn": ["billing-stripe-overview"],
+          "verifyBy": "課金フローを学んだあと、Webhook にすぐ 2xx を返す理由と、イベント ID で重複を除く理由を問うドリルに答える（L1）",
+          "moduleRefs": ["bill-02"]
+        },
+        {
+          "key": "billing-stripe-tenant",
+          "name": "課金状態とテナントの紐付け設計",
+          "description": "テナントと Stripe の顧客の対応、課金状態を DB に写すか都度問い合わせるか",
+          "outcome": "未払い・解約のときに何を止めるかを決め、課金状態をアプリのデータに反映する設計を選べる",
+          "dependsOn": ["billing-stripe-flow", "db-multitenant-schema"],
+          "verifyBy": "課金の紐付けを学んだあと、課金状態を DB に写す案と都度問い合わせる案のトレードオフを問うドリルに答える（L1）",
+          "moduleRefs": ["bill-03"]
         }
       ]
     }
