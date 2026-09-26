@@ -32,6 +32,8 @@ const (
 	MaxNameLen   = 200  // name（ロードマップ・分野・項目・レベル）
 	MaxTextLen   = 2000 // description / outcome / goal / criteria / verifyBy
 	MaxSourceLen = 2048 // source（URL。一般的なブラウザが扱える上限に合わせた）
+	// MaxModuleRefLen は moduleRefs の 1 件あたりの上限。モジュール番号（go-01 等）を入れる欄で、key と同じ長さにそろえた
+	MaxModuleRefLen = 64
 )
 
 // Origin はロードマップの出所（SPEC.md §2）。
@@ -80,6 +82,9 @@ type ItemDef struct {
 	DependsOn []string `json:"dependsOn,omitempty"`
 	// VerifyBy は「次に何をすればレベルが上がるか」。
 	VerifyBy string `json:"verifyBy,omitempty"`
+	// ModuleRefs はカリキュラムのモジュール（go-01 等）との対応（SPEC.md §2）。
+	// 指す先がカリキュラムに実在するかは見ない（カリキュラムはこのリポジトリの外にある）。計算にも使わない
+	ModuleRefs []string `json:"moduleRefs,omitempty"`
 }
 
 // DomainDef は分野1つ。

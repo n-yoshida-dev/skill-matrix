@@ -156,6 +156,19 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestParse_ModuleRefs(t *testing.T) {
+	// SPEC.md §2 の任意フィールド。data/roadmap.json が使っているのに未知のフィールドとして弾いていた（2026-09-26）
+	input := `{"schemaVersion":1,"name":"x","levels":[],"domains":[{"key":"go","name":"Go","items":[{"key":"go-syntax-basics","name":"基本","moduleRefs":["go-01","go-02"]}]}]}`
+	doc, res := Parse([]byte(input))
+	if doc == nil {
+		t.Fatalf("moduleRefs を持つロードマップが読めない: %+v", res.Issues)
+	}
+	got := doc.Domains[0].Items[0].ModuleRefs
+	if len(got) != 2 || got[0] != "go-01" || got[1] != "go-02" {
+		t.Errorf("moduleRefs が書いた順に読めていない: %v", got)
+	}
+}
+
 func TestParse_UnknownFieldMessageNamesTheField(t *testing.T) {
 	// 「どこが悪いか」が分からないと直せないので、綴りを間違えたキー名を必ず含める
 	_, res := Parse([]byte(`{"schemaVersion":1,"nmae":"x"}`))
@@ -484,6 +497,9 @@ func TestValidate_FieldLength(t *testing.T) {
 		{"項目の説明", func(d *Document) { d.Domains[0].Items[0].Description = over(MaxTextLen) }, "domains[0].items[0].description"},
 		{"項目の到達状態", func(d *Document) { d.Domains[0].Items[0].Outcome = over(MaxTextLen) }, "domains[0].items[0].outcome"},
 		{"次の確認方法", func(d *Document) { d.Domains[0].Items[0].VerifyBy = over(MaxTextLen) }, "domains[0].items[0].verifyBy"},
+		{"モジュールとの対応", func(d *Document) {
+			d.Domains[0].Items[1].ModuleRefs = []string{"go-02", over(MaxModuleRefLen)}
+		}, "domains[0].items[1].moduleRefs[1]"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name+"が上限を超えるとエラー", func(t *testing.T) {

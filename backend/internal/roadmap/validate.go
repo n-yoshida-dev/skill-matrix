@@ -407,6 +407,9 @@ func validateStructure(doc *Document, origin Origin, res *Result) map[string]str
 			checkLen(it.Description, itemPath+".description", MaxTextLen, res)
 			checkLen(it.Outcome, itemPath+".outcome", MaxTextLen, res)
 			checkLen(it.VerifyBy, itemPath+".verifyBy", MaxTextLen, res)
+			for k, ref := range it.ModuleRefs {
+				checkLen(ref, fmt.Sprintf("%s.moduleRefs[%d]", itemPath, k), MaxModuleRefLen, res)
+			}
 			checkOutcome(it, origin, itemPath, res)
 		}
 	}
