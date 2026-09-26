@@ -16,4 +16,5 @@
 `judgments/` は空。**実際の学習記録ではない。**
 
 - `roadmap.json` は段階 D で実物に差し替える
-- `state.json` は段階 C-2 の CLI ができたら `recalc` で生成し直す（それまで手書き）
+- `state.json` は手書き。CLI（段階 C-2）はできたので、CI に `verify` を入れるタスクで `recalc` から作り直す
+  （`go -C backend run ./cmd/skillmatrix recalc --data ../data`。`judgments/` が空なので全項目 0 になる）

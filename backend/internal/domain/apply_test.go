@@ -521,6 +521,51 @@ func TestApplyJudgments_棄却した判定はResultsに入れない(t *testing.T
 	}
 }
 
+// 呼び出し側（CLI）は、違反と適用結果が「渡した並びの何件目か」を state.json に書く（SPEC.md §3.4）。
+// 棄却・保留・切り詰めのどれでも、元の位置を指していることを確かめる。
+func TestApplyJudgments_違反と適用結果に並びの位置が付く(t *testing.T) {
+	rm := testRoadmap()
+	rules := DefaultRules()
+	rules.MaxItemsPerLog = 4
+
+	got := ApplyJudgments(rm, nil, []Judgment{
+		aiJudgment("go-99", EvidenceDrill, 1, 0.9, day10),          // 0: V1 棄却（上限の数に入らない）
+		aiJudgment("go-01", EvidenceDrill, 9, 0.9, day10),          // 1: V2 棄却
+		aiJudgment("go-01", EvidenceDrill, 2, 0.9, day10),          // 2: V5 切り詰めて適用
+		aiJudgment("go-02", EvidenceImplementation, 3, 0.4, day10), // 3: V7 保留
+		aiJudgment("go-02", EvidenceDrill, 1, 0.9, day10),          // 4: 適用（違反なし）
+		aiJudgment("go-01", EvidenceDrill, 1, 0.9, day10),          // 5: V8 棄却（受理済み 4 件で上限）
+	}, rules)
+
+	type at struct {
+		code  ViolationCode
+		index int
+	}
+	var gotViolations []at
+	for _, v := range got.Violations {
+		gotViolations = append(gotViolations, at{v.Code, v.Index})
+	}
+	wantViolations := []at{
+		{ViolationUnknownItem, 0},
+		{ViolationLevelOutOfRange, 1},
+		{ViolationEvidenceTooWeak, 2},
+		{ViolationLowConfidence, 3},
+		{ViolationTooManyItems, 5},
+	}
+	if !slices.Equal(gotViolations, wantViolations) {
+		t.Errorf("Violations = %v, want %v", gotViolations, wantViolations)
+	}
+
+	var gotResults []int
+	for _, r := range got.Results {
+		gotResults = append(gotResults, r.Index)
+	}
+	// 棄却（0・1・5）は Results に入らない。保留（3）は入る
+	if want := []int{2, 3, 4}; !slices.Equal(gotResults, want) {
+		t.Errorf("Results の位置 = %v, want %v", gotResults, want)
+	}
+}
+
 // 単体の ApplyJudgment では、棄却したことが Rejected で分かる。
 func TestApplyJudgment_棄却にはRejectedが立つ(t *testing.T) {
 	tests := []struct {

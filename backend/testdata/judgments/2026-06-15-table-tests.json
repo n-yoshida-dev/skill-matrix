@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-06-15",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "go-05",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "evidenceRefs": [
+        "repo:example/study@0000000/go/logs/2026-06-15-table-tests.md"
+      ],
+      "rationale": "テーブル駆動テストの確認問題に、t.Run で名前を付ける理由まで含めて答えた",
+      "confidence": 0.8
+    }
+  ],
+  "unmatched": []
+}

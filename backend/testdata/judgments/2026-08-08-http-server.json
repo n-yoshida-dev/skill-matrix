@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-08-08",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "go-04",
+      "evidenceType": "unaided_implementation",
+      "proposedLevel": 4,
+      "evidenceRefs": [
+        "repo:example/study@0000000/go/logs/2026-08-08-http-server.md"
+      ],
+      "rationale": "標準ライブラリだけで HTTP サーバとミドルウェアを組み、テストまで人に聞かずに書いた",
+      "confidence": 0.7
+    }
+  ],
+  "unmatched": []
+}

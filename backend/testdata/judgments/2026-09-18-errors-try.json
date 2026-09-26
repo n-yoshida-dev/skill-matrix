@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-18",
+  "source": "ai",
+  "judge": "chatgpt",
+  "judgments": [
+    {
+      "itemKey": "go-03",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "evidenceRefs": [
+        "repo:example/study@0000000/go/logs/2026-09-18-errors-try.md"
+      ],
+      "rationale": "errors.As を使った小さな実装を試した、との記述だけで中身が確かめられない",
+      "confidence": 0.4
+    }
+  ],
+  "unmatched": []
+}

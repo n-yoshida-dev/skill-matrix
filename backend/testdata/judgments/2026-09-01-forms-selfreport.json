@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-01",
+  "source": "manual",
+  "judgments": [
+    {
+      "itemKey": "react-04",
+      "evidenceType": "self_report",
+      "proposedLevel": 0,
+      "evidenceRefs": [
+        "log:learning-logs/2026-09-01-forms.md"
+      ],
+      "rationale": "フォームは以前に書いたことがあると自己申告。まだ確認していない"
+    }
+  ],
+  "unmatched": []
+}

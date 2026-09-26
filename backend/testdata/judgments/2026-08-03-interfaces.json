@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-08-03",
+  "source": "ai",
+  "judge": "chatgpt",
+  "judgments": [
+    {
+      "itemKey": "go-01",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "evidenceRefs": [
+        "repo:example/study@0000000/go/logs/2026-08-03-interfaces.md#L1-L6"
+      ],
+      "rationale": "継承が無い理由と埋め込みとの違いを自分の言葉で説明した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "go-02",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "evidenceRefs": [
+        "repo:example/study@0000000/go/logs/2026-08-03-interfaces.md#L7-L20"
+      ],
+      "rationale": "通知処理をインターフェース越しに差し替える練習を、資料を見ながら実装した",
+      "confidence": 0.75
+    }
+  ],
+  "unmatched": []
+}

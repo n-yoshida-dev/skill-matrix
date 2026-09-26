@@ -362,6 +362,9 @@ type Violation struct {
 	Applied Level
 	// Rejected が true なら、適用せず丸ごと捨てたことを表す。
 	Rejected bool
+	// Index は違反の元になった判定の、ApplyJudgments に渡した並び（js）の中での位置（0 始まり）。
+	// 呼び出し側が「どのファイルの何件目か」を記録するのに使う（SPEC.md §3.4）。ApplyJudgment 単体では 0。
+	Index int
 }
 
 // Rules は検証のふるまいを外から与える設定。ハードコードしない。
@@ -400,6 +403,8 @@ type Applied struct {
 	Rejected bool
 	// Violations は検証で弾いた／切り詰めた内容。空でないことは異常を意味しない。
 	Violations []Violation
+	// Index は ApplyJudgments に渡した並び（js）の中での位置（0 始まり）。ApplyJudgment 単体では 0。
+	Index int
 }
 
 // ---------------------------------------------------------------------------

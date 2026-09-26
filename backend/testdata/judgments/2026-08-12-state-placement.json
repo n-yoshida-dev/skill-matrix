@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-08-12",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "react-01",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-08-10",
+      "evidenceRefs": [
+        "log:learning-logs/2026-08-10-react.md"
+      ],
+      "rationale": "props と state の置き場所の違いを、親子の再描画の範囲から説明した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "react-02",
+      "evidenceType": "implementation",
+      "proposedLevel": 4,
+      "evidenceRefs": [
+        "log:learning-logs/2026-08-12-react.md"
+      ],
+      "rationale": "state の持ち上げを実装した。AI の提案を見ながらなのでガイド付きの範囲",
+      "confidence": 0.6
+    }
+  ],
+  "unmatched": []
+}

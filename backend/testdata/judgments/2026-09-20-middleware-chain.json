@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-20",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "go-04",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "evidenceRefs": [
+        "repo:example/study@0000000/go/logs/2026-09-20-middleware-chain.md#L1-L15"
+      ],
+      "rationale": "ミドルウェアの連結を資料を見ながら書き直した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "go-05",
+      "evidenceType": "drill",
+      "proposedLevel": 0,
+      "evidenceRefs": [
+        "repo:example/study@0000000/go/logs/2026-09-20-middleware-chain.md#L16-L22"
+      ],
+      "rationale": "サブテストの並列実行の確認問題に答えられなかった",
+      "confidence": 0.8
+    }
+  ],
+  "unmatched": []
+}

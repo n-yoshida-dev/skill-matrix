@@ -758,3 +758,20 @@ Anthropic の SDK と `net/http` までリンクされる（`go list -deps ./int
 | `internal/llm/output.go` には型の別名（`ProposedJudgment = judgment.Proposed` 等）と `ParseOutput` / `ParseOutputFor` の入口を残した | 棚上げ中の stub・Claude API クライアント・ワーカーを 1 行も変えずに済む（`CLAUDE.md`「棚上げしたコードは消さない」） |
 | 外枠の崩れは `judgment.EnvelopeError`（理由だけ）で返し、`llm` の入口が生の出力と消費トークン数を運ぶ `InvalidOutputError` に包み直す | 消費トークン数は API を呼ぶ側だけの関心事。CLI には要らない |
 | 置き場所の変更は `logs/decisions.md` 2026-09-23 の「`output.go` は v1 の中核として残り CLI から呼ぶ」の趣旨（形の検査は v1 の中核・CLI から呼ぶ）を変えない | ファイルの場所だけの話なので決定の蒸し返しには当たらない。SPEC §4.5・§6・§8.1、`CLAUDE.md`、`PLAN.md` の参照先を付け替えた |
+
+### 2026-09-26：`recalc` / `verify` の CLI で決めた細部（段階 C-2）
+
+仕様の正本は SPEC.md §3.4 末尾「書き出しの形」と §6。ここには理由とハマりどころだけを書く。
+
+| 判断 | 理由 |
+|---|---|
+| `state.json` は Go 標準の整形（`SetIndent("", "  ")`）＋ `SetEscapeHTML(false)`。map を使わず、項目はロードマップ順・履歴は適用順 | `verify` がバイト単位で比べるので、同じ入力から必ず同じバイト列にする。map の反復順は毎回変わる。HTML エスケープを切るのは `List<String>` が `<` になって `git diff` で読めなくなるため |
+| 「どのファイルの何件目か」を運ぶため、`judgment.Proposed.Index`（ファイルの配列での位置）と `domain.Applied.Index` / `domain.Violation.Index`（`ApplyJudgments` に渡した並びでの位置）を足した | 形の検査で弾いた要素は domain に渡らないので、並びが詰まって位置がずれる。CLI が `Proposed.Index` で引き直す。domain に「ファイル」の概念を持ち込まずに済む |
+| 形の検査の棄却の `code` は `shape_rejected`、`itemKey` は読めれば拾う | 棚上げ中の `store.ShapeRejectedCode` と同じ値にそろえた。`store` を import すると DB ドライバが付いてくるので定数は CLI に別に持つ |
+| 外枠の崩れたファイルは全部集めてから止める。`recalc` は `rejected` があっても書き出す | 直すたびに走らせ直さずに済む。棄却の中身を `state.json` と端末で見られる。コミットすると `verify` が落ちることは端末に出す |
+| `judgments/` が無ければ判定 0 件 | git は空のディレクトリを記録しない。今の `data/judgments/` も未追跡で、CI のチェックアウトには無い |
+| `settings.json` の未知のキーはエラー。書かれていないキーは既定値 | 打ち間違いで閾値が黙って既定値に戻るのを防ぐ。画面だけが使う `site` も定義に入れてある（画面側に設定を足したら CLI の型にも足す） |
+| 依存のガードをテストにした（`go list -deps .` に `net/http`・SDK・pgx・`internal/llm` 等が無い） | 「LLM クライアントを import しない」を人の目ではなく CI で守る |
+| `state.json` の期待値ファイル `backend/testdata/state-sample.json` と突き合わせるテスト（`-update` で作り直す） | 書き出しの形の変化に気づける。ダミー判定には棄却を入れず、`verify` が通る状態を保つ |
+
+ハマり：Go の識別子に「・」（U+30FB）は使えない。テスト名に `DB・HTTP` と書いてコンパイルエラーになった（日本語の仮名・漢字は使える）。
