@@ -96,7 +96,7 @@ func TestBuildStateBlock(t *testing.T) {
 	req.States = map[domain.ItemKey]domain.ItemState{
 		"go-01": {
 			ItemKey:        "go-01",
-			Level:          domain.LevelCanExplain,
+			VerifiedLevel:  domain.LevelCanExplain,
 			PreState:       domain.PreStateSelfReported,
 			NeedsReview:    true,
 			LastEvidenceAt: time.Date(2026, 7, 15, 0, 0, 0, 0, time.UTC),
@@ -169,12 +169,12 @@ func TestJudgmentOutputSchema(t *testing.T) {
 		}
 	})
 
-	t.Run("必須の欄は SPEC §4.3 の5つ", func(t *testing.T) {
+	t.Run("必須の欄は SPEC §4.3 の6つ", func(t *testing.T) {
 		props := schema["properties"].(map[string]any)
 		items := props["judgments"].(map[string]any)["items"].(map[string]any)
 		required := items["required"].([]string)
 
-		want := []string{"itemKey", "proposedLevel", "evidenceType", "rationale", "confidence"}
+		want := []string{"itemKey", "proposedLevel", "evidenceType", "evidenceRefs", "rationale", "confidence"}
 		if len(required) != len(want) {
 			t.Fatalf("必須の欄の数が違う: %v", required)
 		}

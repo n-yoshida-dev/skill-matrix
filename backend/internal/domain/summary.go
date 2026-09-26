@@ -77,7 +77,7 @@ func RollupDomain(d Domain, states map[ItemKey]ItemState, now time.Time, cfg Sta
 		}
 
 		// 保存された値が壊れていても配列外参照で落ちないようにする。
-		lv := st.Level
+		lv := st.VerifiedLevel
 		if lv < LevelNone {
 			lv = LevelNone
 		} else if lv > MaxLevel {
@@ -88,6 +88,10 @@ func RollupDomain(d Domain, states map[ItemKey]ItemState, now time.Time, cfg Sta
 		levelTotal += int(lv)
 		if NeedsAttention(st, now, cfg) {
 			sum.StaleCount++
+		}
+		// 実装の根拠はあるが基礎の確認が未了（印が表示レベルより上にある）。サマリー帯に 1 列足す（SPEC.md §7.1）
+		if st.TopEvidenced() > st.VerifiedLevel {
+			sum.PendingCount++
 		}
 	}
 
@@ -117,7 +121,7 @@ func BuildSchedule(rm Roadmap, states map[ItemKey]ItemState, now time.Time) Sche
 	var s Schedule
 
 	for _, it := range rm.AllItems() {
-		if states[it.Key].Level < LevelBasicConfirmed {
+		if states[it.Key].VerifiedLevel < LevelBasicConfirmed {
 			s.ItemsRemaining++
 		}
 	}

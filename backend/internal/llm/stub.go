@@ -101,11 +101,12 @@ type stubWireOutput struct {
 
 // stubWireJudgment は stub が組み立てる判定1件。
 type stubWireJudgment struct {
-	ItemKey       string  `json:"itemKey"`
-	ProposedLevel int     `json:"proposedLevel"`
-	EvidenceType  string  `json:"evidenceType"`
-	Rationale     string  `json:"rationale"`
-	Confidence    float64 `json:"confidence"`
+	ItemKey       string   `json:"itemKey"`
+	ProposedLevel int      `json:"proposedLevel"`
+	EvidenceType  string   `json:"evidenceType"`
+	Rationale     string   `json:"rationale"`
+	EvidenceRefs  []string `json:"evidenceRefs"`
+	Confidence    float64  `json:"confidence"`
 }
 
 // generateStubOutput は既定の stub の出力を JSON として組み立てる。
@@ -122,7 +123,7 @@ func generateStubOutput(req JudgmentRequest) (json.RawMessage, error) {
 			break
 		}
 		// States に無い項目はゼロ値（レベル 0）として扱う
-		cur := req.States[it.Key].Level
+		cur := req.States[it.Key].VerifiedLevel
 		if cur >= domain.MaxLevel {
 			continue
 		}
@@ -136,6 +137,7 @@ func generateStubOutput(req JudgmentRequest) (json.RawMessage, error) {
 			ProposedLevel: int(target),
 			EvidenceType:  string(ev),
 			Rationale:     fmt.Sprintf("stub による固定の判定（レベル %d → %d）。LLM は呼んでいない", cur, target),
+			EvidenceRefs:  []string{"log:stub"},
 			Confidence:    stubConfidence,
 		})
 	}

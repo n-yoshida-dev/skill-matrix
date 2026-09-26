@@ -104,7 +104,7 @@ func applyOne(key domain.ItemKey, level domain.Level, ev domain.EvidenceType, oc
 		},
 		State: domain.ItemState{
 			ItemKey:        key,
-			Level:          level,
+			VerifiedLevel:  level,
 			PreState:       domain.PreStateNone,
 			LastEvidenceAt: occurredAt,
 		},
@@ -160,8 +160,8 @@ func TestApplyJudgmentResult_イベントを積んで現在の状態を書き直
 		if !ok {
 			t.Fatal("go-01 の状態が読めない")
 		}
-		if got.Level != domain.LevelBasicConfirmed {
-			t.Errorf("レベルが %d", got.Level)
+		if got.VerifiedLevel != domain.LevelBasicConfirmed {
+			t.Errorf("レベルが %d", got.VerifiedLevel)
 		}
 		if got.LastEvidenceAt.IsZero() {
 			t.Error("最終根拠日が入っていない")

@@ -43,10 +43,10 @@ func stateOf(states map[ItemKey]ItemState, k ItemKey) ItemState {
 	if !ok {
 		st = ItemState{ItemKey: k}
 	}
-	if st.Level < LevelNone {
-		st.Level = LevelNone
-	} else if st.Level > MaxLevel {
-		st.Level = MaxLevel
+	if st.VerifiedLevel < LevelNone {
+		st.VerifiedLevel = LevelNone
+	} else if st.VerifiedLevel > MaxLevel {
+		st.VerifiedLevel = MaxLevel
 	}
 	return st
 }
@@ -54,7 +54,7 @@ func stateOf(states map[ItemKey]ItemState, k ItemKey) ItemState {
 // isReady は依存項目がすべてレベル1以上に達しているか（＝着手できるか）を返す。
 func isReady(states map[ItemKey]ItemState, it Item) bool {
 	for _, dep := range it.DependsOn {
-		if stateOf(states, dep).Level < LevelBasicConfirmed {
+		if stateOf(states, dep).VerifiedLevel < LevelBasicConfirmed {
 			return false
 		}
 	}
@@ -63,7 +63,7 @@ func isReady(states map[ItemKey]ItemState, it Item) bool {
 
 // isDone は「済」とみなせるか。学習パスの ✓ と同じ基準（レベル1以上＝一度は根拠が付いた）。
 func isDone(states map[ItemKey]ItemState, it Item) bool {
-	return stateOf(states, it.Key).Level >= LevelBasicConfirmed
+	return stateOf(states, it.Key).VerifiedLevel >= LevelBasicConfirmed
 }
 
 // scorer は優先度の計算に必要なものをまとめた内部の入れ物。
@@ -109,7 +109,7 @@ func (s scorer) score(it Item) float64 {
 		readiness = 1
 	}
 
-	gap := float64(MaxLevel-st.Level) / float64(MaxLevel)
+	gap := float64(MaxLevel-st.VerifiedLevel) / float64(MaxLevel)
 
 	bonus := staleBonus(Staleness(s.now, st.LastEvidenceAt, s.cfg))
 	if st.NeedsReview {
@@ -153,7 +153,7 @@ func NextActions(rm Roadmap, states map[ItemKey]ItemState, now time.Time, cfg St
 		for _, it := range d.Items {
 			seq++
 			st := sc.state(it.Key)
-			if st.Level >= MaxLevel && !NeedsAttention(st, now, sc.cfg) {
+			if st.VerifiedLevel >= MaxLevel && !NeedsAttention(st, now, sc.cfg) {
 				continue
 			}
 			list = append(list, entry{
@@ -163,10 +163,13 @@ func NextActions(rm Roadmap, states map[ItemKey]ItemState, now time.Time, cfg St
 					Name:      it.Name,
 					Outcome:   it.Outcome,
 					VerifyBy:  it.VerifyBy,
-					Level:     st.Level,
+					Level:     st.VerifiedLevel,
 					Staleness: Staleness(now, st.LastEvidenceAt, sc.cfg),
 					Priority:  sc.score(it),
 					Blocked:   !sc.ready(it),
+					// 印はあるが表示レベルに届いていない段。画面はこれで「既存の実装について
+					// L1 / L2 を確認する」の文言に切り替える（SPEC.md §7.4）
+					PendingLevels: st.PendingLevels(),
 				},
 				seq: seq,
 			})

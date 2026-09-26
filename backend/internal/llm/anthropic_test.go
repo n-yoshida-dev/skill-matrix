@@ -65,7 +65,7 @@ const successBody = `{
   "type": "message",
   "role": "assistant",
   "model": "claude-sonnet-5",
-  "content": [{"type": "text", "text": "{\"judgments\":[{\"itemKey\":\"go-01\",\"proposedLevel\":1,\"evidenceType\":\"drill\",\"rationale\":\"確認問題に答えている\",\"confidence\":0.8}],\"unmatched\":[\"型パラメータの話\"]}"}],
+  "content": [{"type": "text", "text": "{\"judgments\":[{\"itemKey\":\"go-01\",\"proposedLevel\":1,\"evidenceType\":\"drill\",\"evidenceRefs\":[\"log:x.md\"],\"rationale\":\"確認問題に答えている\",\"confidence\":0.8}],\"unmatched\":[\"型パラメータの話\"]}"}],
   "stop_reason": "end_turn",
   "usage": {"input_tokens": 7500, "output_tokens": 500, "cache_read_input_tokens": 1200, "cache_creation_input_tokens": 0}
 }`

@@ -176,7 +176,7 @@ func (w *Worker) run(ctx context.Context, job *store.JudgmentJob, log *slog.Logg
 
 	// 検証（V1〜V8）。ここは純粋関数で、DB も LLM も知らない
 	batch := domain.ApplyJudgments(in.Roadmap, in.States,
-		res.Output.DomainJudgments(in.LoggedAt), w.cfg.Rules)
+		res.Output.DomainJudgments(domain.SourceAI, in.LoggedAt), w.cfg.Rules)
 
 	// **応答は反映の前に保存する。** 反映に失敗しても「AI が何と言ったか」は残る
 	if err := w.queue.SaveLLMResponse(ctx, store.LLMResponse{

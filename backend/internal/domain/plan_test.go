@@ -106,7 +106,7 @@ func TestNextActions(t *testing.T) {
 	t.Run("最大レベルに達した項目は出さない", func(t *testing.T) {
 		rm := planRoadmap()
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: MaxLevel, LastEvidenceAt: now},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: MaxLevel, LastEvidenceAt: now},
 		}
 		for _, a := range NextActions(rm, states, now, cfg, w, 10) {
 			if a.ItemKey == "go-01" {
@@ -118,7 +118,7 @@ func TestNextActions(t *testing.T) {
 	t.Run("最大レベルでも要再確認なら出す", func(t *testing.T) {
 		rm := planRoadmap()
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: MaxLevel, LastEvidenceAt: now.Add(-200 * day)},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: MaxLevel, LastEvidenceAt: now.Add(-200 * day)},
 		}
 		found := false
 		for _, a := range NextActions(rm, states, now, cfg, w, 10) {
@@ -137,7 +137,7 @@ func TestNextActions(t *testing.T) {
 	t.Run("依存が満たされると着手可能になる", func(t *testing.T) {
 		rm := planRoadmap()
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: LevelBasicConfirmed, LastEvidenceAt: now},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: LevelBasicConfirmed, LastEvidenceAt: now},
 		}
 		got := NextActions(rm, states, now, cfg, w, 10)
 
@@ -177,7 +177,7 @@ func TestBuildPath(t *testing.T) {
 	t.Run("済・今ここ・この先に分類する", func(t *testing.T) {
 		d := planRoadmap().Domains[0]
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: LevelCanExplain, LastEvidenceAt: now},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: LevelCanExplain, LastEvidenceAt: now},
 		}
 		got := BuildPath(d, states)
 
@@ -212,7 +212,7 @@ func TestBuildPath(t *testing.T) {
 		d := planRoadmap().Domains[0]
 		states := map[ItemKey]ItemState{}
 		for _, it := range d.Items {
-			states[it.Key] = ItemState{ItemKey: it.Key, Level: LevelBasicConfirmed, LastEvidenceAt: now}
+			states[it.Key] = ItemState{ItemKey: it.Key, VerifiedLevel: LevelBasicConfirmed, LastEvidenceAt: now}
 		}
 		got := BuildPath(d, states)
 
@@ -275,7 +275,7 @@ func TestBuildPathとNextActionsは別の問いに答える(t *testing.T) {
 
 	rm := planRoadmap()
 	states := map[ItemKey]ItemState{
-		"go-01": {ItemKey: "go-01", Level: LevelBasicConfirmed, LastEvidenceAt: now},
+		"go-01": {ItemKey: "go-01", VerifiedLevel: LevelBasicConfirmed, LastEvidenceAt: now},
 	}
 
 	actions := NextActions(rm, states, now, cfg, w, 10)
@@ -312,8 +312,8 @@ func TestBuildPathとNextActionsは別の問いに答える(t *testing.T) {
 func TestBuildPathの今ここは着手可能な未達項目(t *testing.T) {
 	rm := planRoadmap()
 	states := map[ItemKey]ItemState{
-		"go-01": {ItemKey: "go-01", Level: LevelBasicConfirmed},
-		"go-02": {ItemKey: "go-02", Level: LevelBasicConfirmed},
+		"go-01": {ItemKey: "go-01", VerifiedLevel: LevelBasicConfirmed},
+		"go-02": {ItemKey: "go-02", VerifiedLevel: LevelBasicConfirmed},
 	}
 
 	path := BuildPath(rm.Domains[0], states)

@@ -87,8 +87,8 @@ func TestRollupDomain(t *testing.T) {
 
 	t.Run("レベルごとの内訳と進捗率を出す", func(t *testing.T) {
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: LevelCanExplain, LastEvidenceAt: now},
-			"go-02": {ItemKey: "go-02", Level: LevelBasicConfirmed, LastEvidenceAt: now},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: LevelCanExplain, LastEvidenceAt: now},
+			"go-02": {ItemKey: "go-02", VerifiedLevel: LevelBasicConfirmed, LastEvidenceAt: now},
 		}
 		got := RollupDomain(d, states, now, DefaultStalenessConfig())
 
@@ -103,8 +103,8 @@ func TestRollupDomain(t *testing.T) {
 
 	t.Run("古い根拠と降格提案を要再確認として数える", func(t *testing.T) {
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: LevelCanExplain, LastEvidenceAt: now.Add(-100 * day)},
-			"go-02": {ItemKey: "go-02", Level: LevelBasicConfirmed, LastEvidenceAt: now, NeedsReview: true},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: LevelCanExplain, LastEvidenceAt: now.Add(-100 * day)},
+			"go-02": {ItemKey: "go-02", VerifiedLevel: LevelBasicConfirmed, LastEvidenceAt: now, NeedsReview: true},
 		}
 		got := RollupDomain(d, states, now, DefaultStalenessConfig())
 
@@ -115,8 +115,8 @@ func TestRollupDomain(t *testing.T) {
 
 	t.Run("保存値が範囲外でも落ちない", func(t *testing.T) {
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: 99},
-			"go-02": {ItemKey: "go-02", Level: -5},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: 99},
+			"go-02": {ItemKey: "go-02", VerifiedLevel: -5},
 		}
 		got := RollupDomain(d, states, now, DefaultStalenessConfig())
 
@@ -162,7 +162,7 @@ func TestBuildSchedule(t *testing.T) {
 	t.Run("レベル1以上の項目は残りに数えない", func(t *testing.T) {
 		rm := testRoadmap()
 		states := map[ItemKey]ItemState{
-			"go-01": {ItemKey: "go-01", Level: LevelBasicConfirmed},
+			"go-01": {ItemKey: "go-01", VerifiedLevel: LevelBasicConfirmed},
 		}
 		got := BuildSchedule(rm, states, now)
 

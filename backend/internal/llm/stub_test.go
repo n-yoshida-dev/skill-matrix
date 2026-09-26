@@ -110,8 +110,8 @@ func TestStubJudge_Default(t *testing.T) {
 			t.Errorf("項目 = %v, want %v", got, want)
 		}
 		for _, j := range res.Output.Judgments {
-			if j.ProposedLevel != 1 || j.EvidenceType != string(domain.EvidenceDrill) || j.Confidence != stubConfidence {
-				t.Errorf("%s: level=%d evidence=%s confidence=%g（レベル1・drill・%g のはず）",
+			if j.ProposedLevel != 1 || j.EvidenceType != string(domain.EvidenceDrill) || j.Confidence == nil || *j.Confidence != stubConfidence {
+				t.Errorf("%s: level=%d evidence=%s confidence=%v（レベル1・drill・%g のはず）",
 					j.ItemKey, j.ProposedLevel, j.EvidenceType, j.Confidence, stubConfidence)
 			}
 		}
@@ -146,8 +146,8 @@ func TestStubJudge_Default(t *testing.T) {
 	t.Run("現在のレベルに応じて次のレベルと、それに届く根拠を選ぶ", func(t *testing.T) {
 		req := sampleRequest(t)
 		req.States = map[domain.ItemKey]domain.ItemState{
-			"go-01": {ItemKey: "go-01", Level: domain.MaxLevel},        // 最大レベルなので選ばれない
-			"go-02": {ItemKey: "go-02", Level: domain.LevelCanExplain}, // 2 → 3 は「実装」が要る
+			"go-01": {ItemKey: "go-01", VerifiedLevel: domain.MaxLevel},        // 最大レベルなので選ばれない
+			"go-02": {ItemKey: "go-02", VerifiedLevel: domain.LevelCanExplain}, // 2 → 3 は「実装」が要る
 		}
 		res, err := NewStub().Judge(ctx, req)
 		if err != nil {
@@ -166,7 +166,7 @@ func TestStubJudge_Default(t *testing.T) {
 	t.Run("全項目が最大レベルなら判定は0件で、エラーにはしない", func(t *testing.T) {
 		req := sampleRequest(t)
 		for _, it := range req.Roadmap.AllItems() {
-			req.States[it.Key] = domain.ItemState{ItemKey: it.Key, Level: domain.MaxLevel}
+			req.States[it.Key] = domain.ItemState{ItemKey: it.Key, VerifiedLevel: domain.MaxLevel}
 		}
 		res, err := NewStub().Judge(ctx, req)
 		if err != nil {
@@ -183,14 +183,14 @@ func TestStubJudge_Default(t *testing.T) {
 		if err != nil {
 			t.Fatalf("エラーになった: %v", err)
 		}
-		batch := domain.ApplyJudgments(req.Roadmap, req.States, res.Output.DomainJudgments(logDay), domain.DefaultRules())
+		batch := domain.ApplyJudgments(req.Roadmap, req.States, res.Output.DomainJudgments(domain.SourceAI, logDay), domain.DefaultRules())
 		if len(batch.Violations) != 0 {
 			t.Fatalf("違反が出た: %+v", batch.Violations)
 		}
 		for _, key := range []domain.ItemKey{"go-01", "go-02", "go-03"} {
 			st := batch.States[key]
-			if st.Level != domain.LevelBasicConfirmed || !st.LastEvidenceAt.Equal(logDay) {
-				t.Errorf("%s: level=%d lastEvidenceAt=%v（レベル1・%v のはず）", key, st.Level, st.LastEvidenceAt, logDay)
+			if st.VerifiedLevel != domain.LevelBasicConfirmed || !st.LastEvidenceAt.Equal(logDay) {
+				t.Errorf("%s: level=%d lastEvidenceAt=%v（レベル1・%v のはず）", key, st.VerifiedLevel, st.LastEvidenceAt, logDay)
 			}
 		}
 	})
@@ -228,12 +228,12 @@ func TestStubJudge_FixedOutput(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("行儀の悪い LLM を演じさせると、domain の検証が弾いて記録する", func(t *testing.T) {
-		// 1件目: 実在しない項目（V1）／2件目: レベル 9（V2）／3件目: 未着手からいきなりレベル3（V4）
+		// 1件目: 実在しない項目（V1）／2件目: レベル 9（V2）／3件目: 未着手から実装の根拠でレベル3（印 [3] が付き、表示レベルは 0 のまま。V4 は廃止）
 		raw := []byte(`{
 			"judgments": [
-				{"itemKey": "rust-01", "proposedLevel": 1, "evidenceType": "drill", "rationale": "捏造された項目", "confidence": 0.9},
-				{"itemKey": "go-01", "proposedLevel": 9, "evidenceType": "drill", "rationale": "範囲外のレベル", "confidence": 0.9},
-				{"itemKey": "go-02", "proposedLevel": 3, "evidenceType": "implementation", "rationale": "一気飛び", "confidence": 0.9}
+				{"itemKey": "rust-01", "proposedLevel": 1, "evidenceType": "drill", "evidenceRefs": ["log:x.md"], "rationale": "捏造された項目", "confidence": 0.9},
+				{"itemKey": "go-01", "proposedLevel": 9, "evidenceType": "drill", "evidenceRefs": ["log:x.md"], "rationale": "範囲外のレベル", "confidence": 0.9},
+				{"itemKey": "go-02", "proposedLevel": 3, "evidenceType": "implementation", "evidenceRefs": ["log:x.md"], "rationale": "実装の根拠", "confidence": 0.9}
 			],
 			"unmatched": ["Rust の所有権について読んだ"]
 		}`)
@@ -246,15 +246,15 @@ func TestStubJudge_FixedOutput(t *testing.T) {
 			t.Errorf("Unmatched = %v, want %v", got, want)
 		}
 
-		batch := domain.ApplyJudgments(req.Roadmap, req.States, res.Output.DomainJudgments(logDay), domain.DefaultRules())
+		batch := domain.ApplyJudgments(req.Roadmap, req.States, res.Output.DomainJudgments(domain.SourceAI, logDay), domain.DefaultRules())
 		want := []domain.ViolationCode{
-			domain.ViolationUnknownItem, domain.ViolationLevelOutOfRange, domain.ViolationLevelJump,
+			domain.ViolationUnknownItem, domain.ViolationLevelOutOfRange,
 		}
 		if got := violationCodes(batch.Violations); !slices.Equal(got, want) {
 			t.Errorf("違反 = %v, want %v", got, want)
 		}
-		if got := batch.States["go-02"].Level; got != domain.LevelBasicConfirmed {
-			t.Errorf("go-02 はレベル1に切り詰められるはずが %d だった", got)
+		if st := batch.States["go-02"]; st.VerifiedLevel != domain.LevelNone || !slices.Equal(st.EvidencedLevels(), []domain.Level{domain.LevelGuidedImpl}) {
+			t.Errorf("go-02 は印 [3]・表示レベル 0 のはずが evidenced=%v verified=%d だった", st.EvidencedLevels(), st.VerifiedLevel)
 		}
 	})
 
