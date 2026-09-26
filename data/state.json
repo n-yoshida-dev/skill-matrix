@@ -3,229 +3,66 @@
   "items": [
     {
       "itemKey": "go-01",
-      "verifiedLevel": 2,
-      "evidencedLevels": [1, 2],
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-08-03",
-      "events": [
-        {
-          "file": "2026-08-01-tour-basics.json",
-          "index": 0,
-          "occurredAt": "2026-08-01",
-          "source": "ai",
-          "evidenceType": "drill",
-          "proposedLevel": 1,
-          "marked": [1],
-          "evidenceRefs": ["repo:example/study@0000000/go/logs/2026-08-01-tour-basics.md"],
-          "rationale": "章末の確認問題を見直さずに全問答えられた。ゼロ値の考え方を自分の言葉で言い直している",
-          "confidence": 0.85,
-          "violations": []
-        },
-        {
-          "file": "2026-08-03-interfaces.json",
-          "index": 0,
-          "occurredAt": "2026-08-03",
-          "source": "ai",
-          "evidenceType": "self_explanation",
-          "proposedLevel": 2,
-          "marked": [1, 2],
-          "evidenceRefs": ["repo:example/study@0000000/go/logs/2026-08-03-interfaces.md"],
-          "rationale": "継承が無い理由と埋め込みの違いを説明して伝わった",
-          "confidence": 0.8,
-          "violations": []
-        }
-      ]
+      "lastEvidenceAt": null,
+      "events": []
     },
     {
       "itemKey": "go-02",
-      "verifiedLevel": 3,
-      "evidencedLevels": [1, 2, 3],
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-09-10",
-      "events": [
-        {
-          "file": "2026-08-03-interfaces.json",
-          "index": 1,
-          "occurredAt": "2026-08-03",
-          "source": "ai",
-          "evidenceType": "implementation",
-          "proposedLevel": 3,
-          "marked": [3],
-          "evidenceRefs": ["repo:example/study@0000000/go/logs/2026-08-03-interfaces.md"],
-          "rationale": "通知処理をインターフェース越しに差し替える練習を実装した",
-          "confidence": 0.75,
-          "violations": []
-        },
-        {
-          "file": "2026-09-10-notifier-refactor.json",
-          "index": 0,
-          "occurredAt": "2026-09-10",
-          "source": "ai",
-          "evidenceType": "self_explanation",
-          "proposedLevel": 2,
-          "marked": [1, 2],
-          "evidenceRefs": ["repo:example/study@0000000/go/logs/2026-09-10-notifier-refactor.md"],
-          "rationale": "「実装すると宣言しない」設計の利点を Java の interface と比較して説明した",
-          "confidence": 0.8,
-          "violations": []
-        }
-      ]
+      "lastEvidenceAt": null,
+      "events": []
     },
     {
       "itemKey": "go-03",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "explained_only",
+      "preState": "none",
       "needsReview": false,
       "lastEvidenceAt": null,
-      "events": [
-        {
-          "file": "2026-08-05-errors-reading.json",
-          "index": 0,
-          "occurredAt": "2026-08-05",
-          "source": "ai",
-          "evidenceType": "explained_to",
-          "proposedLevel": 0,
-          "marked": [],
-          "evidenceRefs": ["repo:example/study@0000000/go/logs/2026-08-05-errors-reading.md"],
-          "rationale": "記事を読んだだけで手は動かしていない。errors.Is / As の使い分けは読んで分かった段階",
-          "confidence": 0.9,
-          "violations": []
-        }
-      ]
+      "events": []
     },
     {
       "itemKey": "go-04",
       "verifiedLevel": 0,
-      "evidencedLevels": [3, 4],
+      "evidencedLevels": [],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-09-20",
-      "events": [
-        {
-          "file": "2026-08-08-http-server.json",
-          "index": 0,
-          "occurredAt": "2026-08-08",
-          "source": "ai",
-          "evidenceType": "unaided_implementation",
-          "proposedLevel": 4,
-          "marked": [3, 4],
-          "evidenceRefs": ["repo:example/study@0000000/go/logs/2026-08-08-http-server.md"],
-          "rationale": "標準ライブラリだけでルーティングと認証ミドルウェアを組み、テストも書いた。コード提示や逐次ガイドは受けていない",
-          "confidence": 0.7,
-          "violations": []
-        },
-        {
-          "file": "2026-09-20-middleware-chain.json",
-          "index": 0,
-          "occurredAt": "2026-09-20",
-          "source": "ai",
-          "evidenceType": "implementation",
-          "proposedLevel": 3,
-          "marked": [3],
-          "evidenceRefs": ["repo:example/sample-api@1111111"],
-          "rationale": "ミドルウェアの合成順を変えてログ出力を確かめる実装。資料を見ながら",
-          "confidence": 0.8,
-          "violations": []
-        }
-      ]
+      "lastEvidenceAt": null,
+      "events": []
     },
     {
       "itemKey": "go-05",
-      "verifiedLevel": 1,
-      "evidencedLevels": [1],
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
       "preState": "none",
-      "needsReview": true,
-      "lastEvidenceAt": "2026-06-15",
-      "events": [
-        {
-          "file": "2026-06-15-table-tests.json",
-          "index": 0,
-          "occurredAt": "2026-06-15",
-          "source": "ai",
-          "evidenceType": "drill",
-          "proposedLevel": 1,
-          "marked": [1],
-          "evidenceRefs": ["repo:example/study@0000000/go/logs/2026-06-15-table-tests.md"],
-          "rationale": "table driven test の構造を確認質問に答えて説明できた",
-          "confidence": 0.8,
-          "violations": []
-        },
-        {
-          "file": "2026-09-20-middleware-chain.json",
-          "index": 1,
-          "occurredAt": "2026-09-20",
-          "source": "ai",
-          "evidenceType": "drill",
-          "proposedLevel": 0,
-          "marked": [],
-          "evidenceRefs": ["repo:example/study@0000000/go/logs/2026-09-20-middleware-chain.md"],
-          "rationale": "table driven test の書き方の確認質問に答えられず、写経し直した",
-          "confidence": 0.6,
-          "violations": [{ "code": "V6_failed_check", "detail": "不合格の報告。印は付けず needsReview=true" }]
-        }
-      ]
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
     },
     {
       "itemKey": "react-01",
-      "verifiedLevel": 2,
-      "evidencedLevels": [1, 2],
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-08-12",
-      "events": [
-        {
-          "file": "2026-07-28-components.json",
-          "index": 0,
-          "occurredAt": "2026-07-28",
-          "source": "ai",
-          "evidenceType": "drill",
-          "proposedLevel": 1,
-          "marked": [1],
-          "evidenceRefs": ["repo:example/study@0000000/react/logs/2026-07-28-components.md"],
-          "rationale": "props と state の違いを確認質問に答えて区別できた",
-          "confidence": 0.85,
-          "violations": []
-        },
-        {
-          "file": "2026-08-12-state-placement.json",
-          "index": 0,
-          "occurredAt": "2026-08-12",
-          "source": "ai",
-          "evidenceType": "self_explanation",
-          "proposedLevel": 2,
-          "marked": [1, 2],
-          "evidenceRefs": ["repo:example/study@0000000/react/logs/2026-08-12-state-placement.md"],
-          "rationale": "状態を親に持ち上げる判断基準を自分の言葉で書いている",
-          "confidence": 0.75,
-          "violations": []
-        }
-      ]
+      "lastEvidenceAt": null,
+      "events": []
     },
     {
       "itemKey": "react-02",
       "verifiedLevel": 0,
-      "evidencedLevels": [3],
+      "evidencedLevels": [],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-08-12",
-      "events": [
-        {
-          "file": "2026-08-12-state-placement.json",
-          "index": 1,
-          "occurredAt": "2026-08-12",
-          "source": "ai",
-          "evidenceType": "implementation",
-          "proposedLevel": 3,
-          "marked": [3],
-          "evidenceRefs": ["repo:example/study@0000000/react/logs/2026-08-12-state-placement.md"],
-          "rationale": "useEffect を外した形に書き換えた。AI に手伝ってもらいながら",
-          "confidence": 0.7,
-          "violations": []
-        }
-      ]
+      "lastEvidenceAt": null,
+      "events": []
     },
     {
       "itemKey": "react-03",
@@ -240,106 +77,30 @@
       "itemKey": "react-04",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "self_reported",
+      "preState": "none",
       "needsReview": false,
       "lastEvidenceAt": null,
-      "events": [
-        {
-          "file": "2026-09-01-forms-selfreport.json",
-          "index": 0,
-          "occurredAt": "2026-09-01",
-          "source": "manual",
-          "evidenceType": "self_report",
-          "proposedLevel": 0,
-          "marked": [],
-          "evidenceRefs": ["repo:example/study@0000000/react/logs/2026-09-01-forms.md"],
-          "rationale": "入力検証を書いた経験がある、との自己申告のみ",
-          "confidence": null,
-          "violations": []
-        }
-      ]
+      "events": []
     },
     {
       "itemKey": "infra-01",
-      "verifiedLevel": 3,
-      "evidencedLevels": [1, 2, 3],
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-09-05",
-      "events": [
-        {
-          "file": "2026-07-20-docker-basics.json",
-          "index": 0,
-          "occurredAt": "2026-07-20",
-          "source": "ai",
-          "evidenceType": "drill",
-          "proposedLevel": 1,
-          "marked": [1],
-          "evidenceRefs": ["repo:example/study@0000000/infra/logs/2026-07-20-docker-basics.md"],
-          "rationale": "イメージとコンテナの違い、ボリュームの役割を確認質問に答えられた",
-          "confidence": 0.9,
-          "violations": []
-        },
-        {
-          "file": "2026-08-10-compose-env.json",
-          "index": 0,
-          "occurredAt": "2026-08-10",
-          "source": "ai",
-          "evidenceType": "implementation",
-          "proposedLevel": 3,
-          "marked": [3],
-          "evidenceRefs": ["repo:example/study@0000000/infra/logs/2026-08-10-compose-env.md"],
-          "rationale": "Postgres 付きの開発環境を Compose で立て、down -v で作り直した",
-          "confidence": 0.8,
-          "violations": []
-        },
-        {
-          "file": "2026-09-05-compose-reuse.json",
-          "index": 0,
-          "occurredAt": "2026-09-05",
-          "source": "ai",
-          "evidenceType": "self_explanation",
-          "proposedLevel": 2,
-          "marked": [1, 2],
-          "evidenceRefs": ["repo:example/sample-api@2222222"],
-          "rationale": "ボリュームを消さずにスキーマを変えると詰まる理由を、自分の言葉で書いている",
-          "confidence": 0.85,
-          "violations": []
-        }
-      ]
+      "lastEvidenceAt": null,
+      "events": []
     },
     {
       "itemKey": "infra-02",
       "verifiedLevel": 0,
-      "evidencedLevels": [3],
+      "evidencedLevels": [],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-09-12",
-      "events": [
-        {
-          "file": "2026-09-12-ci-first.json",
-          "index": 0,
-          "occurredAt": "2026-09-12",
-          "source": "ai",
-          "evidenceType": "implementation",
-          "proposedLevel": 3,
-          "marked": [3],
-          "evidenceRefs": ["repo:example/study@0000000/infra/logs/2026-09-12-ci-first.md"],
-          "rationale": "テンプレートの CI を読んで lint / test のステップを足した",
-          "confidence": 0.7,
-          "violations": []
-        }
-      ]
+      "lastEvidenceAt": null,
+      "events": []
     }
   ],
-  "deferred": [
-    {
-      "file": "2026-09-18-errors-try.json",
-      "index": 0,
-      "itemKey": "go-03",
-      "code": "V7_low_confidence",
-      "detail": "confidence 0.4 < 0.5。errors.As を使った小さな実装を試した、との記述"
-    }
-  ],
+  "deferred": [],
   "rejected": []
 }

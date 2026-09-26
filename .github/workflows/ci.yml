@@ -120,6 +120,29 @@ jobs:
       - name: ビルド
         run: go build ./...
 
+  # data/ の判定と理解度が整合しているかを見る（SPEC.md §6）。
+  # backend のテストとは別ジョブにして、赤くなったときに「データの不備」だとチェック名で分かるようにする。
+  # 判定ファイルの崩れ・棄却の残り・state.json の再計算忘れや手編集で落ちる
+  data:
+    name: data/ の検証（verify）
+    needs: detect
+    if: needs.detect.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: 判定を検証し、state.json が再計算結果と一致するか
+        run: go run ./cmd/skillmatrix verify --data ../data
+
   no-secrets:
     name: 秘密情報が混入していないか
     runs-on: ubuntu-latest
