@@ -6,9 +6,11 @@
 // ダッシュボード独自の状態は持たない（ここで作るデータは毎回捨てて作り直す派生物）。
 //
 // 使い方:
-//   node dashboard/update.mjs            data.js を作り直す → dashboard/index.html をブラウザで開く
-//   node dashboard/update.mjs --serve    作り直したうえで http://127.0.0.1:8787/ で配信する（/data.js は開くたびに再生成）
+//   node dashboard/update.mjs --serve --open   配信して http://127.0.0.1:8787/ をブラウザで開く。画面の「更新」ボタンで作り直せる（普段はこれ）
+//   node dashboard/update.mjs                  data.js を作り直すだけ → dashboard/index.html をダブルクリックで開く（ボタンは使えない）
 //   オプション: --port <n> --host <addr>（既定 127.0.0.1。スマホから見るなら --host 0.0.0.0）--quiet
+//
+// ブラウザだけでは git / gh / bd を実行できないので、「更新」ボタンは配信モードのこのプロセス（POST /update）が受けて作り直す。
 //
 // 依存: Node 標準ライブラリだけ。git は必須。gh / bd / go は無ければその項目を「取得できず」にして続ける。
 
@@ -419,7 +421,9 @@ export function collect() {
 function writeData(quiet) {
   const started = Date.now()
   const d = collect()
-  fs.writeFileSync(OUT, `window.DASHBOARD_DATA = ${JSON.stringify(d, null, 2)}\n`)
+  // 一時ファイルに書いてから置き換える（配信中に読まれても書きかけの data.js を渡さない）
+  fs.writeFileSync(OUT + '.tmp', `window.DASHBOARD_DATA = ${JSON.stringify(d, null, 2)}\n`)
+  fs.renameSync(OUT + '.tmp', OUT)
   if (!quiet) {
     const t = d.todo?.total
     console.log(
@@ -431,16 +435,31 @@ function writeData(quiet) {
   return d
 }
 
-/** 配信モード。/data.js は開くたびに作り直す（連続アクセスは 10 秒だけ結果を使い回す） */
-function serve({ host, port, quiet }) {
+/**
+ * 配信モード。/data.js は開くたびに作り直す（連続アクセスは 10 秒だけ結果を使い回す）。
+ * 画面の「更新」ボタンは POST /update で、10 秒の使い回しを無視して必ず作り直す
+ */
+function serve({ host, port, quiet, open }) {
   let cache = { at: 0, body: '' }
+  const regenerate = () => {
+    writeData(quiet)
+    cache = { at: Date.now(), body: fs.readFileSync(OUT, 'utf8') }
+  }
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://x')
-    if (url.pathname === '/data.js') {
-      if (Date.now() - cache.at > 10_000) {
-        writeData(quiet)
-        cache = { at: Date.now(), body: fs.readFileSync(OUT, 'utf8') }
+    if (url.pathname === '/update' && req.method === 'POST') {
+      try {
+        regenerate()
+        res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+        res.end(JSON.stringify({ ok: true, generatedAt: new Date(cache.at).toISOString() }))
+      } catch (e) {
+        res.writeHead(500, { 'content-type': 'application/json; charset=utf-8' })
+        res.end(JSON.stringify({ ok: false, error: e.message }))
       }
+      return
+    }
+    if (url.pathname === '/data.js') {
+      if (Date.now() - cache.at > 10_000) regenerate()
       res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-store' })
       res.end(cache.body)
       return
@@ -456,8 +475,23 @@ function serve({ host, port, quiet }) {
     res.end(fs.readFileSync(p))
   })
   server.listen(port, host, () => {
-    console.log(`ダッシュボード: http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/  （Ctrl+C で終了）`)
+    const url = `http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/`
+    console.log(`ダッシュボード: ${url}  （このまま起動しておく。終了は Ctrl+C）`)
+    if (open) openBrowser(url)
   })
+}
+
+/** 既定のブラウザで URL を開く。WSL では Windows 側のブラウザを使う。開けなくても止めない */
+function openBrowser(url) {
+  const isWsl = /microsoft/i.test(fs.existsSync('/proc/version') ? fs.readFileSync('/proc/version', 'utf8') : '')
+  const cmd =
+    process.platform === 'win32' || isWsl
+      ? ['cmd.exe', ['/c', 'start', '', url]]
+      : process.platform === 'darwin'
+        ? ['open', [url]]
+        : ['xdg-open', [url]]
+  const r = spawnSync(cmd[0], cmd[1], { stdio: 'ignore', timeout: 5_000 })
+  if (r.error || r.status !== 0) console.log(`ブラウザを開けなかったので、上の URL を手で開いてください`)
 }
 
 // ---------- 入口 ----------
@@ -469,7 +503,7 @@ const flag = (k, def) => {
 const quiet = argv.includes('--quiet')
 if (argv.includes('--serve')) {
   writeData(quiet)
-  serve({ host: flag('--host', '127.0.0.1'), port: Number(flag('--port', '8787')), quiet })
+  serve({ host: flag('--host', '127.0.0.1'), port: Number(flag('--port', '8787')), quiet, open: argv.includes('--open') })
 } else {
   writeData(quiet)
 }

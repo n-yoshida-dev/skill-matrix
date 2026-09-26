@@ -45,6 +45,12 @@
   header h1 { font-size: 20px; margin: 0; letter-spacing: 0.01em; }
   header .meta { color: var(--faint); font-size: 13px; }
   header .meta.stale { color: var(--warn); }
+  /* 更新ボタン。配信モード（http）のときだけ押せる。file:// で開いたときは押すと起動方法を出す */
+  #refresh { margin-left: auto; font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+  #refresh:hover { border-color: var(--sub); }
+  #refresh:disabled { opacity: 0.6; cursor: wait; }
+  #hint { width: 100%; font-size: 13px; color: var(--sub); background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
+  #hint code { user-select: all; }
 
   /* 異常だけを出す帯 */
   .alert { display: flex; gap: 8px; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
@@ -147,7 +153,11 @@
 </head>
 <body>
 <div class="wrap">
-  <header><h1 id="title">開発ダッシュボード</h1><span class="meta" id="meta"></span></header>
+  <header>
+    <h1 id="title">開発ダッシュボード</h1><span class="meta" id="meta"></span>
+    <button id="refresh" type="button" title="正本（git / CI / TODO 等）を読み直して描き直す">更新</button>
+    <div id="hint" hidden></div>
+  </header>
   <div id="err" hidden></div>
   <main id="main"></main>
 </div>
@@ -252,7 +262,7 @@ function render(d) {
   meta.className = 'meta' + (ageMin > 60 ? ' stale' : '')
   meta.innerHTML =
     `${esc(g.branch)} · ${ago(d.generatedAt)}に更新` +
-    (ageMin > 60 ? ' · 古いので <code>node dashboard/update.mjs</code> を実行して再読込' : '') +
+    (ageMin > 60 ? '（古い。右の「更新」を押す）' : '') +
     (d.project.repoUrl ? ` · <a href="${esc(d.project.repoUrl)}">GitHub</a>` : '')
 
   const html = []
@@ -408,8 +418,34 @@ document.addEventListener('click', (e) => {
     el.classList.remove('full')
   }
 })
-// 配信モード（--serve）のときだけ、60 秒ごとに読み直す
-if (location.protocol.startsWith('http')) setInterval(() => location.reload(), 60_000)
+// 「更新」ボタン。配信モード（http）なら POST /update で作り直してから読み直す。
+// file:// で開いているときはブラウザから git 等を実行できないので、起動方法を出す
+const served = location.protocol.startsWith('http')
+document.getElementById('refresh').addEventListener('click', async (e) => {
+  const btn = e.currentTarget
+  const hint = document.getElementById('hint')
+  if (!served) {
+    hint.hidden = !hint.hidden
+    hint.innerHTML =
+      'この開き方（ファイルを直接開く）では、ブラウザから git や CI の情報を取りに行けません。' +
+      'ターミナルで <code>node dashboard/update.mjs --serve --open</code> を一度起動して放置しておくと、開いた画面のこのボタンで更新できます。'
+    return
+  }
+  btn.disabled = true
+  btn.textContent = '更新中…（数秒）'
+  try {
+    const res = await fetch('/update', { method: 'POST' })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    location.reload()
+  } catch (err) {
+    btn.disabled = false
+    btn.textContent = '更新'
+    hint.hidden = false
+    hint.textContent = `更新できませんでした（${err.message}）。ターミナルの node dashboard/update.mjs --serve が動いているか確かめてください`
+  }
+})
+// 配信モードのときだけ、60 秒ごとに読み直す
+if (served) setInterval(() => location.reload(), 60_000)
 </script>
 </body>
 </html>

@@ -7,13 +7,14 @@ Claude Code に開発を任せているあいだ、人間がコードやログ�
 ## 起動
 
 ```bash
-node dashboard/update.mjs              # データ（dashboard/data.js）を作り直す → dashboard/index.html をブラウザでダブルクリックして開く
-node dashboard/update.mjs --serve      # 配信もする。http://127.0.0.1:8787/ を開くたびに再生成（10 秒以内の連続アクセスは前回の結果を使い回す）
+node dashboard/update.mjs --serve --open   # 普段はこれ。ブラウザが開く。以後は画面右上の「更新」ボタンで最新にできる（ターミナルは起動したまま放置）
+node dashboard/update.mjs                  # データ（dashboard/data.js）を作り直すだけ → dashboard/index.html をダブルクリックで開く（「更新」ボタンは使えない）
 node dashboard/update.mjs --serve --host 0.0.0.0 --port 8787   # 同じ LAN のスマートフォンから見るとき（認証は無いので LAN 内だけ）
 ```
 
-**HTML だけでは動かない理由**：表示する中身（git の状態・CI・Beads）はブラウザからは読めないので、`update.mjs` が集めて `data.js` に書く工程が要る。
-ブラウザで開くだけなら `--serve` は不要で、`node dashboard/update.mjs` を 1 回実行して `index.html` を開けばよい。最新にしたいときはもう一度実行して再読込する。
+**ターミナルが要る理由**：表示する中身（git の状態・CI・Beads）はブラウザからは読めない。`--serve` で起動した Node のプロセスがブラウザの代わりに
+git / gh / bd を実行し、「更新」ボタン（`POST /update`）を受けて `data.js` を作り直す。ページを開き直したときも 10 秒以上たっていれば作り直す。
+起動は 1 回でよく、閉じるまで動き続ける（VS Code のターミナルで起動しておくのが楽）。
 
 依存は Node の標準ライブラリだけ（npm install 不要、ビルド不要）。`git` は必須。`gh`（GitHub CLI、ログイン済み）・`bd`（Beads）・`go` は
 無ければその項目が「取得できず」になるだけで、ほかは表示される。1 回の生成は数秒（`go run ... verify` と `gh` の呼び出し分）。
@@ -37,7 +38,7 @@ node dashboard/update.mjs --serve --host 0.0.0.0 --port 8787   # 同じ LAN の�
 
 ## 更新と自動化
 
-- 手動：`node dashboard/update.mjs` を実行してブラウザを再読込。`--serve` 中は開き直す（または 60 秒ごとの自動再読込）だけで最新になる
+- 手動：`--serve` 中は画面の「更新」ボタン（または開き直し・60 秒ごとの自動再読込）。ファイルを直接開く使い方なら `node dashboard/update.mjs` を実行して再読込
 - **フック等での自動更新は入れていない。** 配信モードが開くたびに正本を読み直すので、別の更新経路（Claude Code フック・git フック・CI）を足すと
   同じ結果を二重に作ることになり、セッションごとに数秒の待ちが増えるだけだから
 - `dashboard/data.js` は派生物なので `.gitignore` 済み。コミットしない
