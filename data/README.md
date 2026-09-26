@@ -19,10 +19,12 @@ go -C backend run ./cmd/skillmatrix recalc --data ../data   # state.json を書�
 go -C backend run ./cmd/skillmatrix verify --data ../data   # CI と同じ検査（書き出さない）
 ```
 
-## 今はダミーのロードマップ（2026-09-26）
+## 今の状態（2026-09-27）
 
-画面の土台（TODO 2-5）を実物のロードマップ（TODO 2-1 段階 D）より先に作ったため、
-`roadmap.json` は `backend/testdata/roadmap-sample.json` に `moduleRefs` を足しただけのダミー。**実際の学習計画ではない。**
+- `roadmap.json` は実物（8 分野・46 項目）。項目の key・分野・`moduleRefs` は `docs/skill-map-migration.md` §8.3 の対応表から起こした。
+  `backend/testdata/roadmap-sample.json`（テスト用のダミー）とは別物
+- `judgments/` はまだ空。判定は段階 F（`skill-map.md` からの移行）で初めて入る。それまで `state.json` は全項目レベル 0（未着手）
+- `verifyBy` は移行後の状態（§8.4 の期待表）から見た「次の印の取り方」で書いてある。移行前の今は、書いてある段（L1・L2 など）と画面のレベルがずれる
 
-- `judgments/` は空。`state.json` は `recalc` の出力で、全項目がレベル 0（未着手）
-- `roadmap.json` は段階 D で実物に差し替える。判定は段階 F（`skill-map.md` からの移行）で初めて入る
+`roadmap.json` の文字列には所属先・企業名・人名・転職活動・人事評価を書かない（`CLAUDE.md`「守ること」）。
+`verifyBy` は、その項目で**次に付く印**を得るための技術的な検証条件を書く。印が付いて段が上がったら、次の段の条件に書き換える。
