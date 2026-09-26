@@ -185,3 +185,20 @@ func TestBuildSchedule(t *testing.T) {
 		}
 	})
 }
+
+// 「実装根拠あり・理解未確認」（印が VerifiedLevel より上にある項目）をサマリー帯の列として数える（SPEC.md §7.1）。
+func TestRollupDomain_PendingCount(t *testing.T) {
+	now := time.Date(2026, 8, 10, 12, 0, 0, 0, time.UTC)
+	rm := testRoadmap()
+	states := map[ItemKey]ItemState{
+		"go-01": stateWith("go-01", 3),       // 実装の根拠だけ。表示は 0
+		"go-02": stateWith("go-02", 1, 2, 3), // 途切れずに付いている
+	}
+	got := RollupDomain(rm.Domains[0], states, now, DefaultStalenessConfig())
+	if got.PendingCount != 1 {
+		t.Errorf("PendingCount = %d, want 1（go-01 だけ）", got.PendingCount)
+	}
+	if got.ByLevel[0] != 1 || got.ByLevel[3] != 1 {
+		t.Errorf("ByLevel = %v（表示レベルは 0 と 3 が 1 件ずつのはず）", got.ByLevel)
+	}
+}

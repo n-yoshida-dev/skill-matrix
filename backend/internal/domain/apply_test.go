@@ -192,6 +192,16 @@ func TestApplyJudgment(t *testing.T) {
 			wantViolations: []ViolationCode{ViolationLowConfidence},
 		},
 		{
+			name: "V7 AI の判定に確信度が無ければ 0 とみなして保留にする（安全側）",
+			cur:  ItemState{ItemKey: "go-01"},
+			j: Judgment{
+				ItemKey: "go-01", ProposedLevel: LevelBasicConfirmed, EvidenceType: EvidenceDrill,
+				Source: SourceAI, EvidenceRefs: []string{"log:a.md"}, OccurredAt: day10,
+			},
+			wantDeferred:   true,
+			wantViolations: []ViolationCode{ViolationLowConfidence},
+		},
+		{
 			name: "V7 は manual の判定には掛からない（確信度は書かれない）",
 			cur:  ItemState{ItemKey: "go-01"},
 			j: Judgment{

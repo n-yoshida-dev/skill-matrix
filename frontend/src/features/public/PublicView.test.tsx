@@ -109,7 +109,7 @@ const data: AppData = {
             proposedLevel: 0,
             marked: [],
             rationale: '確認質問に答えられなかった',
-            violations: [{ code: 'V6_downgrade', detail: '不合格の報告' }],
+            violations: [{ code: 'V6_failed_check', detail: '不合格の報告' }],
           }),
         ],
       }),

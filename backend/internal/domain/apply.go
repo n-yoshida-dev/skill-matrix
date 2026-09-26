@@ -79,17 +79,24 @@ func ApplyJudgment(cur ItemState, j Judgment, rules Rules) Applied {
 	// V7: 確信度が閾値未満のものは適用せず保留にする。AI の判定だけが対象で、
 	// 人の訂正（manual）や skill-map からの写し（migration）には確信度が無い（SPEC.md §3.3）。
 	// 保留分は state.json の deferred に残し、採用するなら人が manual の判定を足す（SPEC.md §4.7）。
-	if j.isAI() && j.HasConfidence && j.Confidence < rules.ConfidenceThreshold {
-		res.Deferred = true
-		res.Violations = append(res.Violations, Violation{
-			Code:     ViolationLowConfidence,
-			ItemKey:  j.ItemKey,
-			Proposed: j.ProposedLevel,
-			Applied:  d.top,
-			Detail: fmt.Sprintf("確信度 %.2f が閾値 %.2f 未満のため保留",
-				j.Confidence, rules.ConfidenceThreshold),
-		})
-		return res
+	// AI の判定に確信度が無ければ 0 とみなして保留にする（安全側）。形の検査が通していれば起きない
+	if j.isAI() {
+		conf := 0.0
+		if j.HasConfidence {
+			conf = j.Confidence
+		}
+		if conf < rules.ConfidenceThreshold {
+			res.Deferred = true
+			res.Violations = append(res.Violations, Violation{
+				Code:     ViolationLowConfidence,
+				ItemKey:  j.ItemKey,
+				Proposed: j.ProposedLevel,
+				Applied:  d.top,
+				Detail: fmt.Sprintf("確信度 %.2f が閾値 %.2f 未満のため保留",
+					conf, rules.ConfidenceThreshold),
+			})
+			return res
+		}
 	}
 
 	next := cur

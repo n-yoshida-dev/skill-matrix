@@ -263,7 +263,8 @@ sources.local.json.example           その雛形。こちらはコミットす�
 - ファイル名は `^\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]{0,63}\.json$`。`loggedAt` はファイル名の日付と一致する。移行は `YYYY-MM-DD-migration-<domain>.json`
 - `judgments` の各要素は §4.3 の出力そのもの。1件の形の検査と V1〜V8 は §4.5
 - `proposedLevel` は「この根拠が示す最上段」。根拠の種類の梯子の範囲内（`self_explanation` なら 1 か 2、`unaided_implementation` なら 3 か 4）か、
-  **0 ＝ 不合格の報告**（ドリルに落ちた、説明できなかった）。指示書には常に書かせる。省略時の既定（上限にするか必須にするか）は CLI の実装で決める（`docs/skill-map-migration.md` §9）
+  **0 ＝ 不合格の報告**（ドリルに落ちた、説明できなかった）。指示書には常に書かせる。
+  印を付けない種類（`learning_activity` / `explained_to` / `self_report`）では `proposedLevel` に意味が無く、検証は値を無視する（0 と書く。0 でも不合格の報告にはならない）。省略時の既定（上限にするか必須にするか）は CLI の実装で決める（`docs/skill-map-migration.md` §9）
 - **`evidenceRefs` は 1 件以上必須。** 各要素は `<種別>:<識別子>`。種別は `^[a-z][a-z0-9-]*$`。**種別の一覧は決めない**（検証は書式だけ）が、Git 由来はすべて次の 1 つの文法に統一する：
 
   | 種別 | 形 | 例 |
@@ -622,7 +623,8 @@ React / TS   ■ ■ □ □ □          (5項目)
 Java/Spring  ■ ■ ■ ■ ■ ■ ■ ■    (8項目)
 ```
 
-分野ごとに詳細項目が異なるため、共通の列軸を持つ真の行列にすると疎行列になる。上部に「分野 × レベルの到達項目数」のサマリー帯を置いて一覧性を補う。
+分野ごとに詳細項目が異なるため、共通の列軸を持つ真の行列にすると疎行列になる。上部に「分野 × `verifiedLevel` の到達項目数」のサマリー帯を置いて一覧性を補う。
+サマリー帯には「実装根拠あり・理解未確認」（印が `verifiedLevel` より上にある項目。`DomainSummary.PendingCount`）の列を 1 つ足す。
 
 **二重符号化**：升目の**色の濃さ = `verifiedLevel`（0〜5 の6階調）**、**枠線・斜線 = 要再確認**（`staleness` が `stale`、または `needsReview=true`）。
 **角の印 = 上位の根拠あり**（`evidencedLevels` の最上段が `verifiedLevel` より上。例：`[3]` で `verifiedLevel` 0）。

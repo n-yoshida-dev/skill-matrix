@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"slices"
 	"testing"
 	"time"
 )
@@ -327,5 +328,40 @@ func TestBuildPathの今ここは着手可能な未達項目(t *testing.T) {
 		if !isReady(states, n.Item) {
 			t.Errorf("今ここ %q が着手できない", n.Item.Key)
 		}
+	}
+}
+
+// 印はあるが表示レベルに届いていない項目は、次にやることに PendingLevels が付く（SPEC.md §5・§7.4）。
+func TestNextActions_PendingLevels(t *testing.T) {
+	now := time.Date(2026, 8, 10, 12, 0, 0, 0, time.UTC)
+	rm := testRoadmap()
+	states := map[ItemKey]ItemState{
+		"go-01": func() ItemState {
+			s := stateWith("go-01", 3, 4) // ガイドなしの実装まであるが、基礎の確認が未了
+			s.LastEvidenceAt = now
+			return s
+		}(),
+	}
+	actions := NextActions(rm, states, now, DefaultStalenessConfig(), DefaultWeights(), 5)
+
+	var found bool
+	for _, a := range actions {
+		switch a.ItemKey {
+		case "go-01":
+			found = true
+			if got, want := a.PendingLevels, []Level{3, 4}; !slices.Equal(got, want) {
+				t.Errorf("go-01 の PendingLevels = %v, want %v", got, want)
+			}
+			if a.Level != LevelNone {
+				t.Errorf("go-01 の Level = %d, want 0（表示レベル）", a.Level)
+			}
+		case "go-02":
+			if a.PendingLevels != nil {
+				t.Errorf("印の無い go-02 に PendingLevels = %v が付いている", a.PendingLevels)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("go-01 が次にやることに出てこない")
 	}
 }
