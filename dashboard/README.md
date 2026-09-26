@@ -28,7 +28,7 @@ node dashboard/update.mjs --serve --host 0.0.0.0 --port 8787   # 同じ LAN の�
 | タイル：進捗・あなた待ち・CI（main）・データ検証・作業ツリー | 下の各正本 |
 | あなた待ち（判断・確認・作業の札つき） | Beads `bd list --json`（このプロジェクトの epic 配下でラベル `human`）、`TODO.md`「確認待ち」節の未完、`data/state.json` の `deferred`（保留中の判定。1 件以上のときだけ） |
 | 今のタスクとこの後 4 件 | `TODO.md` の未完タスク（上から順） |
-| CI（開いている PR と最近の実行。同じ変更の PR / main 実行は 1 本にまとめる） | `gh pr list` / `gh run list` / `gh run view --json jobs` |
+| CI（開いている PR とその CI の結果、main の最近の実行） | `gh pr list` / `gh run list` / `gh run view --json jobs` |
 | 最近のコミット | `git log` |
 | データ（このプロジェクト固有） | `data/roadmap.json` `data/state.json` `data/judgments/` の件数と分布、`skillmatrix verify` の結果 |
 | 折りたたみ：引き継ぎメモ全文・最近の合意・verify の出力・未コミットのファイル・Claude 側の付箋・よく変わったファイル | `HANDOFF.md`・`logs/decisions.md`・`git status`・Beads・`git log` |
