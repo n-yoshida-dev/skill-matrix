@@ -459,7 +459,15 @@ function serve({ host, port, quiet, open }) {
       return
     }
     if (url.pathname === '/data.js') {
-      if (Date.now() - cache.at > 10_000) regenerate()
+      if (Date.now() - cache.at > 10_000) {
+        try {
+          regenerate()
+        } catch (e) {
+          // 作り直しに失敗しても配信プロセスは落とさない。前回の data.js を返し、理由をターミナルに出す
+          console.error(`data.js を作り直せませんでした: ${e.message}`)
+          if (!cache.body && fs.existsSync(OUT)) cache = { at: 0, body: fs.readFileSync(OUT, 'utf8') }
+        }
+      }
       res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-store' })
       res.end(cache.body)
       return
