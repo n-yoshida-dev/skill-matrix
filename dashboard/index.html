@@ -176,7 +176,7 @@ function render(d) {
     cards.push(`<section><h2>CI と PR <span class="dim small">GitHub Actions</span> ${g.available ? '' : badge('warn', '取得できず')}</h2>
       ${g.error ? `<div class="small" style="color:var(--warn)">${esc(g.error)}</div>` : ''}
       <div class="small dim">開いている PR</div>${prs}
-      <div class="small dim" style="margin-top:6px">最近の実行（frontend / backend / 秘密情報 の順）</div>
+      <div class="small dim" style="margin-top:6px">最近の実行（ジョブ別の結果つき）</div>
       <table>${runs.join('')}</table></section>`)
   }
 

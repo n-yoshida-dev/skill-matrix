@@ -47,13 +47,14 @@ function readText(rel) {
   return fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null
 }
 
+/** JSON ファイルを読む。無ければ value=null（error なし）、壊れていれば error に理由を残す（握りつぶさず画面の注意に出す） */
 function readJson(rel) {
   const t = readText(rel)
-  if (t == null) return null
+  if (t == null) return { value: null, error: null }
   try {
-    return JSON.parse(t)
-  } catch {
-    return null
+    return { value: JSON.parse(t), error: null }
+  } catch (e) {
+    return { value: null, error: `${rel} が JSON として読めない（${e.message}）` }
   }
 }
 
@@ -102,7 +103,7 @@ function readTodo() {
       sub = m[1].trim()
       return
     }
-    if ((m = line.match(/^([ \t]*)- \[([ xX])\] +(.*)$/))) {
+    if ((m = line.match(/^([ \t]*)- \[([ xX])\] *(.*)$/))) {
       const topLevel = m[1] === ''
       const done = m[2] !== ' '
       const body = m[3].trim()
@@ -300,8 +301,11 @@ function readBeads(name) {
 
 /** このプロジェクト固有の指標：ロードマップと判定・理解度の JSON、CLI の verify */
 function readProjectData() {
-  const roadmap = readJson('data/roadmap.json')
-  const state = readJson('data/state.json')
+  const rm = readJson('data/roadmap.json')
+  const st = readJson('data/state.json')
+  const roadmap = rm.value
+  const state = st.value
+  const errors = [rm.error, st.error].filter(Boolean)
   const judgDir = path.join(ROOT, 'data/judgments')
   const judgments = fs.existsSync(judgDir) ? fs.readdirSync(judgDir).filter((f) => f.endsWith('.json')).sort() : []
   const levelCount = Array.isArray(roadmap?.levels) ? roadmap.levels.length : 5
@@ -346,6 +350,7 @@ function readProjectData() {
         }
       : null,
     verify,
+    errors,
   }
 }
 
@@ -359,6 +364,7 @@ function buildAlerts({ git, github, handoff, data, todo, beads }) {
   for (const pr of github.openPrs) {
     if (pr.checks === 'failure') alerts.push({ level: 'error', text: `PR #${pr.number} の CI が失敗`, href: pr.url })
   }
+  for (const e of data.errors) alerts.push({ level: 'error', text: e })
   if (data.verify && !data.verify.ok) {
     const reason = data.verify.output.filter((l) => !/^exit status/.test(l)).at(-1) ?? '詳細は下'
     alerts.push({ level: 'warn', text: `data/ の verify が失敗（${reason}）` })

@@ -7,7 +7,7 @@ Claude Code に開発を任せているあいだ、人間がコードやログ�
 ## 起動
 
 ```bash
-node dashboard/update.mjs --serve      # http://127.0.0.1:8787/ を開く。/data.json は開くたびに再生成される
+node dashboard/update.mjs --serve      # http://127.0.0.1:8787/ を開く。/data.json は開くたびに再生成（10 秒以内の連続アクセスは前回の結果を使い回す）
 node dashboard/update.mjs              # 配信せず dashboard/data.json を作り直すだけ
 node dashboard/update.mjs --serve --host 0.0.0.0 --port 8787   # 同じ LAN のスマートフォンから見るとき（認証は無いので LAN 内だけ）
 ```
