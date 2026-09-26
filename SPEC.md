@@ -448,7 +448,8 @@ V4 を廃止した理由：1 件の根拠が同じ梯子の下位を同時に証
 適用の規則（`ApplyJudgment`）：(1) 印を付ける（4.4 の集合を `proposedLevel` で上限を切った範囲）→ (2) `verifiedLevel` を導出し直す →
 (3) 印があれば `preState` は `none`、無ければ根拠の種類が立てる値 → (4) `lastEvidenceAt` は §3.4 の条件で更新 → (5) `proposedLevel` が 0 なら印を付けず `needsReview`。
 
-**V1〜V8 の前に、形の検査を通す**（`internal/llm` の `ParseOutput`。V1〜V8 は意味の検査で `internal/domain` が担当し、同じ検査を2か所に書かない）。
+**V1〜V8 の前に、形の検査を通す**（`internal/judgment` の `Parse`。棚上げ中の stub・Claude API クライアントは `internal/llm` の `ParseOutput` 経由で同じ関数を通る。
+V1〜V8 は意味の検査で `internal/domain` が担当し、同じ検査を2か所に書かない）。
 形の崩れた判定はその1件だけを棄却し（`rejected`）、同じファイルの他の判定は生かす。
 ファイル全体が JSON として読めない・外枠の型が合わない（`judgments` が配列でない等）・`judgments` が無い場合は、そのファイルをエラーとして CLI が止まる。
 
@@ -567,7 +568,8 @@ priority = w.Readiness * readiness   // 依存項目がすべて L1 以上なら
 
 ## 6. CLI（`backend/cmd/skillmatrix`）
 
-判定ファイルを検証し、理解度を再計算する。**DB・HTTP・LLM クライアントを import しない**（読むのは `internal/domain` / `internal/roadmap` / `internal/llm` の `ParseOutput` だけ）。
+判定ファイルを検証し、理解度を再計算する。**DB・HTTP・LLM クライアントを import しない**（読むのは `internal/domain` / `internal/roadmap` / `internal/judgment` だけ。
+`internal/llm` は棚上げ中の Claude API クライアントと同居しているので import しない）。
 
 ```bash
 go -C backend run ./cmd/skillmatrix recalc --data ../data   # 検証して data/state.json を書き直す（手元で使う）
@@ -771,7 +773,7 @@ backend/
   internal/
     domain/                 純粋関数（理解度モデル・検証・集計）※ DB/HTTP/LLM を import しない
     roadmap/                マスタ JSON のスキーマ定義と検証
-    llm/output.go           AI 出力の形の検査（ParseOutput）。v1 の中核
+    judgment/               判定の JSON の形の検査（Parse）。v1 の中核。llm/output.go はここへの入口だけ
   testdata/                 ダミーのロードマップ・学習ログ・判定
   ── 以下は v2 へ棚上げ（§10）。消さない ──
   cmd/server/ cmd/worker/ internal/{store,httpapi,worker,config} internal/llm/{anthropic,prompt,stub}.go migrations/
