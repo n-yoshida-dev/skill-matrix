@@ -18,19 +18,22 @@ node dashboard/update.mjs --serve --host 0.0.0.0 --port 8787   # 同じ LAN の�
 依存は Node の標準ライブラリだけ（npm install 不要、ビルド不要）。`git` は必須。`gh`（GitHub CLI、ログイン済み）・`bd`（Beads）・`go` は
 無ければその項目が「取得できず」になるだけで、ほかは表示される。1 回の生成は数秒（`go run ... verify` と `gh` の呼び出し分）。
 
-## 表示するもの（上ほど重要）と取得元
+## 画面の並び（上ほど重要）と取得元
+
+文章は一覧用に短く縮めて 1 行で出す（括弧書き・記法・2 文目以降を落とす）。全文はマウスを載せると出る。押すと全文に切り替わる（スマートフォン向け）。
 
 | 表示 | 取得元（正本） |
 |---|---|
-| 注意（CI 失敗・verify 失敗・HANDOFF の遅れ・未コミット・未 push） | 下の各正本から機械的に導く |
-| 人間の判断・作業待ち | Beads `bd list --json`（このプロジェクトの epic 配下でラベル `human`）と `TODO.md`「確認待ち」節の未完 |
-| 進捗（フェーズ別の達成率・残り件数・現在のフェーズと節） | `TODO.md`（apps-workflow の `progress.sh` と同じ数え方） |
-| 現在地と次の一手 | `HANDOFF.md` の「現在地」「次セッションで最初にやること」節と、その最終コミットからの遅れ |
-| 次のタスク | `TODO.md` の未完タスク先頭 10 件 |
-| CI と PR | `gh pr list` / `gh run list` / `gh run view --json jobs`（frontend / backend / 秘密情報の各ジョブ） |
-| Git | `git status` / `git log` / upstream との差分 / 直近 14 日でよく変わったファイル |
+| 異常の帯（CI 失敗・verify 失敗・HANDOFF の遅れ・取得失敗）。異常が無ければ出ない | 下の各正本から機械的に導く |
+| タイル：進捗・あなた待ち・CI（main）・データ検証・作業ツリー | 下の各正本 |
+| あなた待ち（判断・確認・作業の札つき） | Beads `bd list --json`（このプロジェクトの epic 配下でラベル `human`）、`TODO.md`「確認待ち」節の未完、`data/state.json` の `deferred`（保留中の判定。1 件以上のときだけ） |
+| 今のタスクとこの後 4 件 | `TODO.md` の未完タスク（上から順） |
+| CI（開いている PR と最近の実行。同じ変更の PR / main 実行は 1 本にまとめる） | `gh pr list` / `gh run list` / `gh run view --json jobs` |
+| 最近のコミット | `git log` |
 | データ（このプロジェクト固有） | `data/roadmap.json` `data/state.json` `data/judgments/` の件数と分布、`skillmatrix verify` の結果 |
-| 最近の合意 | `logs/decisions.md` の見出し |
+| 折りたたみ：引き継ぎメモ全文・最近の合意・verify の出力・未コミットのファイル・Claude 側の付箋・よく変わったファイル | `HANDOFF.md`・`logs/decisions.md`・`git status`・Beads・`git log` |
+
+進捗の数え方は apps-workflow の `progress.sh` と同じ（`##` 見出し = フェーズ、「確認待ち」「保留」の節は合計から外す）。
 
 ## 更新と自動化
 
