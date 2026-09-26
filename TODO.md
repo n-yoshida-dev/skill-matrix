@@ -63,13 +63,13 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
   完了条件：`ItemState` に `VerifiedLevel`（導出）と `Evidenced`、`Judgment` に `Source` / `EvidenceRefs` / `HasConfidence`、`EvidenceLearningActivity`、`evidenceLadder`（Base / Top）がある。V4（`MaxLevelStep` / `ViolationLevelJump`）が消え、V5 は梯子の範囲、V6 は `proposedLevel == 0`、V7 は `source: ai` のときだけ。印がある項目の `preState` は常に `none`。導出（`[3]`→0、`[1,3]`→1、`[1,2,3]`→3、`[1,2,3,4]`→4）・不合格報告・鮮度の更新条件・source 別の V7 がテストにある。`ParseOutput` が `evidenceRefs`（配列・1 件以上・書式）と `confidence` の有無（`ai` なら必須、他は禁止）を検査する。棚上げ中の `store` は改名に機械的に追従するだけ（挙動は変えない）。`EvidenceRefs` は判定材料にしない
 - [x] 検証と再計算の CLI を作る（段階 C-2。`backend/cmd/skillmatrix`。JSON を読み、形の検査 → V1〜V8 → `ApplyJudgment` → 理解度を書き出す）（2026-09-26 完了。下準備として形の検査を `internal/judgment` へ切り出した＝PR #43。書き出しの形は SPEC §3.4 末尾）
   完了条件：`recalc` と `verify` の2モードがある。`recalc` は `data/state.json`（SPEC.md §3.4 の形）を書き出す。`verify` は書き出さず、違反があれば終了コード 1 と違反の一覧（どの項目のどのルールか）を出し、**さらに `state.json` が再計算結果と一致しなければ終了コード 1**。処理順はファイル名の昇順・配列の順。`preState` のゼロ値（`""`）は書き出し時に `"none"` にする（`state.json` は `none` を要求する。PR #41 のレビューで判明）。DB・HTTP・LLM クライアントを import しない。単体テストがある。`backend/testdata/` のダミー判定を `schemaVersion: 2` に更新してある
-- [ ] その CLI を CI で走らせる（`verify` モード）
+- [x] その CLI を CI で走らせる（`verify` モード）（2026-09-26 完了。PR #46。backend とは別の独立ジョブ「data/ の検証（verify）」。赤の run 2 本の URL は PR 本文。前提として `internal/roadmap` に `moduleRefs` を追加）
   完了条件：`.github/workflows/ci.yml` に組み込まれ、JSON をわざと壊した PR と、`state.json` だけ古い PR の両方で CI が赤くなることを一度確かめてある。
   **先に `data/state.json` を `recalc` で作り直す**（今は手書きのダミーで、`verify` は一致しない。`data/judgments/` が空なので全項目 0 になり、
   公開ビューのダミー表示は消える。段階 D で実物のロードマップに替わるまでの間だけ。`data/README.md` の「今はダミー」節も直す）
-- [ ] `data/roadmap.json` を自分の実物として作る（段階 D。移行計画 §8.3 の対応表から起こす。8 分野・約 40 項目）
+- [x] `data/roadmap.json` を自分の実物として作る（段階 D。移行計画 §8.3 の対応表から起こす。8 分野・約 40 項目）（2026-09-27 完了。PR #50。46 項目。`verifyBy` は §8.4 の移行後の状態から見た「次の印」で書いた）
   完了条件：`verify` が通る。項目 key はハイフン区切りでカリキュラムに依存しない（`go-syntax-basics`）。`moduleRefs` でモジュールと対応付けてある。`verifyBy` / `outcome` / `goal` / `description` を「所属|企業|面接|転職|人事」で grep して 0 件。`data/state.json` は全項目 0 の初期値で置く。**`backend/testdata/` のダミーとは別物**（ロードマップの定義は個人データではない）
-- [ ] 根拠の出どころの設定ファイル `sources.local.json` を用意する（`.example` だけコミット）
+- [x] 根拠の出どころの設定ファイル `sources.local.json` を用意する（`.example` だけコミット）（2026-09-27 完了。PR #51。実ファイルは手元だけ。`learning-logs/` を `.gitignore` と CI の秘密情報の検査に追加）
   完了条件：`sources.local.json.example` が `logs`（既定の置き場 `learning-logs/`）と `repos`（`n-yoshida-dev/study` → ローカルパスと `logsGlob`）の 2 キーの形（SPEC.md §3.5）。実ファイルはコミットされていない。
   **`.gitignore` は追記不要**（`*.local.json` が既に `.gitignore:18` にあり、`.example` は guard-secrets の末尾一致に掛からずコミットできる。PR #32 のレビューで確認）
 - [ ] 【study 側】`skill-map.md` を凍結し、参照先を skill-matrix へ切り替える（段階 E。`~/workspace/study` で作業する。段階 D の後）
@@ -170,9 +170,10 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 - [ ] ロードマップのカタログ `roadmaps/` を用意し、`data/roadmap.json` は選んだ 1 枚にする
   完了条件：`roadmaps/` に 2 枚以上（react / go など）があり、それぞれ `source` と `checkedAt` と元サイトの利用条件の確認結果が書いてある。
   自分の実ロードマップとダミーが区別できる。`init` がここから選べる
-- [ ] `learning-logs/` と学習ログの雛形を置く
+- [ ] `learning-logs/` と学習ログの雛形を置く（`.gitignore` への追加と `.example` の既定は PR #51 で済み）
   完了条件：`learning-logs/` が `.gitignore` に入り、雛形（日付・やったこと・自分の言葉で理解したこと・作ったもの）が `templates/` 等にある。
-  `sources.local.json.example` の既定がこのディレクトリを指す。Private で使う人向けに `.gitignore` から外す手順が README にある
+  `sources.local.json.example` の既定がこのディレクトリを指す。Private で使う人向けに `.gitignore` から外す手順が README にある。
+  **CI の「秘密情報が混入していないか」の検査式からも `learning-logs/` を外す手順が README にある**（PR #51 で CI も止めるようにしたので、`.gitignore` だけ外すと CI が赤くなる）
 - [ ] Claude Code 以外の入口を置く（`AGENTS.md` 等）
   完了条件：`AGENTS.md` に「判定は `prompts/judge.md` を読んで行う」の案内があり、Codex CLI / Cursor / Gemini CLI のいずれか 1 つで実機確認している。
   判定基準や禁止事項を書き写していない（`prompts/judge.md` へのリンクだけ）
