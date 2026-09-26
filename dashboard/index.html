@@ -3,105 +3,212 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>skill-matrix 開発ダッシュボード</title>
+<title>開発ダッシュボード</title>
 <style>
-  /* 色はフロントエンド（frontend/src/index.css）と同じ名前・値。ライト／ダーク両対応 */
+  /* 色の名前。状態色（good / warn / bad）は必ず記号（✓ ! ✕）と文字を添えて使い、色だけで意味を伝えない */
   :root {
-    --paper: #f7f8fb; --panel: #ffffff; --rule: #dfe4ee; --rule-strong: #b8c1d3;
-    --ink: #16213a; --dim: #5f6a80; --empty: #e9edf4; --accent: #b8432a;
+    --bg: #f4f5f7; --card: #ffffff; --line: #e4e7ec; --track: #e9ecf1;
+    --ink: #172033; --sub: #566074; --faint: #8b93a3;
+    --link: #1f63b8;
+    --good: #1c7c4c; --good-bg: #e2f2e9;
+    --warn: #93600a; --warn-bg: #fdf1d6;
+    --bad: #b93a2a; --bad-bg: #fbe3dd;
+    --you: #b8432a; --you-bg: #fcebe5;
+    --tag: #eef1f5;
+    /* 理解度の 5 段階（frontend/src/index.css と同じ値） */
     --l1: #86b6ef; --l2: #5598e7; --l3: #2a78d6; --l4: #1c5cab; --l5: #104281;
-    --ok: #1e7f4f; --ok-bg: #e3f3ea; --warn: #9a6200; --warn-bg: #fff3d6; --err: #b8432a; --err-bg: #fbe4de;
-    --info: #2a5db0; --info-bg: #e6eefb;
     color-scheme: light dark;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --paper: #121620; --panel: #181e2b; --rule: #262d3c; --rule-strong: #3a4459;
-      --ink: #e8ecf4; --dim: #98a2b8; --empty: #1f2634; --accent: #e8825f;
+      --bg: #11151d; --card: #181e29; --line: #262e3d; --track: #232b39;
+      --ink: #e7ebf3; --sub: #a3acbe; --faint: #737d90;
+      --link: #8db6f2;
+      --good: #6fd39a; --good-bg: #16301f;
+      --warn: #f0c050; --warn-bg: #36290e;
+      --bad: #f28b74; --bad-bg: #3a1d17;
+      --you: #f0906c; --you-bg: #3a2019;
+      --tag: #242c3a;
       --l1: #9ec5f4; --l2: #6aa6ec; --l3: #3f88dd; --l4: #2d6fc0; --l5: #1f579c;
-      --ok: #6fd39a; --ok-bg: #163524; --warn: #f2c14e; --warn-bg: #3a2d0f; --err: #f28b6f; --err-bg: #3d1f18;
-      --info: #8fb4f0; --info-bg: #1b2a44;
     }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.6 -apple-system, 'Segoe UI', 'Hiragino Sans', 'Yu Gothic UI', 'Noto Sans JP', sans-serif; }
-  a { color: var(--info); text-decoration: none; } a:hover { text-decoration: underline; }
-  code, .mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 0.92em; }
-  code { background: var(--empty); padding: 0 4px; border-radius: 3px; }
-  header { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; padding: 12px 16px 6px; }
-  header h1 { font-size: 18px; margin: 0; }
-  header .meta { color: var(--dim); font-size: 12px; }
-  main { padding: 0 16px 32px; max-width: 1400px; margin: 0 auto; }
-  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
-  @media (max-width: 420px) { .grid { grid-template-columns: 1fr; } }
-  .wide { grid-column: 1 / -1; }
-  section { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 14px; min-width: 0; }
-  section h2 { font-size: 13px; margin: 0 0 8px; color: var(--dim); text-transform: none; letter-spacing: 0.02em; display: flex; gap: 8px; align-items: baseline; }
-  section h2 .n { color: var(--ink); font-size: 16px; }
-  ul { margin: 0; padding-left: 18px; } li { margin: 2px 0; }
-  ul.plain { list-style: none; padding-left: 0; }
-  ul.plain li { padding: 4px 0; border-top: 1px solid var(--rule); } ul.plain li:first-child { border-top: 0; }
-  .dim { color: var(--dim); } .small { font-size: 12px; }
-  .badge { display: inline-block; padding: 0 7px; border-radius: 999px; font-size: 11px; line-height: 18px; border: 1px solid transparent; white-space: nowrap; vertical-align: middle; }
-  .b-ok { color: var(--ok); background: var(--ok-bg); } .b-warn { color: var(--warn); background: var(--warn-bg); }
-  .b-err { color: var(--err); background: var(--err-bg); } .b-info { color: var(--info); background: var(--info-bg); }
-  .b-dim { color: var(--dim); background: var(--empty); }
-  .alerts { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 12px; }
-  .alert { padding: 6px 12px; border-radius: 6px; border-left: 4px solid; font-size: 14px; }
-  .alert.error { background: var(--err-bg); border-color: var(--err); } .alert.warn { background: var(--warn-bg); border-color: var(--warn); }
-  .alert.info { background: var(--info-bg); border-color: var(--info); }
-  .human { border-color: var(--accent); }
-  .human h2 .n { color: var(--accent); }
-  .bar { height: 10px; background: var(--empty); border-radius: 4px; overflow: hidden; }
-  .bar > i { display: block; height: 100%; background: var(--l3); border-radius: 4px; }
-  /* table-layout: fixed にしないと、長い題名の列がスマホ幅で横にはみ出す */
-  table { border-collapse: collapse; width: 100%; font-size: 13px; table-layout: fixed; }
-  td, th { padding: 3px 6px; text-align: left; vertical-align: top; border-top: 1px solid var(--rule); overflow: hidden; }
-  th { color: var(--dim); font-weight: 500; border-top: 0; }
-  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 4.5em; }
-  td.st { width: 4.2em; }
-  .md p { margin: 4px 0; } .md ul { margin: 2px 0; } .md pre { background: var(--empty); padding: 6px 8px; border-radius: 4px; overflow: auto; font-size: 12px; }
-  .stats { display: flex; flex-wrap: wrap; gap: 8px 20px; }
-  .stat b { display: block; font-size: 20px; line-height: 1.2; font-variant-numeric: tabular-nums; } .stat span { font-size: 12px; color: var(--dim); }
-  .levels { display: flex; height: 14px; border-radius: 4px; overflow: hidden; gap: 2px; background: var(--paper); }
-  .levels i { display: block; min-width: 0; } .levels i[data-l="0"] { background: var(--empty); }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 -apple-system, 'Segoe UI', 'Hiragino Sans', 'Yu Gothic UI', 'Noto Sans JP', sans-serif;
+  }
+  a { color: var(--link); text-decoration: none; } a:hover { text-decoration: underline; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 16px; }
+
+  /* 見出し行 */
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-bottom: 14px; }
+  header h1 { font-size: 20px; margin: 0; letter-spacing: 0.01em; }
+  header .meta { color: var(--faint); font-size: 13px; }
+  header .meta.stale { color: var(--warn); }
+
+  /* 異常だけを出す帯 */
+  .alert { display: flex; gap: 8px; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
+  .alert.error { background: var(--bad-bg); color: var(--bad); }
+  .alert.warn { background: var(--warn-bg); color: var(--warn); }
+  .alert span:last-child { color: var(--ink); overflow-wrap: anywhere; }
+  .alert a { color: inherit; text-decoration: underline; }
+
+  /* 数字のタイル */
+  .kpis { display: grid; gap: 10px; grid-template-columns: 1.5fr repeat(4, 1fr); margin-bottom: 14px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+  .kl { font-size: 12px; color: var(--sub); }
+  .kv { font-size: 30px; font-weight: 650; line-height: 1.25; font-variant-numeric: tabular-nums; }
+  .kv small { font-size: 15px; font-weight: 500; margin-left: 2px; color: var(--sub); }
+  .kv.st { font-size: 20px; padding: 6px 0 2px; }
+  .ks { font-size: 12px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kpi.you { border-color: var(--you); background: var(--you-bg); }
+  .kpi.you .kv { color: var(--you); }
+  .bar { height: 6px; background: var(--track); border-radius: 3px; overflow: hidden; margin: 4px 0 6px; }
+  .bar i { display: block; height: 100%; background: var(--l3); border-radius: 3px; }
+
+  /* 状態の記号と色 */
+  .s-good { color: var(--good); } .s-bad { color: var(--bad); } .s-warn { color: var(--warn); } .s-run { color: var(--link); } .s-na { color: var(--faint); }
+
+  /* カード */
+  .row { display: grid; gap: 12px; margin-bottom: 12px; }
+  .row.two { grid-template-columns: 3fr 2fr; }
+  .row.three { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+  .card h2 { font-size: 14px; margin: 0 0 6px; color: var(--sub); font-weight: 600; display: flex; align-items: baseline; gap: 8px; }
+  .card h2 .count { font-size: 18px; color: var(--ink); }
+  .card.you-card { border-color: var(--you); }
+  .card.you-card h2 .count { color: var(--you); }
+  .card h3 { font-size: 12px; color: var(--faint); font-weight: 500; margin: 14px 0 2px; }
+
+  /* 1 行ずつの一覧。長い題名は 1 行で切り、全文はマウスを載せると出る */
+  ul.list { list-style: none; margin: 0; padding: 0; }
+  ul.list li { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); min-width: 0; }
+  ul.list li:first-child { border-top: 0; }
+  .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .src { flex: none; font-size: 12px; color: var(--faint); white-space: nowrap; }
+  .tag { flex: none; font-size: 11px; line-height: 20px; padding: 0 8px; border-radius: 4px; background: var(--tag); color: var(--sub); white-space: nowrap; }
+  .tag.k-判断 { background: var(--you-bg); color: var(--you); }
+  .tag.k-確認 { background: var(--warn-bg); color: var(--warn); }
+  .tag.k-作業 { background: var(--good-bg); color: var(--good); }
+  .tag.blocked { background: transparent; border: 1px solid var(--line); color: var(--faint); }
+  .sym { flex: none; width: 1.2em; text-align: center; font-weight: 700; }
+
+  /* 今のタスク */
+  .now { font-size: 19px; font-weight: 600; line-height: 1.4; margin: 2px 0 2px; }
+  .now-sub { font-size: 12px; color: var(--faint); }
+  ol.next { margin: 0; padding-left: 1.4em; color: var(--sub); }
+  ol.next li { padding: 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* データ */
+  .nums { display: flex; gap: 22px; flex-wrap: wrap; }
+  .nums b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .nums span { font-size: 12px; color: var(--faint); }
+  .levels { display: flex; gap: 2px; height: 12px; border-radius: 3px; overflow: hidden; margin: 12px 0 4px; }
+  .levels i { display: block; min-width: 4px; }
+  .levels i[data-l="0"] { background: var(--track); }
   .levels i[data-l="1"] { background: var(--l1); } .levels i[data-l="2"] { background: var(--l2); } .levels i[data-l="3"] { background: var(--l3); }
   .levels i[data-l="4"] { background: var(--l4); } .levels i[data-l="5"] { background: var(--l5); }
-  .task { display: flex; gap: 8px; align-items: baseline; }
-  .task .ln { color: var(--dim); font-size: 11px; white-space: nowrap; }
-  .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
-  pre.out { background: var(--empty); padding: 6px 8px; border-radius: 4px; font-size: 12px; overflow: auto; margin: 4px 0 0; white-space: pre-wrap; }
-  #err { color: var(--err); padding: 16px; }
+  .legend { font-size: 12px; color: var(--faint); }
+
+  /* 折りたたみ（詳しく見たいときだけ開く） */
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; }
+  summary { cursor: pointer; padding: 10px 16px; font-size: 14px; color: var(--sub); }
+  summary .src { margin-left: 6px; }
+  details > div { padding: 0 16px 12px; font-size: 14px; }
+  .md p { margin: 6px 0; } .md ul { margin: 4px 0; padding-left: 1.3em; }
+  .md pre, pre.out { background: var(--tag); padding: 8px 10px; border-radius: 6px; overflow: auto; font-size: 12px; white-space: pre-wrap; }
+  code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 0.9em; background: var(--tag); padding: 0 4px; border-radius: 3px; }
+  .mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; }
+  .empty { color: var(--faint); font-size: 14px; padding: 6px 0; }
+  #err { background: var(--bad-bg); color: var(--bad); padding: 12px 16px; border-radius: 8px; }
+
+  /* スマートフォン幅：1 列にし、タイルは 2 列（進捗だけ横いっぱい） */
+  @media (max-width: 860px) {
+    .kpis { grid-template-columns: 1fr 1fr; }
+    .kpi.wide { grid-column: span 2; }
+    .row.two, .row.three { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .wrap { padding: 12px; }
+    .kv { font-size: 26px; }
+    /* 狭い幅では題名を 2 行まで見せ、付箋 ID は隠して題名に幅を回す */
+    .txt { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .src.id { display: none; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1 id="title">開発ダッシュボード</h1>
-  <span class="meta" id="meta"></span>
-</header>
-<main>
+<div class="wrap">
+  <header><h1 id="title">開発ダッシュボード</h1><span class="meta" id="meta"></span></header>
   <div id="err" hidden></div>
-  <div class="alerts" id="alerts"></div>
-  <div class="grid" id="grid"></div>
-</main>
+  <main id="main"></main>
+</div>
+
 <!-- update.mjs が作る data.js（window.DASHBOARD_DATA）。JS にしてあるので、この HTML をダブルクリックで開いても読める -->
 <script src="data.js"></script>
 <script>
-// data.js のデータを描く。状態は持たない（表示するだけ）。配信モード（update.mjs --serve）では 60 秒ごとにページを読み直す
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
-const inline = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-const badge = (cls, text) => `<span class="badge b-${cls}">${esc(text)}</span>`
-const ago = (iso) => {
-  if (!iso) return ''
-  const m = Math.round((Date.now() - Date.parse(iso)) / 60000)
-  if (m < 60) return `${m} 分前`
-  if (m < 60 * 48) return `${Math.round(m / 60)} 時間前`
-  return `${Math.round(m / 1440)} 日前`
-}
-const fmtDate = (iso) => (iso ? iso.slice(0, 16).replace('T', ' ') : '')
+// data.js のデータを描く。状態は持たない（表示するだけ）。
+// 正本の文章は長いので、一覧では「短い題名」に縮めて出し、全文は title 属性（マウスを載せると出る）に残す。
 
-// HANDOFF の節を描く最小限の Markdown（段落・箇条書き・コードブロック・太字・コード）
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+
+/** 全角の括弧書き（…）を入れ子ごと取り除く */
+function dropParens(s) {
+  let out = ''
+  let depth = 0
+  for (const ch of s) {
+    if (ch === '（') { depth++; continue }
+    if (ch === '）') { if (depth > 0) depth--; continue }
+    if (depth === 0) out += ch
+  }
+  return out
+}
+
+/** 一覧用の短い題名にする：記法・括弧書き・後ろの注記・2 文目以降を落とし、長ければ切る */
+function short(s, { max = 48, colon = true } = {}) {
+  let t = String(s ?? '').replace(/^【[^】]+】\s*/, '')
+  t = t.replace(/([）。])\s*\*\*.*$/, '$1') // 後ろに付いた太字の注記
+  t = t.replace(/`/g, '').replace(/\*\*/g, '')
+  t = dropParens(t).split('。')[0]
+  const c = t.indexOf('：')
+  if (colon && c >= 8) t = t.slice(0, c)
+  t = t.replace(/\s+/g, ' ').trim()
+  return t.length > max ? t.slice(0, max - 1) + '…' : t
+}
+
+/** 先頭の【…】を種類の札として取り出す（「ユーザー確認」→「確認」） */
+const bracketTag = (s) => (String(s).match(/^【([^】]+)】/)?.[1] ?? '').replace(/^ユーザー/, '')
+
+/** コミットや CI の題名から種類（feat 等）と短い題名を取り出す */
+const TYPES = { feat: '機能', fix: '修正', docs: '文書', refactor: '整理', chore: '雑務', test: 'テスト' }
+function commitTitle(s) {
+  const m = String(s ?? '').match(/^(\w+)(\([^)]*\))?!?:\s*(.*)$/)
+  const body = (m ? m[3] : s).replace(/\s*\(#\d+\)\s*$/, '')
+  return { type: m ? TYPES[m[1]] ?? m[1] : '', text: short(body, { max: 40 }) }
+}
+
+function ago(iso) {
+  if (!iso) return ''
+  const m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000))
+  if (m < 60) return `${m}分前`
+  if (m < 60 * 48) return `${Math.round(m / 60)}時間前`
+  return `${Math.round(m / 1440)}日前`
+}
+
+/** 状態 → 記号と色。色だけに頼らないよう、必ず記号と文字を一緒に出す */
+const SYM = { good: '✓', bad: '✕', warn: '!', run: '●', na: '–' }
+const st = (kind, label) => `<span class="s-${kind}">${SYM[kind]} ${esc(label)}</span>`
+function runState(r) {
+  if (!r) return ['na', 'なし']
+  if (r.status !== 'completed') return ['run', '実行中']
+  if (r.conclusion === 'success') return ['good', '成功']
+  if (r.conclusion === 'skipped' || r.conclusion === 'cancelled') return ['na', r.conclusion === 'skipped' ? 'スキップ' : '中止']
+  return ['bad', '失敗']
+}
+
+/** 引き継ぎメモ（折りたたみの中）用の最小限の Markdown */
 function md(text) {
+  const inline = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
   const out = []
   let para = [], list = null, pre = null
   const flushP = () => { if (para.length) { out.push(`<p>${inline(para.join(' '))}</p>`); para = [] } }
@@ -120,118 +227,151 @@ function md(text) {
   return `<div class="md">${out.join('')}</div>`
 }
 
-const ciBadge = (status, conclusion) =>
-  status !== 'completed' ? badge('info', status === 'in_progress' ? '実行中' : status)
-  : conclusion === 'success' ? badge('ok', '成功') : conclusion === 'skipped' ? badge('dim', 'スキップ') : badge('err', conclusion || '失敗')
+const li = (inner) => `<li>${inner}</li>`
+const txt = (shortText, full) => `<span class="txt" title="${esc(full ?? shortText)}">${esc(shortText)}</span>`
+const fold = (summary, body, open = false) => `<details${open ? ' open' : ''}><summary>${summary}</summary><div>${body}</div></details>`
 
 function render(d) {
-  document.title = `${d.project.name} 開発ダッシュボード`
-  document.getElementById('title').textContent = `${d.project.name} 開発ダッシュボード`
-  document.getElementById('meta').innerHTML =
-    `生成 ${fmtDate(d.generatedAt)}（${ago(d.generatedAt)}） · ブランチ <code>${esc(d.git.branch)}</code>` +
-    (d.project.repoUrl ? ` · <a href="${esc(d.project.repoUrl)}">${esc(d.project.repoUrl.replace('https://github.com/', ''))}</a> ${badge('dim', d.project.visibility)}` : '')
+  const t = d.todo, g = d.git, gh = d.github, x = d.data, h = d.handoff
+  const name = d.project.name
+  document.title = `${name} 開発ダッシュボード`
+  document.getElementById('title').textContent = name
 
-  document.getElementById('alerts').innerHTML = d.alerts
-    .map((a) => `<div class="alert ${a.level}">${a.href ? `<a href="${esc(a.href)}">${esc(a.text)}</a>` : esc(a.text)}</div>`)
-    .join('')
+  // 見出し行：いつのデータか。1 時間より古ければ更新方法を添える
+  const ageMin = (Date.now() - Date.parse(d.generatedAt)) / 60000
+  const meta = document.getElementById('meta')
+  meta.className = 'meta' + (ageMin > 60 ? ' stale' : '')
+  meta.innerHTML =
+    `${esc(g.branch)} · ${ago(d.generatedAt)}に更新` +
+    (ageMin > 60 ? ' · 古いので <code>node dashboard/update.mjs</code> を実行して再読込' : '') +
+    (d.project.repoUrl ? ` · <a href="${esc(d.project.repoUrl)}">GitHub</a>` : '')
 
-  const cards = []
-  const t = d.todo
+  const html = []
 
-  // 1. 人間待ち（最上段）
+  // 1. 異常だけ（情報レベルはタイルが示すので出さない）
+  for (const a of d.alerts.filter((a) => a.level === 'error' || a.level === 'warn')) {
+    const body = a.href ? `<a href="${esc(a.href)}">${esc(a.text)}</a>` : esc(a.text)
+    html.push(`<div class="alert ${a.level}"><span>${a.level === 'error' ? '✕' : '!'}</span><span>${body}</span></div>`)
+  }
+
+  // 人間待ち：Beads（ラベル human）と TODO.md「確認待ち」
+  const KIND = { decision: '判断', review: '確認', action: '作業' }
   const human = [
-    ...d.beads.human.map((b) => ({ key: b.id, text: b.title.replace(/^\[[^\]]+\]\s*/, ''), tags: b.labels.filter((l) => l !== 'human'), sub: `P${b.priority} · ${ago(b.updatedAt)}`, blocked: b.blockedBy })),
-    ...(t?.askItems ?? []).map((a) => ({ key: `TODO.md:${a.line}`, text: a.text.replace(/\s*完了条件：.*$/, ''), tags: [], sub: '' })),
+    ...d.beads.human.map((b) => {
+      const title = b.title.replace(/^\[[^\]]+\]\s*/, '')
+      const kind = b.labels.map((l) => KIND[l]).find(Boolean) ?? '確認'
+      return { kind, text: short(title), full: title, src: b.id, blocked: b.blockedBy.length > 0 }
+    }),
+    ...(t?.askItems ?? []).map((a) => {
+      const full = a.text.replace(/\s*完了条件：.*$/, '')
+      return { kind: bracketTag(full) || '確認', text: short(full), full, src: 'TODO', blocked: false }
+    }),
   ]
-  cards.push(`<section class="human wide"><h2>人間の判断・作業待ち <span class="n">${human.length}</span> 件 <span class="dim small">Beads（ラベル human）と TODO.md「確認待ち」</span></h2>
-    ${human.length ? `<ul class="plain">${human.map((h) => `<li><div class="task"><span class="ln mono">${esc(h.key)}</span><span>${inline(h.text)} ${h.tags.map((x) => badge('info', x)).join(' ')}${h.blocked?.length ? badge('warn', 'blocked: ' + h.blocked.join(',')) : ''} <span class="dim small">${esc(h.sub)}</span></span></div></li>`).join('')}</ul>` : '<div class="dim">なし</div>'}
-    ${d.beads.others.length ? `<div class="small dim" style="margin-top:6px">Claude 側の付箋 ${d.beads.others.length} 件: ${d.beads.others.map((b) => `<span class="mono">${esc(b.id)}</span> ${esc(b.title.replace(/^\[[^\]]+\]\s*/, ''))}`).join(' / ')}</div>` : ''}
-  </section>`)
 
-  // 2. 進捗（TODO.md）
-  if (t) {
-    const rows = t.phases.map((p) => {
-      const pct = p.total ? Math.floor((100 * p.done) / p.total) : 0 // 切り捨て（apps-workflow の progress.sh と同じ）
-      return `<tr><td><span class="truncate" title="${esc(p.name)}">${esc(p.name)}</span><div class="bar"><i style="width:${pct}%"></i></div></td><td class="num">${pct}%</td><td class="num">${p.open} / ${p.total}</td></tr>`
-    })
-    const pct = t.total.total ? Math.floor((100 * t.total.done) / t.total.total) : 0
-    cards.push(`<section><h2>進捗 <span class="n">${pct}%</span> <span class="dim small">TODO.md（残り ${t.total.open} / ${t.total.total}）</span></h2>
-      <table><tr><th>フェーズ</th><th class="num">達成</th><th class="num">残り</th></tr>${rows.join('')}</table>
-      <div class="small dim" style="margin-top:6px">確認待ち ${t.ask.open} 件（回答済み ${t.ask.done}）· 保留 ${t.hold.open} 件（合計に含めない）</div>
-      <div class="small" style="margin-top:4px">現在のフェーズ: ${esc(t.currentPhase ?? '-')}<br>現在の節: ${esc(t.currentSection ?? '-')}</div>
-    </section>`)
-  }
+  // 2. 数字のタイル
+  const pct = t && t.total.total ? Math.floor((100 * t.total.done) / t.total.total) : 0
+  const mainRun = gh.runs.find((r) => r.branch === 'main')
+  const [ciKind, ciLabel] = gh.available ? runState(mainRun) : ['na', '取得できず']
+  const [vKind, vLabel] = !x.verify ? ['na', '未実行'] : x.verify.ok ? ['good', '一致'] : ['bad', '不一致']
+  const dirty = g.dirty.length
+  const [wKind, wLabel] = dirty ? ['warn', `未コミット ${dirty}`] : g.ahead ? ['warn', `未push ${g.ahead}`] : ['good', 'クリーン']
+  html.push(`<div class="kpis">
+    <div class="kpi wide"><div class="kl">進捗（TODO.md）</div>
+      <div class="kv">${pct}<small>%</small></div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <div class="ks">${esc(short(t?.currentPhase, { colon: false, max: 30 }))} · 残り ${t?.total.open ?? '-'} / ${t?.total.total ?? '-'}</div></div>
+    <div class="kpi ${human.length ? 'you' : ''}"><div class="kl">あなた待ち</div>
+      <div class="kv">${human.length}<small>件</small></div><div class="ks">判断・確認・作業</div></div>
+    <div class="kpi"><div class="kl">CI（main）</div>
+      <div class="kv st">${st(ciKind, ciLabel)}</div><div class="ks">${mainRun ? ago(mainRun.createdAt) : '&nbsp;'}</div></div>
+    <div class="kpi"><div class="kl">データ検証</div>
+      <div class="kv st">${st(vKind, vLabel)}</div><div class="ks">判定 ${x.judgments.count} 件</div></div>
+    <div class="kpi"><div class="kl">作業ツリー</div>
+      <div class="kv st">${st(wKind, wLabel)}</div><div class="ks">${esc(g.branch)}</div></div>
+  </div>`)
 
-  // 3. 次のタスク（TODO.md の未完・先頭）
-  if (t) {
-    cards.push(`<section><h2>次のタスク <span class="dim small">TODO.md の未完（先頭 ${t.openTasks.length} 件・上から順）</span></h2>
-      <ul class="plain">${t.openTasks.map((x, i) => `<li><div class="task"><span class="ln mono">${i === 0 ? '▶' : ' '} ${x.line}</span><span>${inline(x.text)}${x.section ? `<div class="dim small">${esc(x.section)}</div>` : ''}</span></div></li>`).join('')}</ul></section>`)
-  }
+  // 3. あなた待ち ＋ 今のタスク
+  const humanRows = human.map((x) =>
+    li(`<span class="tag k-${esc(x.kind)}">${esc(x.kind)}</span>${txt(x.text, x.full)}` +
+      (x.blocked ? '<span class="tag blocked">ブロック中</span>' : '') + `<span class="src mono id">${esc(x.src)}</span>`),
+  )
+  const first = t?.openTasks[0]
+  const rest = (t?.openTasks ?? []).slice(1, 5)
+  html.push(`<div class="row two">
+    <section class="card ${human.length ? 'you-card' : ''}"><h2>あなた待ち <span class="count">${human.length}</span></h2>
+      ${human.length ? `<ul class="list">${humanRows.join('')}</ul>` : '<div class="empty">なし</div>'}</section>
+    <section class="card"><h2>今のタスク</h2>
+      ${first ? `<div class="now" title="${esc(first.text)}">${esc(short(first.text, { max: 60 }))}</div>
+      <div class="now-sub">${esc(short(first.section, { colon: false }))} · TODO.md:${first.line}</div>` : '<div class="empty">未完タスクなし</div>'}
+      ${rest.length ? `<h3>この後</h3><ol class="next">${rest.map((r) => `<li title="${esc(r.text)}">${esc(short(r.text, { max: 40 }))}</li>`).join('')}</ol>` : ''}
+    </section></div>`)
 
-  // 5. CI と PR（GitHub）
-  {
-    const g = d.github
-    const prs = g.openPrs.length
-      ? `<ul class="plain">${g.openPrs.map((p) => `<li><a href="${esc(p.url)}">#${p.number}</a> ${esc(p.title)} ${p.draft ? badge('dim', 'draft') : ''} ${p.checks === 'success' ? badge('ok', 'CI 成功') : p.checks === 'failure' ? badge('err', 'CI 失敗') : p.checks === 'pending' ? badge('info', 'CI 実行中') : badge('dim', 'CI なし')} <span class="dim small">${esc(p.branch)} · ${ago(p.updatedAt)}</span></li>`).join('')}</ul>`
-      : '<div class="dim small">開いている PR はない</div>'
-    const runs = g.runs.slice(0, 6).map((r) => `<tr><td class="st">${ciBadge(r.status, r.conclusion)}</td><td><a href="${esc(r.url)}"><span class="truncate" title="${esc(r.title)}">${esc(r.title)}</span></a><div class="dim small">${esc(r.branch)} · ${esc(r.event)} · ${ago(r.createdAt)}${r.jobs ? ' · ' + r.jobs.map((j) => `${esc(j.name.replace(/\s*\(.*\)$/, ''))} ${j.conclusion === 'success' ? '✓' : j.conclusion === 'skipped' ? '–' : '✗'}`).join(' / ') : ''}</div></td></tr>`)
-    cards.push(`<section><h2>CI と PR <span class="dim small">GitHub Actions</span> ${g.available ? '' : badge('warn', '取得できず')}</h2>
-      ${g.error ? `<div class="small" style="color:var(--warn)">${esc(g.error)}</div>` : ''}
-      <div class="small dim">開いている PR</div>${prs}
-      <div class="small dim" style="margin-top:6px">最近の実行（ジョブ別の結果つき）</div>
-      <table>${runs.join('')}</table></section>`)
-  }
-
-  // 5. 現在地と次の一手（HANDOFF.md）
-  if (d.handoff) {
-    const h = d.handoff
-    const fresh = h.commitsSince === 0 ? badge('ok', '最新') : badge(h.commitsSince >= 3 ? 'warn' : 'info', `${h.commitsSince} コミット前`)
-    cards.push(`<section class="wide"><h2>現在地と次の一手 <span class="dim small">HANDOFF.md（最終更新 ${esc(h.lastCommit?.date ?? '-')} ${esc(h.lastCommit?.hash ?? '')}）</span> ${fresh}</h2>
-      <div class="grid" style="gap:8px 16px">
-        <div><div class="dim small">${esc(h.sections.current?.title ?? '現在地')}</div>${md(h.sections.current?.body)}</div>
-        <div><div class="dim small">${esc(h.sections.next?.title ?? '次にやること')}</div>${md(h.sections.next?.body)}</div>
-      </div></section>`)
-  }
-
-  // 6. Git
-  {
-    const g = d.git
-    const sync = g.upstream ? `${esc(g.upstream)} に対して ${g.ahead > 0 ? badge('warn', `未 push ${g.ahead}`) : ''} ${g.behind > 0 ? badge('info', `遅れ ${g.behind}`) : ''} ${!g.ahead && !g.behind ? badge('ok', '同期済み') : ''}` : badge('dim', 'upstream なし')
-    cards.push(`<section><h2>Git <span class="dim small"><code>${esc(g.branch)}</code></span> ${sync}</h2>
-      <div class="small dim">未コミット ${g.dirty.length} ファイル</div>
-      ${g.dirty.length ? `<ul class="small mono" style="margin-bottom:6px">${g.dirty.slice(0, 12).map((f) => `<li>${esc(f.status)} ${esc(f.path)}</li>`).join('')}${g.dirty.length > 12 ? `<li>…ほか ${g.dirty.length - 12}</li>` : ''}</ul>` : ''}
-      <div class="small dim">最近のコミット</div>
-      <ul class="plain small">${g.commits.slice(0, 8).map((c) => `<li><span class="mono dim">${esc(c.hash)}</span> ${esc(c.subject)} ${c.pr ? `<a href="${esc(d.project.repoUrl ?? '')}/pull/${c.pr}">#${c.pr}</a>` : ''} <span class="dim">${ago(c.date)}</span></li>`).join('')}</ul>
-      <div class="small dim" style="margin-top:6px">直近 ${g.recentDays} 日でよく変わったファイル</div>
-      <div class="small mono">${g.recentFiles.map((f) => `${esc(f.file)} <span class="dim">×${f.commits}</span>`).join(' · ')}</div>
-    </section>`)
-  }
-
-  // 7. このプロジェクト固有：data/ の状態
-  {
-    const x = d.data
-    const s = x.state
-    const total = s?.items || 0
-    const levels = s ? `<div class="levels">${s.byLevel.map((n, l) => (n ? `<i data-l="${l}" style="flex:${n}" title="Level ${l}: ${n} 件"></i>` : '')).join('')}</div>
-      <div class="small dim">${s.byLevel.map((n, l) => `L${l} ${n}`).join(' · ')}</div>` : ''
-    cards.push(`<section><h2>データ（data/） ${x.verify ? (x.verify.ok ? badge('ok', 'verify 成功') : badge('err', 'verify 失敗')) : badge('dim', 'verify 未実行')}</h2>
-      <div class="stats">
-        <div class="stat"><b>${x.roadmap?.domains ?? '-'} / ${x.roadmap?.items ?? '-'}</b><span>分野 / 項目（${esc(x.roadmap?.name ?? 'roadmap.json なし')}）</span></div>
-        <div class="stat"><b>${x.judgments.count}</b><span>判定ファイル${x.judgments.latest ? `（最新 ${esc(x.judgments.latest)}）` : ''}</span></div>
-        <div class="stat"><b>${total ? total - (s.byLevel[0] ?? 0) : 0} / ${total}</b><span>根拠のある項目</span></div>
-        <div class="stat"><b>${s?.needsReview ?? '-'} · ${s?.pendingBase ?? '-'}</b><span>要再確認 · 基礎未確認</span></div>
-        <div class="stat"><b>${s?.deferred ?? '-'} · ${s?.rejected ?? '-'}</b><span>保留 · 棄却</span></div>
+  // 4. CI ／ 最近のコミット ／ データ
+  const prRows = gh.openPrs.map((p) => {
+    const kind = p.checks === 'success' ? 'good' : p.checks === 'failure' ? 'bad' : p.checks === 'pending' ? 'run' : 'na'
+    return li(`<span class="sym s-${kind}">${SYM[kind]}</span>${txt(`#${p.number} ${commitTitle(p.title).text}`, p.title)}<span class="src">PR · ${ago(p.updatedAt)}</span>`)
+  })
+  // 同じ変更の PR 実行と main 実行は題名が同じなので、新しい方の 1 本だけ出す
+  const seen = new Set()
+  const runs = gh.runs.filter((r) => {
+    const key = commitTitle(r.title).text
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+  const runRows = runs.slice(0, 5).map((r) => {
+    const [kind] = runState(r)
+    const failed = (r.jobs ?? []).filter((j) => j.conclusion === 'failure').map((j) => j.name.replace(/\s*[（(].*$/, ''))
+    const title = commitTitle(r.title).text + (failed.length ? ` — 失敗: ${failed.join(', ')}` : '')
+    return li(`<span class="sym s-${kind}">${SYM[kind]}</span><a class="txt" href="${esc(r.url)}" title="${esc(r.title)}">${esc(title)}</a><span class="src">${r.branch === 'main' ? 'main' : 'PR'} · ${ago(r.createdAt)}</span>`)
+  })
+  const commitRows = g.commits.slice(0, 6).map((c) => {
+    const { type, text } = commitTitle(c.subject)
+    const pr = c.pr && d.project.repoUrl ? `<a href="${esc(d.project.repoUrl)}/pull/${c.pr}">#${c.pr}</a> · ` : ''
+    return li(`<span class="tag">${esc(type || '—')}</span>${txt(text, c.subject)}<span class="src">${pr}${ago(c.date)}</span>`)
+  })
+  const s = x.state
+  const withEvidence = s ? s.items - (s.byLevel[0] ?? 0) : 0
+  html.push(`<div class="row three">
+    <section class="card"><h2>CI</h2>
+      ${gh.available ? '' : `<div class="empty">${esc(gh.error ?? '取得できず')}</div>`}
+      ${prRows.length ? `<h3 style="margin-top:0">開いている PR</h3><ul class="list">${prRows.join('')}</ul><h3>最近の実行</h3>` : ''}
+      <ul class="list">${runRows.join('') || '<li class="empty">なし</li>'}</ul></section>
+    <section class="card"><h2>最近のコミット</h2><ul class="list">${commitRows.join('')}</ul></section>
+    <section class="card"><h2>データ（data/）</h2>
+      <div class="nums">
+        <div><b>${x.roadmap?.items ?? '-'}</b><span>項目</span></div>
+        <div><b>${withEvidence}</b><span>根拠あり</span></div>
+        <div><b>${s?.needsReview ?? '-'}</b><span>要再確認</span></div>
+        <div><b>${x.judgments.count}</b><span>判定ファイル</span></div>
       </div>
-      <div style="margin-top:8px" class="small dim">verifiedLevel の分布（左 L0 → 右 L5）</div>${levels}
-      ${x.verify ? `<pre class="out">${esc(x.verify.output.join('\n'))}</pre>` : ''}
-    </section>`)
+      ${s ? `<div class="levels" title="verifiedLevel の分布">${s.byLevel.map((n, l) => (n ? `<i data-l="${l}" style="flex:${n}" title="L${l}: ${n} 件"></i>` : '')).join('')}</div>
+      <div class="legend">${s.byLevel.map((n, l) => `L${l} ${n}`).join(' · ')}</div>` : ''}
+      ${x.roadmap?.name ? `<div class="legend" style="margin-top:6px">${esc(x.roadmap.name)}</div>` : ''}
+    </section></div>`)
+
+  // 5. 詳しく見たいときだけ開く
+  const more = []
+  if (h) {
+    const lag = h.commitsSince ? `${h.commitsSince} コミット前` : '最新'
+    more.push(fold(`引き継ぎメモ（HANDOFF.md）<span class="src">${esc(h.lastCommit?.date ?? '')} · ${lag}</span>`,
+      `<h3>${esc(h.sections.current?.title ?? '現在地')}</h3>${md(h.sections.current?.body)}<h3>${esc(h.sections.next?.title ?? '次にやること')}</h3>${md(h.sections.next?.body)}`))
   }
+  if (d.decisions.length) {
+    more.push(fold(`最近の合意（logs/decisions.md）<span class="src">${d.decisions.length} 件</span>`,
+      `<ul class="list">${d.decisions.map((x) => li(`<span class="src mono">${esc(x.date)}</span>${txt(short(x.title, { max: 60 }), x.title)}`)).join('')}</ul>`))
+  }
+  if (x.verify && !x.verify.ok) more.push(fold('データ検証（verify）の出力', `<pre class="out">${esc(x.verify.output.join('\n'))}</pre>`))
+  if (dirty) more.push(fold(`未コミットのファイル<span class="src">${dirty} 件</span>`, `<ul class="list">${g.dirty.map((f) => li(`<span class="src mono">${esc(f.status)}</span><span class="txt mono">${esc(f.path)}</span>`)).join('')}</ul>`))
+  if (d.beads.others.length) {
+    more.push(fold(`Claude 側の付箋（Beads）<span class="src">${d.beads.others.length} 件</span>`,
+      `<ul class="list">${d.beads.others.map((b) => li(`<span class="src mono">${esc(b.id)}</span>${txt(short(b.title.replace(/^\[[^\]]+\]\s*/, '')))}`)).join('')}</ul>`))
+  }
+  more.push(fold(`よく変わったファイル<span class="src">直近 ${g.recentDays} 日</span>`,
+    `<ul class="list">${g.recentFiles.map((f) => li(`<span class="txt mono">${esc(f.file)}</span><span class="src">${f.commits} 回</span>`)).join('')}</ul>`))
+  html.push(more.join(''))
 
-  // 8. 最近の合意（logs/decisions.md）
-  cards.push(`<section><h2>最近の合意 <span class="dim small">logs/decisions.md</span></h2>
-    <ul class="plain small">${d.decisions.map((x) => `<li><span class="mono dim">${esc(x.date)}</span> ${inline(x.title)}</li>`).join('') || '<li class="dim">なし</li>'}</ul></section>`)
-
-  document.getElementById('grid').innerHTML = cards.join('')
+  document.getElementById('main').innerHTML = html.join('')
 }
 
 try {
@@ -242,6 +382,7 @@ try {
   el.hidden = false
   el.textContent = `データを読めません（${e.message}）。先に node dashboard/update.mjs を実行してください`
 }
+// 配信モード（--serve）のときだけ、60 秒ごとに読み直す
 if (location.protocol.startsWith('http')) setInterval(() => location.reload(), 60_000)
 </script>
 </body>

@@ -238,7 +238,7 @@ function readGithub() {
     'run',
     'list',
     '--limit',
-    '8',
+    '15', // 画面では同じ変更の PR / main 実行を 1 本にまとめるので、多めに取る
     '--json',
     'databaseId,status,conclusion,headBranch,event,displayTitle,createdAt,url',
   ])
