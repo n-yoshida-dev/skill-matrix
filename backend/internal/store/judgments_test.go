@@ -204,8 +204,11 @@ func TestApplyJudgmentResult_純粋関数が出したそのままの形で保存
 		ItemKey:       "go-01",
 		ProposedLevel: domain.LevelBasicConfirmed,
 		EvidenceType:  domain.EvidenceDrill,
+		EvidenceRefs:  []string{"log:x.md"},
 		Rationale:     "確認問題に答えている",
+		Source:        domain.SourceAI,
 		Confidence:    0.8,
+		HasConfidence: true,
 		OccurredAt:    jobNow,
 	}}, domain.DefaultRules())
 
