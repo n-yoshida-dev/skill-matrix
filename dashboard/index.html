@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>skill-matrix 開発ダッシュボード</title>
+<style>
+  /* 色はフロントエンド（frontend/src/index.css）と同じ名前・値。ライト／ダーク両対応 */
+  :root {
+    --paper: #f7f8fb; --panel: #ffffff; --rule: #dfe4ee; --rule-strong: #b8c1d3;
+    --ink: #16213a; --dim: #5f6a80; --empty: #e9edf4; --accent: #b8432a;
+    --l1: #86b6ef; --l2: #5598e7; --l3: #2a78d6; --l4: #1c5cab; --l5: #104281;
+    --ok: #1e7f4f; --ok-bg: #e3f3ea; --warn: #9a6200; --warn-bg: #fff3d6; --err: #b8432a; --err-bg: #fbe4de;
+    --info: #2a5db0; --info-bg: #e6eefb;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #121620; --panel: #181e2b; --rule: #262d3c; --rule-strong: #3a4459;
+      --ink: #e8ecf4; --dim: #98a2b8; --empty: #1f2634; --accent: #e8825f;
+      --l1: #9ec5f4; --l2: #6aa6ec; --l3: #3f88dd; --l4: #2d6fc0; --l5: #1f579c;
+      --ok: #6fd39a; --ok-bg: #163524; --warn: #f2c14e; --warn-bg: #3a2d0f; --err: #f28b6f; --err-bg: #3d1f18;
+      --info: #8fb4f0; --info-bg: #1b2a44;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.6 -apple-system, 'Segoe UI', 'Hiragino Sans', 'Yu Gothic UI', 'Noto Sans JP', sans-serif; }
+  a { color: var(--info); text-decoration: none; } a:hover { text-decoration: underline; }
+  code, .mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 0.92em; }
+  code { background: var(--empty); padding: 0 4px; border-radius: 3px; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; padding: 12px 16px 6px; }
+  header h1 { font-size: 18px; margin: 0; }
+  header .meta { color: var(--dim); font-size: 12px; }
+  main { padding: 0 16px 32px; max-width: 1400px; margin: 0 auto; }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  @media (max-width: 420px) { .grid { grid-template-columns: 1fr; } }
+  .wide { grid-column: 1 / -1; }
+  section { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 14px; min-width: 0; }
+  section h2 { font-size: 13px; margin: 0 0 8px; color: var(--dim); text-transform: none; letter-spacing: 0.02em; display: flex; gap: 8px; align-items: baseline; }
+  section h2 .n { color: var(--ink); font-size: 16px; }
+  ul { margin: 0; padding-left: 18px; } li { margin: 2px 0; }
+  ul.plain { list-style: none; padding-left: 0; }
+  ul.plain li { padding: 4px 0; border-top: 1px solid var(--rule); } ul.plain li:first-child { border-top: 0; }
+  .dim { color: var(--dim); } .small { font-size: 12px; }
+  .badge { display: inline-block; padding: 0 7px; border-radius: 999px; font-size: 11px; line-height: 18px; border: 1px solid transparent; white-space: nowrap; vertical-align: middle; }
+  .b-ok { color: var(--ok); background: var(--ok-bg); } .b-warn { color: var(--warn); background: var(--warn-bg); }
+  .b-err { color: var(--err); background: var(--err-bg); } .b-info { color: var(--info); background: var(--info-bg); }
+  .b-dim { color: var(--dim); background: var(--empty); }
+  .alerts { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 12px; }
+  .alert { padding: 6px 12px; border-radius: 6px; border-left: 4px solid; font-size: 14px; }
+  .alert.error { background: var(--err-bg); border-color: var(--err); } .alert.warn { background: var(--warn-bg); border-color: var(--warn); }
+  .alert.info { background: var(--info-bg); border-color: var(--info); }
+  .human { border-color: var(--accent); }
+  .human h2 .n { color: var(--accent); }
+  .bar { height: 10px; background: var(--empty); border-radius: 4px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--l3); border-radius: 4px; }
+  /* table-layout: fixed にしないと、長い題名の列がスマホ幅で横にはみ出す */
+  table { border-collapse: collapse; width: 100%; font-size: 13px; table-layout: fixed; }
+  td, th { padding: 3px 6px; text-align: left; vertical-align: top; border-top: 1px solid var(--rule); overflow: hidden; }
+  th { color: var(--dim); font-weight: 500; border-top: 0; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 4.5em; }
+  td.st { width: 4.2em; }
+  .md p { margin: 4px 0; } .md ul { margin: 2px 0; } .md pre { background: var(--empty); padding: 6px 8px; border-radius: 4px; overflow: auto; font-size: 12px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .stat b { display: block; font-size: 20px; line-height: 1.2; font-variant-numeric: tabular-nums; } .stat span { font-size: 12px; color: var(--dim); }
+  .levels { display: flex; height: 14px; border-radius: 4px; overflow: hidden; gap: 2px; background: var(--paper); }
+  .levels i { display: block; min-width: 0; } .levels i[data-l="0"] { background: var(--empty); }
+  .levels i[data-l="1"] { background: var(--l1); } .levels i[data-l="2"] { background: var(--l2); } .levels i[data-l="3"] { background: var(--l3); }
+  .levels i[data-l="4"] { background: var(--l4); } .levels i[data-l="5"] { background: var(--l5); }
+  .task { display: flex; gap: 8px; align-items: baseline; }
+  .task .ln { color: var(--dim); font-size: 11px; white-space: nowrap; }
+  .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+  pre.out { background: var(--empty); padding: 6px 8px; border-radius: 4px; font-size: 12px; overflow: auto; margin: 4px 0 0; white-space: pre-wrap; }
+  #err { color: var(--err); padding: 16px; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">開発ダッシュボード</h1>
+  <span class="meta" id="meta"></span>
+</header>
+<main>
+  <div id="err" hidden></div>
+  <div class="alerts" id="alerts"></div>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+// data.json を読んで描く。状態は持たない（表示するだけ）。配信モード（update.mjs --serve）では 60 秒ごとに読み直す
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+const inline = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+const badge = (cls, text) => `<span class="badge b-${cls}">${esc(text)}</span>`
+const ago = (iso) => {
+  if (!iso) return ''
+  const m = Math.round((Date.now() - Date.parse(iso)) / 60000)
+  if (m < 60) return `${m} 分前`
+  if (m < 60 * 48) return `${Math.round(m / 60)} 時間前`
+  return `${Math.round(m / 1440)} 日前`
+}
+const fmtDate = (iso) => (iso ? iso.slice(0, 16).replace('T', ' ') : '')
+
+// HANDOFF の節を描く最小限の Markdown（段落・箇条書き・コードブロック・太字・コード）
+function md(text) {
+  const out = []
+  let para = [], list = null, pre = null
+  const flushP = () => { if (para.length) { out.push(`<p>${inline(para.join(' '))}</p>`); para = [] } }
+  const flushL = () => { if (list) { out.push(`<ul>${list.map((l) => `<li>${inline(l)}</li>`).join('')}</ul>`); list = null } }
+  for (const raw of (text ?? '').split('\n')) {
+    if (pre !== null) { if (raw.startsWith('```')) { out.push(`<pre>${esc(pre.join('\n'))}</pre>`); pre = null } else pre.push(raw); continue }
+    if (raw.startsWith('```')) { flushP(); flushL(); pre = []; continue }
+    const line = raw.trim()
+    if (!line) { flushP(); flushL(); continue }
+    const m = line.match(/^[-*] +(.*)$/)
+    if (m) { flushP(); (list ??= []).push(m[1]); continue }
+    if (list && raw.startsWith('  ')) { list[list.length - 1] += ' ' + line; continue }
+    flushL(); para.push(line)
+  }
+  flushP(); flushL()
+  return `<div class="md">${out.join('')}</div>`
+}
+
+const ciBadge = (status, conclusion) =>
+  status !== 'completed' ? badge('info', status === 'in_progress' ? '実行中' : status)
+  : conclusion === 'success' ? badge('ok', '成功') : conclusion === 'skipped' ? badge('dim', 'スキップ') : badge('err', conclusion || '失敗')
+
+function render(d) {
+  document.title = `${d.project.name} 開発ダッシュボード`
+  document.getElementById('title').textContent = `${d.project.name} 開発ダッシュボード`
+  document.getElementById('meta').innerHTML =
+    `生成 ${fmtDate(d.generatedAt)}（${ago(d.generatedAt)}） · ブランチ <code>${esc(d.git.branch)}</code>` +
+    (d.project.repoUrl ? ` · <a href="${esc(d.project.repoUrl)}">${esc(d.project.repoUrl.replace('https://github.com/', ''))}</a> ${badge('dim', d.project.visibility)}` : '')
+
+  document.getElementById('alerts').innerHTML = d.alerts
+    .map((a) => `<div class="alert ${a.level}">${a.href ? `<a href="${esc(a.href)}">${esc(a.text)}</a>` : esc(a.text)}</div>`)
+    .join('')
+
+  const cards = []
+  const t = d.todo
+
+  // 1. 人間待ち（最上段）
+  const human = [
+    ...d.beads.human.map((b) => ({ key: b.id, text: b.title.replace(/^\[[^\]]+\]\s*/, ''), tags: b.labels.filter((l) => l !== 'human'), sub: `P${b.priority} · ${ago(b.updatedAt)}`, blocked: b.blockedBy })),
+    ...(t?.askItems ?? []).map((a) => ({ key: `TODO.md:${a.line}`, text: a.text.replace(/\s*完了条件：.*$/, ''), tags: [], sub: '' })),
+  ]
+  cards.push(`<section class="human wide"><h2>人間の判断・作業待ち <span class="n">${human.length}</span> 件 <span class="dim small">Beads（ラベル human）と TODO.md「確認待ち」</span></h2>
+    ${human.length ? `<ul class="plain">${human.map((h) => `<li><div class="task"><span class="ln mono">${esc(h.key)}</span><span>${inline(h.text)} ${h.tags.map((x) => badge('info', x)).join(' ')}${h.blocked?.length ? badge('warn', 'blocked: ' + h.blocked.join(',')) : ''} <span class="dim small">${esc(h.sub)}</span></span></div></li>`).join('')}</ul>` : '<div class="dim">なし</div>'}
+    ${d.beads.others.length ? `<div class="small dim" style="margin-top:6px">Claude 側の付箋 ${d.beads.others.length} 件: ${d.beads.others.map((b) => `<span class="mono">${esc(b.id)}</span> ${esc(b.title.replace(/^\[[^\]]+\]\s*/, ''))}`).join(' / ')}</div>` : ''}
+  </section>`)
+
+  // 2. 進捗（TODO.md）
+  if (t) {
+    const rows = t.phases.map((p) => {
+      const pct = p.total ? Math.floor((100 * p.done) / p.total) : 0 // 切り捨て（apps-workflow の progress.sh と同じ）
+      return `<tr><td><span class="truncate" title="${esc(p.name)}">${esc(p.name)}</span><div class="bar"><i style="width:${pct}%"></i></div></td><td class="num">${pct}%</td><td class="num">${p.open} / ${p.total}</td></tr>`
+    })
+    const pct = t.total.total ? Math.floor((100 * t.total.done) / t.total.total) : 0
+    cards.push(`<section><h2>進捗 <span class="n">${pct}%</span> <span class="dim small">TODO.md（残り ${t.total.open} / ${t.total.total}）</span></h2>
+      <table><tr><th>フェーズ</th><th class="num">達成</th><th class="num">残り</th></tr>${rows.join('')}</table>
+      <div class="small dim" style="margin-top:6px">確認待ち ${t.ask.open} 件（回答済み ${t.ask.done}）· 保留 ${t.hold.open} 件（合計に含めない）</div>
+      <div class="small" style="margin-top:4px">現在のフェーズ: ${esc(t.currentPhase ?? '-')}<br>現在の節: ${esc(t.currentSection ?? '-')}</div>
+    </section>`)
+  }
+
+  // 3. 次のタスク（TODO.md の未完・先頭）
+  if (t) {
+    cards.push(`<section><h2>次のタスク <span class="dim small">TODO.md の未完（先頭 ${t.openTasks.length} 件・上から順）</span></h2>
+      <ul class="plain">${t.openTasks.map((x, i) => `<li><div class="task"><span class="ln mono">${i === 0 ? '▶' : ' '} ${x.line}</span><span>${inline(x.text)}${x.section ? `<div class="dim small">${esc(x.section)}</div>` : ''}</span></div></li>`).join('')}</ul></section>`)
+  }
+
+  // 5. CI と PR（GitHub）
+  {
+    const g = d.github
+    const prs = g.openPrs.length
+      ? `<ul class="plain">${g.openPrs.map((p) => `<li><a href="${esc(p.url)}">#${p.number}</a> ${esc(p.title)} ${p.draft ? badge('dim', 'draft') : ''} ${p.checks === 'success' ? badge('ok', 'CI 成功') : p.checks === 'failure' ? badge('err', 'CI 失敗') : p.checks === 'pending' ? badge('info', 'CI 実行中') : badge('dim', 'CI なし')} <span class="dim small">${esc(p.branch)} · ${ago(p.updatedAt)}</span></li>`).join('')}</ul>`
+      : '<div class="dim small">開いている PR はない</div>'
+    const runs = g.runs.slice(0, 6).map((r) => `<tr><td class="st">${ciBadge(r.status, r.conclusion)}</td><td><a href="${esc(r.url)}"><span class="truncate" title="${esc(r.title)}">${esc(r.title)}</span></a><div class="dim small">${esc(r.branch)} · ${esc(r.event)} · ${ago(r.createdAt)}${r.jobs ? ' · ' + r.jobs.map((j) => `${esc(j.name.replace(/\s*\(.*\)$/, ''))} ${j.conclusion === 'success' ? '✓' : j.conclusion === 'skipped' ? '–' : '✗'}`).join(' / ') : ''}</div></td></tr>`)
+    cards.push(`<section><h2>CI と PR <span class="dim small">GitHub Actions</span> ${g.available ? '' : badge('warn', '取得できず')}</h2>
+      ${g.error ? `<div class="small" style="color:var(--warn)">${esc(g.error)}</div>` : ''}
+      <div class="small dim">開いている PR</div>${prs}
+      <div class="small dim" style="margin-top:6px">最近の実行（ジョブ別の結果つき）</div>
+      <table>${runs.join('')}</table></section>`)
+  }
+
+  // 5. 現在地と次の一手（HANDOFF.md）
+  if (d.handoff) {
+    const h = d.handoff
+    const fresh = h.commitsSince === 0 ? badge('ok', '最新') : badge(h.commitsSince >= 3 ? 'warn' : 'info', `${h.commitsSince} コミット前`)
+    cards.push(`<section class="wide"><h2>現在地と次の一手 <span class="dim small">HANDOFF.md（最終更新 ${esc(h.lastCommit?.date ?? '-')} ${esc(h.lastCommit?.hash ?? '')}）</span> ${fresh}</h2>
+      <div class="grid" style="gap:8px 16px">
+        <div><div class="dim small">${esc(h.sections.current?.title ?? '現在地')}</div>${md(h.sections.current?.body)}</div>
+        <div><div class="dim small">${esc(h.sections.next?.title ?? '次にやること')}</div>${md(h.sections.next?.body)}</div>
+      </div></section>`)
+  }
+
+  // 6. Git
+  {
+    const g = d.git
+    const sync = g.upstream ? `${esc(g.upstream)} に対して ${g.ahead > 0 ? badge('warn', `未 push ${g.ahead}`) : ''} ${g.behind > 0 ? badge('info', `遅れ ${g.behind}`) : ''} ${!g.ahead && !g.behind ? badge('ok', '同期済み') : ''}` : badge('dim', 'upstream なし')
+    cards.push(`<section><h2>Git <span class="dim small"><code>${esc(g.branch)}</code></span> ${sync}</h2>
+      <div class="small dim">未コミット ${g.dirty.length} ファイル</div>
+      ${g.dirty.length ? `<ul class="small mono" style="margin-bottom:6px">${g.dirty.slice(0, 12).map((f) => `<li>${esc(f.status)} ${esc(f.path)}</li>`).join('')}${g.dirty.length > 12 ? `<li>…ほか ${g.dirty.length - 12}</li>` : ''}</ul>` : ''}
+      <div class="small dim">最近のコミット</div>
+      <ul class="plain small">${g.commits.slice(0, 8).map((c) => `<li><span class="mono dim">${esc(c.hash)}</span> ${esc(c.subject)} ${c.pr ? `<a href="${esc(d.project.repoUrl ?? '')}/pull/${c.pr}">#${c.pr}</a>` : ''} <span class="dim">${ago(c.date)}</span></li>`).join('')}</ul>
+      <div class="small dim" style="margin-top:6px">直近 ${g.recentDays} 日でよく変わったファイル</div>
+      <div class="small mono">${g.recentFiles.map((f) => `${esc(f.file)} <span class="dim">×${f.commits}</span>`).join(' · ')}</div>
+    </section>`)
+  }
+
+  // 7. このプロジェクト固有：data/ の状態
+  {
+    const x = d.data
+    const s = x.state
+    const total = s?.items || 0
+    const levels = s ? `<div class="levels">${s.byLevel.map((n, l) => (n ? `<i data-l="${l}" style="flex:${n}" title="Level ${l}: ${n} 件"></i>` : '')).join('')}</div>
+      <div class="small dim">${s.byLevel.map((n, l) => `L${l} ${n}`).join(' · ')}</div>` : ''
+    cards.push(`<section><h2>データ（data/） ${x.verify ? (x.verify.ok ? badge('ok', 'verify 成功') : badge('err', 'verify 失敗')) : badge('dim', 'verify 未実行')}</h2>
+      <div class="stats">
+        <div class="stat"><b>${x.roadmap?.domains ?? '-'} / ${x.roadmap?.items ?? '-'}</b><span>分野 / 項目（${esc(x.roadmap?.name ?? 'roadmap.json なし')}）</span></div>
+        <div class="stat"><b>${x.judgments.count}</b><span>判定ファイル${x.judgments.latest ? `（最新 ${esc(x.judgments.latest)}）` : ''}</span></div>
+        <div class="stat"><b>${total ? total - (s.byLevel[0] ?? 0) : 0} / ${total}</b><span>根拠のある項目</span></div>
+        <div class="stat"><b>${s?.needsReview ?? '-'} · ${s?.pendingBase ?? '-'}</b><span>要再確認 · 基礎未確認</span></div>
+        <div class="stat"><b>${s?.deferred ?? '-'} · ${s?.rejected ?? '-'}</b><span>保留 · 棄却</span></div>
+      </div>
+      <div style="margin-top:8px" class="small dim">verifiedLevel の分布（左 L0 → 右 L5）</div>${levels}
+      ${x.verify ? `<pre class="out">${esc(x.verify.output.join('\n'))}</pre>` : ''}
+    </section>`)
+  }
+
+  // 8. 最近の合意（logs/decisions.md）
+  cards.push(`<section><h2>最近の合意 <span class="dim small">logs/decisions.md</span></h2>
+    <ul class="plain small">${d.decisions.map((x) => `<li><span class="mono dim">${esc(x.date)}</span> ${inline(x.title)}</li>`).join('') || '<li class="dim">なし</li>'}</ul></section>`)
+
+  document.getElementById('grid').innerHTML = cards.join('')
+}
+
+async function load() {
+  try {
+    const res = await fetch('data.json', { cache: 'no-store' })
+    if (!res.ok) throw new Error(`data.json: HTTP ${res.status}`)
+    render(await res.json())
+    document.getElementById('err').hidden = true
+  } catch (e) {
+    const el = document.getElementById('err')
+    el.hidden = false
+    el.textContent = `data.json を読めません（${e.message}）。node dashboard/update.mjs --serve で起動してください`
+  }
+}
+load()
+if (location.protocol.startsWith('http')) setInterval(load, 60_000)
+</script>
+</body>
+</html>

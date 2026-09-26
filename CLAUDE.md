@@ -59,6 +59,13 @@
 - **棚上げしたコード（`SPEC.md` §10 の一覧）は消さない。** テストを緑に保つための最小限の追随（型に 1 フィールド足す等）はしてよい。
   それ以上の手直しが要るなら、直さずに棚上げの範囲を見直す。Go 側の `Staleness` / `NextActions` 等は参照実装として残す（`SPEC.md` §5）
 
+## 開発ダッシュボード（`dashboard/`。試験導入 2026-09-26）
+
+人間が進捗・人間待ち・CI・現在地を 1 画面で見る観測画面。`node dashboard/update.mjs --serve` で起動し、TODO / HANDOFF / decisions / git / gh / bd / `data/` を
+開くたびに読み直して描く（独自の状態は持たない。使い方と取得元は `dashboard/README.md`）。
+**`TODO.md` の見出し規約・`HANDOFF.md` の節名・CI のジョブ名・Beads の題名規約を変えたら、`dashboard/update.mjs` の読み取りも合わせて直す。**
+重要な指標が増えたら表示項目を足してよいが、ダッシュボードのために正本側へ欄を足さない。
+
 ## Claude Code の設定
 
 共通のフック3種と `/apps-workflow:handoff` `/apps-workflow:pr-check` は [apps-workflow プラグイン](https://github.com/n-yoshida-dev/claude-plugins)から来る（`.claude/settings.json` の `enabledPlugins`）。

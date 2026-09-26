@@ -811,6 +811,7 @@ frontend/
     lib/staleness.ts        鮮度（純粋関数）
     components/
 docs/                       要件定義・アーキテクチャの人間向け解説
+dashboard/                  開発の観測画面（v1 の機能ではない。正本を読んで描くだけ。dashboard/README.md）
 .claude/skills/judge-log/   /judge-log の入口（prompts/judge.md を読ませるだけ）
 ```
 
