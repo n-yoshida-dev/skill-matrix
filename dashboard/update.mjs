@@ -232,7 +232,12 @@ function readGithub() {
         : states.length
           ? 'success'
           : 'none'
-    return { number: p.number, title: p.title, url: p.url, branch: p.headRefName, draft: p.isDraft, updatedAt: p.updatedAt, checks }
+    // 失敗したジョブ名（例：backend (vet / test / build)）。画面の PR の行に「失敗: backend」と出す
+    const failed = (p.statusCheckRollup ?? [])
+      .filter((c) => ['FAILURE', 'ERROR', 'TIMED_OUT'].includes((c.conclusion || c.state || '').toUpperCase()))
+      .map((c) => c.name || c.context)
+      .filter(Boolean)
+    return { number: p.number, title: p.title, url: p.url, branch: p.headRefName, draft: p.isDraft, updatedAt: p.updatedAt, checks, failed }
   })
   const list = runJson('gh', [
     'run',
@@ -253,8 +258,9 @@ function readGithub() {
     url: r.url,
     jobs: null,
   }))
-  // ジョブ別（frontend / backend / 秘密情報）の結果は、main の最新と、それ以外の最新の 2 本だけ引く（gh の呼び出しを増やさない）
-  const detailTargets = [runs.find((r) => r.branch === 'main'), runs.find((r) => r.branch !== 'main')].filter(Boolean)
+  // ジョブ別（frontend / backend / 秘密情報）の結果は、main の最新の 1 本だけ引く（gh の呼び出しを増やさない）。
+  // 開いている PR の失敗ジョブは、上の statusCheckRollup から取れている
+  const detailTargets = [runs.find((r) => r.branch === 'main')].filter(Boolean)
   for (const r of detailTargets) {
     const v = runJson('gh', ['run', 'view', String(r.id), '--json', 'jobs'])
     if (v.value?.jobs) {

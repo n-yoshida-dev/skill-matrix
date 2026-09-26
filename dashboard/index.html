@@ -324,7 +324,9 @@ function render(d) {
   // 4. CI ／ 最近のコミット ／ データ
   const prRows = gh.openPrs.map((p) => {
     const kind = p.checks === 'success' ? 'good' : p.checks === 'failure' ? 'bad' : p.checks === 'pending' ? 'run' : 'na'
-    return li(`<span class="sym s-${kind}">${SYM[kind]}</span>${txt(`#${p.number} ${commitTitle(p.title).text}`, p.title)}<span class="src">PR · ${ago(p.updatedAt)}</span>`)
+    const failed = (p.failed ?? []).map((n) => n.replace(/\s*[（(].*$/, ''))
+    const label = `#${p.number} ${commitTitle(p.title).text}` + (failed.length ? ` — 失敗: ${failed.join(', ')}` : '')
+    return li(`<span class="sym s-${kind}">${SYM[kind]}</span>${txt(label, p.title)}<span class="src">PR · ${ago(p.updatedAt)}</span>`)
   })
   // 「最近の実行」は main だけを出す。PR の実行は、開いている PR なら上の「開いている PR」に CI の結果が出ており、
   // マージ済みなら main 側の実行と同じ変更なので重複になる（題名で突き合わせると PR 名の変更で 2 行に割れる。2026-09-27）
