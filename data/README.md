@@ -26,5 +26,5 @@ go -C backend run ./cmd/skillmatrix verify --data ../data   # CI と同じ検査
 - `judgments/` はまだ空。判定は段階 F（`skill-map.md` からの移行）で初めて入る。それまで `state.json` は全項目レベル 0（未着手）
 - `verifyBy` は移行後の状態（§8.4 の期待表）から見た「次の印の取り方」で書いてある。移行前の今は、書いてある段（L1・L2 など）と画面のレベルがずれる
 
-`roadmap.json` の文字列には所属先・企業名・人名・転職活動・人事評価を書かない（`CLAUDE.md`「守ること」）。
+`roadmap.json` の文字列は `CLAUDE.md`「守ること」の roadmap の縛りに従う（技術的な事実だけを書く）。
 `verifyBy` は、その項目で**次に付く印**を得るための技術的な検証条件を書く。印が付いて段が上がったら、次の段の条件に書き換える。

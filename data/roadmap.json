@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "Web アプリ開発の学習ロードマップ",
-  "description": "Go / React を軸に、これまでの実装で触れた Java・DB・CI/CD・BaaS・課金を 8 分野に並べたもの。項目の出どころは docs/skill-map-migration.md §8.3",
+  "description": "Go / React を軸に、Java / Spring Boot・データベース設計・CI/CD・BaaS と認証・AI 協働開発・課金を加えた 8 分野。項目の出どころは docs/skill-map-migration.md §8.3",
   "origin": "manual",
   "source": "https://github.com/n-yoshida-dev/skill-matrix/blob/main/docs/skill-map-migration.md",
   "checkedAt": "2026-09-26",
