@@ -59,7 +59,7 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
   `PLAN.md`「未確定」の skill-map の行と `KNOWLEDGE.md` 2026-08-10「移行しない」に「2026-09-25 の決定で置き換え」の注記がある。
   SPEC に写した後は SPEC が正本なので、段階 C 以降の完了条件にある「移行計画 §x」の参照を SPEC の節番号へ付け替えてある。
   `CLAUDE.md`「判定基準を指示書に書き写さない」の「根拠の種類と上限」を「根拠の種類と印」に直してある
-- [ ] `internal/domain` と `internal/llm/output.go` を 2 本の梯子モデルへ変更する（段階 C-1。SPEC.md §1.1・§4.4・§4.5・§5。Go の型名の対応は移行計画 §3）
+- [x] `internal/domain` と `internal/llm/output.go` を 2 本の梯子モデルへ変更する（段階 C-1。SPEC.md §1.1・§4.4・§4.5・§5。Go の型名の対応は移行計画 §3）（2026-09-26 完了。V6 の識別子は `V6_failed_check`）
   完了条件：`ItemState` に `VerifiedLevel`（導出）と `Evidenced`、`Judgment` に `Source` / `EvidenceRefs` / `HasConfidence`、`EvidenceLearningActivity`、`evidenceLadder`（Base / Top）がある。V4（`MaxLevelStep` / `ViolationLevelJump`）が消え、V5 は梯子の範囲、V6 は `proposedLevel == 0`、V7 は `source: ai` のときだけ。印がある項目の `preState` は常に `none`。導出（`[3]`→0、`[1,3]`→1、`[1,2,3]`→3、`[1,2,3,4]`→4）・不合格報告・鮮度の更新条件・source 別の V7 がテストにある。`ParseOutput` が `evidenceRefs`（配列・1 件以上・書式）と `confidence` の有無（`ai` なら必須、他は禁止）を検査する。棚上げ中の `store` は改名に機械的に追従するだけ（挙動は変えない）。`EvidenceRefs` は判定材料にしない
 - [ ] 検証と再計算の CLI を作る（段階 C-2。`backend/cmd/skillmatrix`。JSON を読み、形の検査 → V1〜V8 → `ApplyJudgment` → 理解度を書き出す）
   完了条件：`recalc` と `verify` の2モードがある。`recalc` は `data/state.json`（SPEC.md §3.4 の形）を書き出す。`verify` は書き出さず、違反があれば終了コード 1 と違反の一覧（どの項目のどのルールか）を出し、**さらに `state.json` が再計算結果と一致しなければ終了コード 1**。処理順はファイル名の昇順・配列の順。DB・HTTP・LLM クライアントを import しない。単体テストがある。`backend/testdata/` のダミー判定を `schemaVersion: 2` に更新してある
