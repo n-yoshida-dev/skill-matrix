@@ -92,6 +92,9 @@
   .tag.k-作業 { background: var(--good-bg); color: var(--good); }
   .tag.blocked { background: transparent; border: 1px solid var(--line); color: var(--faint); }
   .sym { flex: none; width: 1.2em; text-align: center; font-weight: 700; }
+  /* 押して全文に切り替えた題名は、折り返して全部見せる */
+  span.txt[title], ol.next li[title], .now[title] { cursor: pointer; }
+  .full { white-space: normal !important; display: block !important; -webkit-line-clamp: unset !important; overflow: visible !important; }
 
   /* 今のタスク */
   .now { font-size: 19px; font-weight: 600; line-height: 1.4; margin: 2px 0 2px; }
@@ -122,6 +125,11 @@
   .empty { color: var(--faint); font-size: 14px; padding: 6px 0; }
   #err { background: var(--bad-bg); color: var(--bad); padding: 12px 16px; border-radius: 8px; }
 
+  /* 中間の幅：タイル 5 枚を 1 行に詰めると文字が折り返すので、進捗を 1 行目、残り 4 枚を 2 行目に */
+  @media (max-width: 1080px) {
+    .kpis { grid-template-columns: repeat(4, 1fr); }
+    .kpi.wide { grid-column: span 4; }
+  }
   /* スマートフォン幅：1 列にし、タイルは 2 列（進捗だけ横いっぱい） */
   @media (max-width: 860px) {
     .kpis { grid-template-columns: 1fr 1fr; }
@@ -202,7 +210,8 @@ function runState(r) {
   if (!r) return ['na', 'なし']
   if (r.status !== 'completed') return ['run', '実行中']
   if (r.conclusion === 'success') return ['good', '成功']
-  if (r.conclusion === 'skipped' || r.conclusion === 'cancelled') return ['na', r.conclusion === 'skipped' ? 'スキップ' : '中止']
+  if (r.conclusion === 'cancelled') return ['warn', '中止']
+  if (r.conclusion === 'skipped' || r.conclusion === 'neutral') return ['na', 'スキップ']
   return ['bad', '失敗']
 }
 
@@ -267,12 +276,18 @@ function render(d) {
       return { kind: bracketTag(full) || '確認', text: short(full), full, src: 'TODO', blocked: false }
     }),
   ]
+  // V7 で保留になった判定は、人が採否を決めるもの（SPEC §4.5）なので、あなた待ちに入れる
+  if (x.state?.deferred) {
+    const text = `保留中の判定 ${x.state.deferred} 件の採否を決める`
+    human.push({ kind: '判断', text, full: `${text}（data/state.json の deferred。採用するなら manual の判定を足す）`, src: 'state.json', blocked: false })
+  }
 
   // 2. 数字のタイル
   const pct = t && t.total.total ? Math.floor((100 * t.total.done) / t.total.total) : 0
   const mainRun = gh.runs.find((r) => r.branch === 'main')
   const [ciKind, ciLabel] = gh.available ? runState(mainRun) : ['na', '取得できず']
-  const [vKind, vLabel] = !x.verify ? ['na', '未実行'] : x.verify.ok ? ['good', '一致'] : ['bad', '不一致']
+  // verify は go が無いと code -1（実行できず）。それ以外の失敗は不一致に限らないので「失敗」と出す
+  const [vKind, vLabel] = !x.verify ? ['na', '未実行'] : x.verify.ok ? ['good', '成功'] : x.verify.code === -1 ? ['na', '取得できず'] : ['bad', '失敗']
   const dirty = g.dirty.length
   const [wKind, wLabel] = dirty ? ['warn', `未コミット ${dirty}`] : g.ahead ? ['warn', `未push ${g.ahead}`] : ['good', 'クリーン']
   html.push(`<div class="kpis">
@@ -311,10 +326,11 @@ function render(d) {
     const kind = p.checks === 'success' ? 'good' : p.checks === 'failure' ? 'bad' : p.checks === 'pending' ? 'run' : 'na'
     return li(`<span class="sym s-${kind}">${SYM[kind]}</span>${txt(`#${p.number} ${commitTitle(p.title).text}`, p.title)}<span class="src">PR · ${ago(p.updatedAt)}</span>`)
   })
-  // 同じ変更の PR 実行と main 実行は題名が同じなので、新しい方の 1 本だけ出す
+  // 同じ変更の PR 実行と main 実行は題名が同じなので、新しい方の 1 本だけ出す。
+  // 鍵は縮める前の題名（末尾の (#n) だけ除く）。縮めた題名だと「引き継ぎを更新」のような別の変更まで重なる
   const seen = new Set()
   const runs = gh.runs.filter((r) => {
-    const key = commitTitle(r.title).text
+    const key = String(r.title ?? '').replace(/\s*\(#\d+\)\s*$/, '')
     if (seen.has(key)) return false
     seen.add(key)
     return true
@@ -382,6 +398,20 @@ try {
   el.hidden = false
   el.textContent = `データを読めません（${e.message}）。先に node dashboard/update.mjs を実行してください`
 }
+// 縮めた題名を押すと全文に切り替わる（マウスの無いスマートフォン向け）。もう一度押すと戻る
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('span.txt[title], ol.next li[title], .now[title]')
+  if (!el) return
+  if (el.dataset.short == null) {
+    el.dataset.short = el.textContent
+    el.textContent = el.title
+    el.classList.add('full')
+  } else {
+    el.textContent = el.dataset.short
+    delete el.dataset.short
+    el.classList.remove('full')
+  }
+})
 // 配信モード（--serve）のときだけ、60 秒ごとに読み直す
 if (location.protocol.startsWith('http')) setInterval(() => location.reload(), 60_000)
 </script>

@@ -61,7 +61,7 @@
 
 ## 開発ダッシュボード（`dashboard/`。試験導入 2026-09-26）
 
-人間が進捗・人間待ち・CI・現在地を 1 画面で見る観測画面。`node dashboard/update.mjs` で TODO / HANDOFF / decisions / git / gh / bd / `data/` を読んで
+人間が進捗・人間待ち・CI・今のタスクを 1 画面で見る観測画面（文章は 1 行に縮め、引き継ぎメモ等の全文は折りたたみ）。`node dashboard/update.mjs` で TODO / HANDOFF / decisions / git / gh / bd / `data/` を読んで
 `dashboard/data.js` を作り、`dashboard/index.html` をブラウザで直接開く（`--serve` を付ければ開くたびに再生成）。独自の状態は持たない。
 使い方と取得元は `dashboard/README.md`。
 **`TODO.md` の見出し規約・`HANDOFF.md` の節名・CI のジョブ名・Beads の題名規約を変えたら、`dashboard/update.mjs` の読み取りも合わせて直す。**

@@ -360,7 +360,10 @@ function readProjectData() {
 function buildAlerts({ git, github, handoff, data, todo, beads }) {
   const alerts = []
   const mainRun = github.runs.find((r) => r.branch === 'main')
-  if (mainRun && mainRun.conclusion && mainRun.conclusion !== 'success') {
+  // 失敗は赤、中止は黄、成功・スキップは帯を出さない（画面のタイルと同じ区分）
+  if (mainRun && mainRun.conclusion === 'cancelled') {
+    alerts.push({ level: 'warn', text: 'main の CI が中止された', href: mainRun.url })
+  } else if (mainRun && mainRun.conclusion && !['success', 'skipped', 'neutral'].includes(mainRun.conclusion)) {
     alerts.push({ level: 'error', text: `main の CI が ${mainRun.conclusion}`, href: mainRun.url })
   }
   for (const pr of github.openPrs) {
