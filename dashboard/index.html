@@ -262,7 +262,7 @@ function render(d) {
   meta.className = 'meta' + (ageMin > 60 ? ' stale' : '')
   meta.innerHTML =
     `${esc(g.branch)} · ${ago(d.generatedAt)}に更新` +
-    (ageMin > 60 ? '（古い。右の「更新」を押す）' : '') +
+    (ageMin > 60 ? (location.protocol.startsWith('http') ? '（古い。右の「更新」を押す）' : '（古い。ターミナルで node dashboard/update.mjs を実行）') : '') +
     (d.project.repoUrl ? ` · <a href="${esc(d.project.repoUrl)}">GitHub</a>` : '')
 
   const html = []
