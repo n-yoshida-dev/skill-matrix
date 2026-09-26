@@ -315,7 +315,7 @@ type Judgment struct {
 	// Source は誰が書いた判定か。空なら ai として扱う（古い呼び出し側との互換）。
 	Source JudgmentSource
 	// EvidenceRefs は根拠の出どころ（`<種別>:<識別子>`）。記録であって判定材料ではない。
-	// 書式の検査は形の検査（llm.ParseOutput）が担当し、ここでは見ない。
+	// 書式の検査は形の検査（judgment.Parse）が担当し、ここでは見ない。
 	EvidenceRefs []string
 	// Confidence は AI の自己申告する確信度（0.0〜1.0）。HasConfidence が false なら意味を持たない。
 	Confidence float64

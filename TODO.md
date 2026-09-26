@@ -96,7 +96,7 @@ DB への永続化・インポート API・CRUD はサーバごと棚上げし�
 ### 2-4. AI 判定（自分専用版：判定は Claude Code / ChatGPT にやらせる）
 
 サーバから Claude API を呼ぶ部分（クライアント・キュー・ワーカー・クォータ・ジョブ API）は棚上げした（フェーズ3 の 3-1 / 3-2）。
-v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検査する側（`internal/llm/output.go` と 2-1 の CLI）だけ。
+v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検査する側（`internal/judgment` と 2-1 の CLI）だけ。
 
 - [x] `internal/llm` にインタフェースと **stub プロバイダ**を実装する（`LLM_PROVIDER=stub`。開発中の課金ゼロ＋テストの決定性）
   完了条件：`llm.New` が `LLM_PROVIDER=stub` で LLM を呼ばない実装を返し、同じ入力に同じ判定を返す。その判定が `domain.ApplyJudgments` を違反なしで通る。返す JSON を差し替えた stub で V1・V2・V4 が記録される。形の崩れた判定は捨てずに `Rejected` に残る（KNOWLEDGE.md 2026-09-19）

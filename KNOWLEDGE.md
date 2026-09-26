@@ -745,3 +745,16 @@ dev サーバは既定で `frontend/` の外を配信しないので `server.fs.
 回避：`store` に触る PR は、コミット前に `docker compose up -d postgres` を立てて
 `TEST_DATABASE_URL='postgres://skillmatrix:skillmatrix@localhost:5432/skillmatrix?sslmode=disable' go test ./internal/store/` を回す
 （HANDOFF.md の動作確認コマンドに載せた。`../CLAUDE.md` への昇格は TODO 確認待ち）。
+
+### 2026-09-26：形の検査を `internal/llm` から `internal/judgment` へ切り出した（段階 C-2 の下準備）
+
+`internal/llm` には v1 の中核（`output.go` の形の検査）と、棚上げ中の Claude API クライアント（`anthropic.go`）が同じパッケージに同居していた。
+Go は import をパッケージ単位で行うので、CLI が `ParseOutput` だけを使うつもりで `internal/llm` を import すると、
+Anthropic の SDK と `net/http` までリンクされる（`go list -deps ./internal/llm` で確認）。TODO C-2 の完了条件「LLM クライアントを import しない」に反する。
+
+| 判断 | 理由 |
+|---|---|
+| 形の検査を `internal/judgment`（`Parse` / `Proposed` / `Rejected` / `Output` / `EnvelopeError`）へ移した | CLI が import しても SDK・通信・DB が付いてこない。`go list -deps ./internal/judgment` で確かめられる |
+| `internal/llm/output.go` には型の別名（`ProposedJudgment = judgment.Proposed` 等）と `ParseOutput` / `ParseOutputFor` の入口を残した | 棚上げ中の stub・Claude API クライアント・ワーカーを 1 行も変えずに済む（`CLAUDE.md`「棚上げしたコードは消さない」） |
+| 外枠の崩れは `judgment.EnvelopeError`（理由だけ）で返し、`llm` の入口が生の出力と消費トークン数を運ぶ `InvalidOutputError` に包み直す | 消費トークン数は API を呼ぶ側だけの関心事。CLI には要らない |
+| 置き場所の変更は `logs/decisions.md` 2026-09-23 の「`output.go` は v1 の中核として残り CLI から呼ぶ」の趣旨（形の検査は v1 の中核・CLI から呼ぶ）を変えない | ファイルの場所だけの話なので決定の蒸し返しには当たらない。SPEC §4.5・§6・§8.1、`CLAUDE.md`、`PLAN.md` の参照先を付け替えた |

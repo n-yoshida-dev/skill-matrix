@@ -448,7 +448,8 @@ V4 を廃止した理由：1 件の根拠が同じ梯子の下位を同時に証
 適用の規則（`ApplyJudgment`）：(1) 印を付ける（4.4 の集合を `proposedLevel` で上限を切った範囲）→ (2) `verifiedLevel` を導出し直す →
 (3) 印があれば `preState` は `none`、無ければ根拠の種類が立てる値 → (4) `lastEvidenceAt` は §3.4 の条件で更新 → (5) `proposedLevel` が 0 なら印を付けず `needsReview`。
 
-**V1〜V8 の前に、形の検査を通す**（`internal/llm` の `ParseOutput`。V1〜V8 は意味の検査で `internal/domain` が担当し、同じ検査を2か所に書かない）。
+**V1〜V8 の前に、形の検査を通す**（`internal/judgment` の `Parse`。棚上げ中の stub・Claude API クライアントは `internal/llm` の `ParseOutput` 経由で同じ関数を通る。
+V1〜V8 は意味の検査で `internal/domain` が担当し、同じ検査を2か所に書かない）。
 形の崩れた判定はその1件だけを棄却し（`rejected`）、同じファイルの他の判定は生かす。
 ファイル全体が JSON として読めない・外枠の型が合わない（`judgments` が配列でない等）・`judgments` が無い場合は、そのファイルをエラーとして CLI が止まる。
 
@@ -567,7 +568,8 @@ priority = w.Readiness * readiness   // 依存項目がすべて L1 以上なら
 
 ## 6. CLI（`backend/cmd/skillmatrix`）
 
-判定ファイルを検証し、理解度を再計算する。**DB・HTTP・LLM クライアントを import しない**（読むのは `internal/domain` / `internal/roadmap` / `internal/llm` の `ParseOutput` だけ）。
+判定ファイルを検証し、理解度を再計算する。**DB・HTTP・LLM クライアントを import しない**（読むのは `internal/domain` / `internal/roadmap` / `internal/judgment` だけ。
+`internal/llm` は棚上げ中の Claude API クライアントと同居しているので import しない）。
 
 ```bash
 go -C backend run ./cmd/skillmatrix recalc --data ../data   # 検証して data/state.json を書き直す（手元で使う）
@@ -771,10 +773,11 @@ backend/
   internal/
     domain/                 純粋関数（理解度モデル・検証・集計）※ DB/HTTP/LLM を import しない
     roadmap/                マスタ JSON のスキーマ定義と検証
-    llm/output.go           AI 出力の形の検査（ParseOutput）。v1 の中核
+    judgment/               判定の JSON の形の検査（Parse）。v1 の中核
   testdata/                 ダミーのロードマップ・学習ログ・判定
   ── 以下は v2 へ棚上げ（§10）。消さない ──
-  cmd/server/ cmd/worker/ internal/{store,httpapi,worker,config} internal/llm/{anthropic,prompt,stub}.go migrations/
+  cmd/server/ cmd/worker/ internal/{store,httpapi,worker,config} internal/llm/{anthropic,prompt,stub,output}.go migrations/
+  （llm/output.go は judgment への入口と、生の出力・消費トークン数を運ぶエラー型。呼ぶのは棚上げ中のコードだけ）
 frontend/
   src/
     data/                   data/*.json の読み込みと型（Vite の別名で data/ を指す）
@@ -837,7 +840,7 @@ CLI と画面が共通で読む。秘密情報は入らないのでコミット�
 2026-09-23 に棚上げした分。**消さない。** 実装済みのコードは `backend/` に残っている（`TODO.md` フェーズ3）。
 戻す条件は `logs/decisions.md` 2026-09-23「見直す条件」。ここは棚上げ時点の内容で、v1 の変更（`evidenceRef` の追加など）は反映していない。
 戻すときに v1 の §3・§4 と突き合わせて直す。
-**棚上げしたコードのコメント（`cmd/server` / `cmd/worker` / `internal/{store,httpapi,worker,config}` / `internal/llm/{anthropic,prompt,stub}.go` / `migrations/`）と
+**棚上げしたコードのコメント（`cmd/server` / `cmd/worker` / `internal/{store,httpapi,worker,config}` / `internal/llm/{anthropic,prompt,stub,output}.go` / `migrations/`）と
 `KNOWLEDGE.md` の過去の記録は旧番号のまま。** §3 → §10.1、§4.1 → §10.2、§4.2 → §10.3、§4.6 → §10.4、§4.7 → §10.5、§4.8 → §10.6、§6 → §10.7、§8.3 → §10.8、§9 → §10.9 と読み替える。
 v1 の中核である `internal/domain` にも旧番号の参照が残っている（`types.go` の `evidenceOrder` のプロンプトキャッシュの注記 §4.2 → §10.3、
 `apply.go` / `types.go` の「保留分は `assessment_events` に書かず」→ v1 では `state.json` の `deferred`）。2-1 で `EvidenceRef` を足すときに直す。
