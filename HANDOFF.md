@@ -27,39 +27,42 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
 進捗（TODO.md より自動集計・2026-09-26）
 
 ████████████████████ 100%  残り  0 / 11  フェーズ1：設計（完了）
-█████████░░░░░░░░░░░  45%  残り 22 / 40  フェーズ2：v1 実装（自分専用版。ゴールは「画面で自分のマトリクスが見える」こと）
-███████████░░░░░░░░░  56%  残り 22 / 51  合計
+█████████░░░░░░░░░░░  47%  残り 21 / 40  フェーズ2：v1 実装（自分専用版。ゴールは「画面で自分のマトリクスが見える」こと）
+███████████░░░░░░░░░  58%  残り 21 / 51  合計
 あなたの回答待ち：4 件（回答済み 4 件）
 保留（合計に含めない）：19 件（済み 15 件）
 
-前回の区切り（2026-09-25）から：完了 +4 件、新たに見つかったタスク +1 件
+前回の区切り（2026-09-26）から：完了 +1 件、新たに見つかったタスク +0 件
 ```
 
 ## 1. 現在地
 
-`main` はクリーン（PR #41 まで）。作業中のブランチは無い。
+`main` はクリーン（PR #44 まで）。作業中のブランチは無い。
 
-- **SPEC は 2 本の梯子モデル（段階 B 済み）、`internal/domain` と `llm/output.go` もそれに追従済み（段階 C-1 済み）。**
-  `ItemState` は `VerifiedLevel`（導出）＋ `Evidenced`（印）、`Judgment` は `Source` / `EvidenceRefs` / `HasConfidence` を持つ。V4 は廃止
-- **画面は公開ビュー（`/`。採用担当者向け・タイル表示）まで動く。** 作業ビュー（`/plan`）は土台だけ。
-  `data/` はダミー（`roadmap.json` は testdata と同じ内容、`state.json` は手書き）。実物は段階 D・F で入る
-- 棚上げ中の `store` / `worker` / `stub` / `prompt` は改名に機械的に追従しただけ（挙動は変えていない）
+- **段階 C-2 まで済み。** `backend/cmd/skillmatrix` に `recalc` / `verify` がある（SPEC §6）。`state.json` の書き出しの形は SPEC §3.4 末尾。
+  形の検査は `internal/judgment` に移した（`internal/llm/output.go` は棚上げ中のコード用の入口だけ）
+- **CI はまだ `verify` を走らせていない。** `data/state.json` は手書きのダミーのままで、`verify --data ../data` は一致しない
+- **画面は公開ビュー（`/`）まで動く。** 作業ビュー（`/plan`）は土台だけ。`data/roadmap.json` は testdata と同じダミーで、実物は段階 D・F で入る
 - 以後の細部は既存方針と整合する範囲で Claude が判断してよい。止めて確認するのは重大な矛盾・データ損失・公開情報上の問題だけ（2026-09-25 ユーザー指示）
 
 ## 2. 次セッションで最初にやること
 
-**TODO 2-1 の段階 C-2＝検証と再計算の CLI（`backend/cmd/skillmatrix`。`recalc` / `verify`）。**
-仕様は `SPEC.md` §6（モードと終了コード）・§3.3〜§3.4（判定ファイルと `state.json` の形）・§4.5（形の検査 → V1〜V8）。
-完了条件は TODO 2-1 にある（`preState` の `""` → `"none"` 正規化、処理順、`backend/testdata/` の判定を `schemaVersion: 2` に更新、を含む）。
-`state.json` の JSON エンコードは決定的に（項目はロードマップ順。整形の細部は C-2 で決めて SPEC §3.4 に書く）。`verify` はバイト単位で一致を見る。
+**TODO 2-1「その CLI を CI で走らせる（`verify` モード）」。** 最初に `go -C backend run ./cmd/skillmatrix recalc --data ../data` で
+`data/state.json` を作り直してコミットする（全項目 0 になり公開ビューのダミー表示が消える。段階 D まで。`data/README.md` の「今はダミー」節も直す）。
+そのあと `.github/workflows/ci.yml` の backend ジョブに `go run ./cmd/skillmatrix verify --data ../data` を足し、
+完了条件どおり「JSON を壊した PR」「`state.json` だけ古い PR」で CI が赤くなるのを一度ずつ確かめる。
 
-その後は TODO 2-1 の順（CI で `verify` → `roadmap.json` の実物 → `sources` → study 側の凍結 → 移行判定 → 切り替え）。
+その後は TODO 2-1 の順（`roadmap.json` の実物 → `sources` → study 側の凍結 → 移行判定 → 切り替え）。
 
 ## 3. 動作確認コマンド
 
 ```bash
-# 純粋関数のテスト（DB 不要）
-go -C backend test ./internal/... -cover
+# 純粋関数と CLI のテスト（DB 不要）
+go -C backend test ./internal/... ./cmd/skillmatrix -cover
+
+# 判定から state.json を作り直す／コミット済みの state.json が最新か確かめる（CI 用）
+go -C backend run ./cmd/skillmatrix recalc --data ../data
+go -C backend run ./cmd/skillmatrix verify --data ../data
 
 # store を触ったら DB テストも回す（ローカルでは Postgres 無しだとスキップされ、CI だけが落ちる。KNOWLEDGE.md 2026-09-26）
 docker compose up -d postgres

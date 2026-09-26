@@ -255,11 +255,13 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 
 ## 確認待ち
 
-- [ ] 【ユーザー確認】`../CLAUDE.md` に 2 点を足すか（2026-09-26 に判明）：(1)「同じリポジトリの作業ディレクトリを複数セッションで同時に使わない」
+- [ ] 【ユーザー確認】`../CLAUDE.md` に 3 点を足すか（2026-09-26 に判明）：(1)「同じリポジトリの作業ディレクトリを複数セッションで同時に使わない」
   （2026-09-25 に別セッションが同じチェックアウトで main を進め、ローカルブランチが消えるなど衝突の余地があった）。
   (2)「`internal/store` を触る PR は、コミット前に `docker compose up -d postgres` を立てて `TEST_DATABASE_URL` 付きで DB テストを回す」
-  （ローカルでは Postgres 無しだとスキップされ、PR #41 で CI だけが落ちた）
-  完了条件：`../CLAUDE.md` に 2 点が入っているか、入れない理由が本人から示されている
+  （ローカルでは Postgres 無しだとスキップされ、PR #41 で CI だけが落ちた）。
+  (3)「棚上げするコードは、使い続けるコードと同じ Go パッケージに置かない」（Go の import はパッケージ単位なので、使わないつもりの依存まで付いてくる。
+  PR #43 で `internal/llm` から形の検査を切り出した。KNOWLEDGE.md 2026-09-26）
+  完了条件：`../CLAUDE.md` に 3 点が入っているか、入れない理由が本人から示されている
 - [ ] 【別リポジトリ】claude-plugins の `check-edited.sh`（PostToolUse）を `package.json` の `lint` スクリプトを呼ぶ形に直す
   （このリポジトリは oxlint で eslint が無く、frontend の編集のたびに「eslint 失敗（missing packages）」が出る。KNOWLEDGE.md 2026-09-25）
   完了条件：skill-matrix の frontend でファイルを編集しても eslint のエラー表示が出ず、oxlint の結果が出る
