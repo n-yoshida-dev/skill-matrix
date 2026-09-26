@@ -51,7 +51,7 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
 **TODO 2-1 の段階 C-2＝検証と再計算の CLI（`backend/cmd/skillmatrix`。`recalc` / `verify`）。**
 仕様は `SPEC.md` §6（モードと終了コード）・§3.3〜§3.4（判定ファイルと `state.json` の形）・§4.5（形の検査 → V1〜V8）。
 完了条件は TODO 2-1 にある（`preState` の `""` → `"none"` 正規化、処理順、`backend/testdata/` の判定を `schemaVersion: 2` に更新、を含む）。
-`state.json` の JSON エンコードは決定的に（項目はロードマップ順、末尾改行 1 つ）。`verify` はバイト単位で一致を見る。
+`state.json` の JSON エンコードは決定的に（項目はロードマップ順。整形の細部は C-2 で決めて SPEC §3.4 に書く）。`verify` はバイト単位で一致を見る。
 
 その後は TODO 2-1 の順（CI で `verify` → `roadmap.json` の実物 → `sources` → study 側の凍結 → 移行判定 → 切り替え）。
 
