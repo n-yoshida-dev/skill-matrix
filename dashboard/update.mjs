@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // 開発ダッシュボードのデータ生成。
 // リポジトリ内の正本（TODO.md / HANDOFF.md / logs/decisions.md / data/）と git / gh / bd の出力を読み、
-// dashboard/data.js（`window.DASHBOARD_DATA = {...}` の 1 行）を書き出す。JSON ではなく JS にしているのは、
+// dashboard/data.js（`window.DASHBOARD_DATA = {...}` という 1 文の JS ファイル）を書き出す。JSON ではなく JS にしているのは、
 // index.html をブラウザでダブルクリックして開いても（file:// でも）読めるようにするため（fetch は file:// では使えない）。
 // ダッシュボード独自の状態は持たない（ここで作るデータは毎回捨てて作り直す派生物）。
 //
