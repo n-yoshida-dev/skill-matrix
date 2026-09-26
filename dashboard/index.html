@@ -46,11 +46,18 @@
   header .meta { color: var(--faint); font-size: 13px; }
   header .meta.stale { color: var(--warn); }
   /* 更新ボタン。配信モード（http）のときだけ押せる。file:// で開いたときは押すと起動方法を出す */
-  #refresh { margin-left: auto; font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+  #howto { margin-left: auto; }
+  #refresh { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
   #refresh:hover { border-color: var(--sub); }
   #refresh:disabled { opacity: 0.6; cursor: wait; }
-  #hint { width: 100%; font-size: 13px; color: var(--sub); background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
-  #hint code { user-select: all; }
+  #howto { font-size: 13px; color: var(--link); background: none; border: 0; padding: 4px 2px; cursor: pointer; font-family: inherit; }
+  #hint { width: 100%; font-size: 13px; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+  #hint.bad { border-color: var(--bad); background: var(--bad-bg); }
+  #hint p { margin: 0 0 6px; }
+  #hint .cmd { display: flex; gap: 8px; align-items: flex-start; }
+  #hint pre { flex: 1; min-width: 0; margin: 0; padding: 8px 10px; border-radius: 6px; background: var(--tag); font-size: 12px; white-space: pre-wrap; word-break: break-all; user-select: all; }
+  #hint .copy { flex: none; font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+  #hint .note { margin: 6px 0 0; color: var(--faint); font-size: 12px; }
 
   /* 異常だけを出す帯 */
   .alert { display: flex; gap: 8px; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
@@ -155,6 +162,7 @@
 <div class="wrap">
   <header>
     <h1 id="title">開発ダッシュボード</h1><span class="meta" id="meta"></span>
+    <button id="howto" type="button" title="更新ボタンを使うための起動方法">起動方法</button>
     <button id="refresh" type="button" title="正本（git / CI / TODO 等）を読み直して描き直す">更新</button>
     <div id="hint" hidden></div>
   </header>
@@ -262,7 +270,7 @@ function render(d) {
   meta.className = 'meta' + (ageMin > 60 ? ' stale' : '')
   meta.innerHTML =
     `${esc(g.branch)} · ${ago(d.generatedAt)}に更新` +
-    (ageMin > 60 ? (location.protocol.startsWith('http') ? '（古い。右の「更新」を押す）' : '（古い。ターミナルで node dashboard/update.mjs を実行）') : '') +
+    (ageMin > 60 ? (location.protocol.startsWith('http') ? '（古い。右の「更新」を押す）' : '（古い。右の「起動方法」を見る）') : '') +
     (d.project.repoUrl ? ` · <a href="${esc(d.project.repoUrl)}">GitHub</a>` : '')
 
   const html = []
@@ -418,19 +426,54 @@ document.addEventListener('click', (e) => {
     el.classList.remove('full')
   }
 })
-// 「更新」ボタン。配信モード（http）なら POST /update で作り直してから読み直す。
-// file:// で開いているときはブラウザから git 等を実行できないので、起動方法を出す
+// ---------- 起動方法の案内と「更新」ボタン ----------
+// ブラウザだけでは git / gh / bd を実行できない。ターミナルで起動した Node のプロセス（配信モード）が
+// 「更新」ボタン（POST /update）を受けて作り直す。止まっているときは、実行場所の cd から始まるコマンドを出す
 const served = location.protocol.startsWith('http')
-document.getElementById('refresh').addEventListener('click', async (e) => {
-  const btn = e.currentTarget
+
+/** リポジトリの場所。data.js にあればそれを、無ければ file:// のパス（…/dashboard/index.html の 2 つ上）から求める */
+function repoRoot() {
+  const fromData = window.DASHBOARD_DATA?.project?.root
+  if (fromData) return fromData
+  if (location.protocol === 'file:') return decodeURIComponent(location.pathname).replace(/\/dashboard\/[^/]*$/, '')
+  return '<リポジトリの場所>'
+}
+
+/** 起動方法を #hint に出す。reason があれば、なぜ出したかを 1 行添える（失敗時は赤枠） */
+function showHowto(reason) {
   const hint = document.getElementById('hint')
+  const cmd = `cd ${repoRoot()}\nnode dashboard/update.mjs --serve --open`
+  hint.className = reason ? 'bad' : ''
+  hint.innerHTML =
+    (reason ? `<p><strong>${esc(reason)}</strong></p>` : '') +
+    '<p>ターミナル（VS Code のターミナルで可）で次を実行すると、ブラウザが開きます。以後はその画面の「更新」で最新になります。</p>' +
+    `<div class="cmd"><pre>${esc(cmd)}</pre><button type="button" class="copy">コピー</button></div>` +
+    '<p class="note">実行したターミナルは閉じずに置いておく。ターミナルを閉じる・PC を再起動すると止まるので、そのときはもう一度実行する。</p>'
+  hint.hidden = false
+  hint.querySelector('.copy').addEventListener('click', async (e) => {
+    try {
+      await navigator.clipboard.writeText(cmd)
+      e.currentTarget.textContent = 'コピーしました'
+    } catch {
+      // file:// などでクリップボードが使えないときは、コマンドを選択状態にして手でコピーしてもらう
+      getSelection().selectAllChildren(hint.querySelector('pre'))
+      e.currentTarget.textContent = '選択しました（Ctrl+C）'
+    }
+  })
+}
+
+document.getElementById('howto').addEventListener('click', () => {
+  const hint = document.getElementById('hint')
+  if (hint.hidden) showHowto()
+  else hint.hidden = true
+})
+
+document.getElementById('refresh').addEventListener('click', async (e) => {
   if (!served) {
-    hint.hidden = !hint.hidden
-    hint.innerHTML =
-      'この開き方（ファイルを直接開く）では、ブラウザから git や CI の情報を取りに行けません。' +
-      'ターミナルで <code>node dashboard/update.mjs --serve --open</code> を一度起動して放置しておくと、開いた画面のこのボタンで更新できます。'
+    showHowto('この開き方（ファイルを直接開く）では更新できません')
     return
   }
+  const btn = e.currentTarget
   btn.disabled = true
   btn.textContent = '更新中…（数秒）'
   try {
@@ -440,12 +483,24 @@ document.getElementById('refresh').addEventListener('click', async (e) => {
   } catch (err) {
     btn.disabled = false
     btn.textContent = '更新'
-    hint.hidden = false
-    hint.textContent = `更新できませんでした（${err.message}）。ターミナルの node dashboard/update.mjs --serve が動いているか確かめてください`
+    showHowto(`更新できませんでした。起動したプロセスが止まっているようです（${err.message}）`)
   }
 })
-// 配信モードのときだけ、60 秒ごとに読み直す
-if (served) setInterval(() => location.reload(), 60_000)
+
+// 配信モードのときだけ、60 秒ごとに読み直す。先にプロセスが応答するか確かめ、止まっていたら
+// ブラウザのエラー画面に切り替えず、この画面のまま起動方法を出す
+if (served) {
+  const timer = setInterval(async () => {
+    try {
+      const res = await fetch('data.js', { method: 'HEAD', cache: 'no-store' })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      location.reload()
+    } catch {
+      clearInterval(timer)
+      showHowto('起動したプロセスが止まったため、自動更新を止めました')
+    }
+  }, 60_000)
+}
 </script>
 </body>
 </html>
