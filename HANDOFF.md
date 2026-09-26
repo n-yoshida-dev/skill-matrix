@@ -38,9 +38,10 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
 
 ## 1. 現在地
 
-`main` はクリーン（PR #51 まで）。作業中のブランチは無い。
+`main` はクリーン。作業中のブランチは無い。
 
-- **段階 D まで済み。** CI の独立ジョブ「data/ の検証（verify）」が全 PR と main で `verify` を走らせる（壊した JSON・`recalc` し忘れで赤くなるのを確認済み）
+- **段階 E まで済み。凍結コミットは study の `284c0f1`**（push 済み。`skill-map.md` 冒頭に更新停止の注記、study の参照先・更新先は skill-matrix へ切り替え済み）
+- 段階 D：CI の独立ジョブ「data/ の検証（verify）」が全 PR と main で `verify` を走らせる（壊した JSON・`recalc` し忘れで赤くなるのを確認済み）
 - **`data/roadmap.json` は実物**（8 分野・46 項目）。`data/judgments/` は空で、`state.json` は全項目レベル 0。
   `verifyBy` は移行後（§8.4）から見た「次の印」で書いてあるので、段階 F が入るまで画面のレベルとずれる（`data/README.md`）
 - `sources.local.json.example` を置いた。実ファイル `sources.local.json` は手元にだけある（study のパス入り）
@@ -49,9 +50,11 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
 
 ## 2. 次セッションで最初にやること
 
-**TODO 2-1 段階 E「`skill-map.md` を凍結し、参照先を skill-matrix へ切り替える」。`~/workspace/study` でセッションを開いて作業する。**
-文面と変更先は `docs/skill-map-migration.md` §8.1（凍結の注記の案もここ）。完了条件は TODO.md の段階 E の行。
-**凍結コミットのハッシュを控える**（段階 F の `evidenceRefs` が指す）。E と F は続けて行う（同じ日か翌日。空白期間を作らない）。
+**TODO 2-1 段階 F「`skill-map.md` から移行判定を作り `data/judgments/` に置く」。このリポジトリで作業する。**
+読むのは凍結版 `git -C ~/workspace/study show 284c0f1:learner-profile/skill-map.md`（作業コピーではなく凍結コミット）。`evidenceRefs` の 1 件目は
+`repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L<行>`。手順は `docs/skill-map-migration.md` §8.2〜§8.4、完了条件は TODO.md の段階 F の行。
+**最初に** §8.3・§8.4 を凍結版と突き合わせる（React の 2 行が §8.3 作成後に進んでいる。KNOWLEDGE.md 2026-09-27「段階 E」）。
+E（2026-09-27）と F は続けて行う（**遅くとも 2026-09-28 まで**。空白期間を作らない）。
 
 ## 3. 動作確認コマンド
 
