@@ -1,0 +1,368 @@
+{
+  "schemaVersion": 2,
+  "items": [
+    {
+      "itemKey": "go-01",
+      "verifiedLevel": 2,
+      "evidencedLevels": [
+        1,
+        2
+      ],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": "2026-08-03",
+      "events": [
+        {
+          "file": "2026-08-01-tour-basics.json",
+          "index": 0,
+          "occurredAt": "2026-08-01",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:example/study@0000000/go/logs/2026-08-01-tour-basics.md#L3-L8"
+          ],
+          "rationale": "章末の確認問題を見直さずに全問答えられた",
+          "confidence": 0.85,
+          "violations": []
+        },
+        {
+          "file": "2026-08-03-interfaces.json",
+          "index": 0,
+          "occurredAt": "2026-08-03",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 2,
+          "marked": [
+            1,
+            2
+          ],
+          "evidenceRefs": [
+            "repo:example/study@0000000/go/logs/2026-08-03-interfaces.md#L1-L6"
+          ],
+          "rationale": "継承が無い理由と埋め込みとの違いを自分の言葉で説明した",
+          "confidence": 0.8,
+          "violations": []
+        },
+        {
+          "file": "2026-09-10-notifier-refactor.json",
+          "index": 1,
+          "occurredAt": "2026-09-10",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:example/study@0000000/go/logs/2026-09-10-notifier-refactor.md#L20"
+          ],
+          "rationale": "ゼロ値の確認問題に答えた（既にレベル 2 なので鮮度は更新しない）",
+          "confidence": 0.9,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "itemKey": "go-02",
+      "verifiedLevel": 3,
+      "evidencedLevels": [
+        1,
+        2,
+        3
+      ],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": "2026-09-10",
+      "events": [
+        {
+          "file": "2026-08-03-interfaces.json",
+          "index": 1,
+          "occurredAt": "2026-08-03",
+          "source": "ai",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:example/study@0000000/go/logs/2026-08-03-interfaces.md#L7-L20"
+          ],
+          "rationale": "通知処理をインターフェース越しに差し替える練習を、資料を見ながら実装した",
+          "confidence": 0.75,
+          "violations": []
+        },
+        {
+          "file": "2026-09-10-notifier-refactor.json",
+          "index": 0,
+          "occurredAt": "2026-09-10",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 2,
+          "marked": [
+            1,
+            2
+          ],
+          "evidenceRefs": [
+            "repo:example/study@0000000/go/logs/2026-09-10-notifier-refactor.md#L4"
+          ],
+          "rationale": "「実装すると宣言しない」設計の利点を Java の interface と比べて説明した",
+          "confidence": 0.8,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "itemKey": "go-03",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "explained_only",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": [
+        {
+          "file": "2026-08-05-errors-reading.json",
+          "index": 0,
+          "occurredAt": "2026-08-05",
+          "source": "ai",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:example/study@0000000/go/logs/2026-08-05-errors-reading.md"
+          ],
+          "rationale": "errors.Is と errors.As の説明を読んだだけで、自分では書いていない",
+          "confidence": 0.9,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "itemKey": "go-04",
+      "verifiedLevel": 0,
+      "evidencedLevels": [
+        3,
+        4
+      ],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": "2026-09-20",
+      "events": [
+        {
+          "file": "2026-08-08-http-server.json",
+          "index": 0,
+          "occurredAt": "2026-08-08",
+          "source": "ai",
+          "evidenceType": "unaided_implementation",
+          "proposedLevel": 4,
+          "marked": [
+            3,
+            4
+          ],
+          "evidenceRefs": [
+            "repo:example/study@0000000/go/logs/2026-08-08-http-server.md"
+          ],
+          "rationale": "標準ライブラリだけで HTTP サーバとミドルウェアを組み、テストまで人に聞かずに書いた",
+          "confidence": 0.7,
+          "violations": []
+        },
+        {
+          "file": "2026-09-20-middleware-chain.json",
+          "index": 0,
+          "occurredAt": "2026-09-20",
+          "source": "ai",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:example/study@0000000/go/logs/2026-09-20-middleware-chain.md#L1-L15"
+          ],
+          "rationale": "ミドルウェアの連結を資料を見ながら書き直した",
+          "confidence": 0.8,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "itemKey": "go-05",
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1
+      ],
+      "preState": "none",
+      "needsReview": true,
+      "lastEvidenceAt": "2026-06-15",
+      "events": [
+        {
+          "file": "2026-06-15-table-tests.json",
+          "index": 0,
+          "occurredAt": "2026-06-15",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:example/study@0000000/go/logs/2026-06-15-table-tests.md"
+          ],
+          "rationale": "テーブル駆動テストの確認問題に、t.Run で名前を付ける理由まで含めて答えた",
+          "confidence": 0.8,
+          "violations": []
+        },
+        {
+          "file": "2026-09-20-middleware-chain.json",
+          "index": 1,
+          "occurredAt": "2026-09-20",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:example/study@0000000/go/logs/2026-09-20-middleware-chain.md#L16-L22"
+          ],
+          "rationale": "サブテストの並列実行の確認問題に答えられなかった",
+          "confidence": 0.8,
+          "violations": [
+            {
+              "code": "V6_failed_check",
+              "detail": "不合格の報告（根拠 \"drill\"）。印は付けず、レベル 1 を維持して要再確認とした"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "itemKey": "react-01",
+      "verifiedLevel": 2,
+      "evidencedLevels": [
+        1,
+        2
+      ],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": "2026-08-10",
+      "events": [
+        {
+          "file": "2026-08-12-state-placement.json",
+          "index": 0,
+          "occurredAt": "2026-08-10",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 2,
+          "marked": [
+            1,
+            2
+          ],
+          "evidenceRefs": [
+            "log:learning-logs/2026-08-10-react.md"
+          ],
+          "rationale": "props と state の置き場所の違いを、親子の再描画の範囲から説明した",
+          "confidence": 0.8,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "itemKey": "react-02",
+      "verifiedLevel": 0,
+      "evidencedLevels": [
+        3
+      ],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": "2026-08-12",
+      "events": [
+        {
+          "file": "2026-08-12-state-placement.json",
+          "index": 1,
+          "occurredAt": "2026-08-12",
+          "source": "ai",
+          "evidenceType": "implementation",
+          "proposedLevel": 4,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "log:learning-logs/2026-08-12-react.md"
+          ],
+          "rationale": "state の持ち上げを実装した。AI の提案を見ながらなのでガイド付きの範囲",
+          "confidence": 0.6,
+          "violations": [
+            {
+              "code": "V5_evidence_too_weak",
+              "detail": "根拠 \"implementation\" で印を付けられるのはレベル 3〜3。4 を 3 に切り詰めた"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "itemKey": "react-03",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "react-04",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "self_reported",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": [
+        {
+          "file": "2026-09-01-forms-selfreport.json",
+          "index": 0,
+          "occurredAt": "2026-09-01",
+          "source": "manual",
+          "evidenceType": "self_report",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "log:learning-logs/2026-09-01-forms.md"
+          ],
+          "rationale": "フォームは以前に書いたことがあると自己申告。まだ確認していない",
+          "confidence": null,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "itemKey": "infra-01",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    },
+    {
+      "itemKey": "infra-02",
+      "verifiedLevel": 0,
+      "evidencedLevels": [],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": null,
+      "events": []
+    }
+  ],
+  "deferred": [
+    {
+      "file": "2026-09-18-errors-try.json",
+      "index": 0,
+      "itemKey": "go-03",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    }
+  ],
+  "rejected": []
+}

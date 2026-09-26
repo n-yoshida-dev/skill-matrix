@@ -26,6 +26,9 @@ import (
 
 // Proposed は AI（または人）が書いた判定1件。形の検査だけを通った、検証前の提案。
 type Proposed struct {
+	// Index は judgments 配列の中での位置（0 始まり）。形の検査で弾いた判定があると、
+	// Output.Judgments の並びの位置とはずれる。state.json には元の位置を書く（SPEC.md §3.4）。
+	Index         int
 	ItemKey       string
 	ProposedLevel int
 	EvidenceType  string
@@ -140,16 +143,25 @@ func Parse(raw []byte, source domain.JudgmentSource) (Output, error) {
 		return Output{}, &EnvelopeError{Reason: "judgments がありません"}
 	}
 
-	out := Output{Unmatched: w.Unmatched}
-	for i, elem := range *w.Judgments {
+	out := parseJudgments(*w.Judgments, source)
+	out.Unmatched = w.Unmatched
+	return out, nil
+}
+
+// parseJudgments は judgments 配列の要素を1件ずつ読む。形の崩れた要素は Rejected に入れて続ける。
+// AI の出力（Parse）と判定ファイル（ParseFile）の両方がここを通る。
+func parseJudgments(elems []json.RawMessage, source domain.JudgmentSource) Output {
+	var out Output
+	for i, elem := range elems {
 		p, reason := parseJudgment(elem, source)
 		if reason != "" {
 			out.Rejected = append(out.Rejected, Rejected{Index: i, Raw: elem, Reason: reason})
 			continue
 		}
+		p.Index = i
 		out.Judgments = append(out.Judgments, p)
 	}
-	return out, nil
+	return out
 }
 
 // parseJudgment は判定1件を読み取る。読み取れなければ理由を返す（理由が空なら成功）。

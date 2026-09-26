@@ -237,7 +237,11 @@ func TestParse_RejectsMalformedJudgment(t *testing.T) {
 				t.Fatalf("1件の崩れで全体がエラーになった: %v", err)
 			}
 			if len(out.Judgments) != 1 || out.Judgments[0].ItemKey != "go-02" {
-				t.Errorf("正常な判定が残っていない: %+v", out.Judgments)
+				t.Fatalf("正常な判定が残っていない: %+v", out.Judgments)
+			}
+			// 弾いた要素の分だけ並びが詰まっても、元の配列での位置（1）を覚えている
+			if out.Judgments[0].Index != 1 {
+				t.Errorf("Index = %d, want 1", out.Judgments[0].Index)
 			}
 			if len(out.Rejected) != 1 {
 				t.Fatalf("弾いた判定は1件のはずが %+v だった", out.Rejected)

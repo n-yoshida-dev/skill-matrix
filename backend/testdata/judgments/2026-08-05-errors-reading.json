@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-08-05",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "go-03",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "evidenceRefs": [
+        "repo:example/study@0000000/go/logs/2026-08-05-errors-reading.md"
+      ],
+      "rationale": "errors.Is と errors.As の説明を読んだだけで、自分では書いていない",
+      "confidence": 0.9
+    }
+  ],
+  "unmatched": []
+}

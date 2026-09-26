@@ -264,7 +264,7 @@ sources.local.json.example           その雛形。こちらはコミットす�
 - `judgments` の各要素は §4.3 の出力そのもの。1件の形の検査と V1〜V8 は §4.5
 - `proposedLevel` は「この根拠が示す最上段」。根拠の種類の梯子の範囲内（`self_explanation` なら 1 か 2、`unaided_implementation` なら 3 か 4）か、
   **0 ＝ 不合格の報告**（ドリルに落ちた、説明できなかった）。指示書には常に書かせる。
-  印を付けない種類（`learning_activity` / `explained_to` / `self_report`）では `proposedLevel` に意味が無く、検証は値を無視する（0 と書く。0 でも不合格の報告にはならない）。省略時の既定（上限にするか必須にするか）は CLI の実装で決める（`docs/skill-map-migration.md` §9）
+  印を付けない種類（`learning_activity` / `explained_to` / `self_report`）では `proposedLevel` に意味が無く、検証は値を無視する（0 と書く。0 でも不合格の報告にはならない）。**省略はできない**（既定値を設けず、形の検査で棄却する。KNOWLEDGE.md 2026-09-26「段階 C-1」）
 - **`evidenceRefs` は 1 件以上必須。** 各要素は `<種別>:<識別子>`。種別は `^[a-z][a-z0-9-]*$`。**種別の一覧は決めない**（検証は書式だけ）が、Git 由来はすべて次の 1 つの文法に統一する：
 
   | 種別 | 形 | 例 |
@@ -335,6 +335,17 @@ sources.local.json.example           その雛形。こちらはコミットす�
 
 `deferred` と `rejected` を持つのは「握りつぶさない」ため。以前の `llm_responses.violations`（§10.1）と同じ役割。
 `rejected` が空でない `state.json` は `verify` が失敗にする（§6）ので、通常はコミット前に判定ファイルを直して空にする。
+
+**書き出しの形**（`verify` がバイト単位で比べるので、ここに書いたとおりに毎回同じバイト列にする。2026-09-26 に段階 C-2 で確定）：
+
+- 整形は Go 標準（`encoding/json` の 2 スペース字下げ）。配列も 1 要素 1 行。末尾は改行 1 つ。キーの順は上の例のとおり
+- `<` `>` `&` を `<` 等に置き換えない（`rationale` の `List<String>` のような技術用語を `git diff` で読めるように）
+- 空の配列は `null` ではなく `[]`。`lastEvidenceAt` は根拠が無ければ `null`、`confidence` は `source` が `ai` 以外なら `null`
+- 日付は `YYYY-MM-DD`。`preState` のゼロ値（内部の `""`）は `"none"` にする
+- `index` は判定ファイルの `judgments` 配列での位置（0 始まり）。形の検査で弾いた要素があっても元の位置を書く
+- `deferred` / `rejected` はファイル名の昇順、ファイル内は `index` の昇順
+- 形の検査で弾いた判定の `code` は `shape_rejected`（V1〜V8 とは別の層なので分ける。棚上げ中の `store.ShapeRejectedCode` と同じ値）。
+  `itemKey` は読めればその値、読めなければ `""`
 
 ### 3.5 根拠の出どころ `sources.local.json`
 
@@ -587,7 +598,16 @@ go -C backend run ./cmd/skillmatrix verify --data ../data   # 検証だけ。sta
   直すべき不備だから。コミット前に `recalc` で気づいて直す。CI はその取りこぼしを止める
 - `state.json` の一致まで見るのは「AI が判定ファイルを書いたのに `recalc` を走らせ忘れた」「`state.json` を手でいじった」を止めるため
 - 終了コード：0 = 問題なし、1 = 上の条件、2 = 使い方の誤り・ファイル IO の失敗
-- 設定（閾値・上限・鮮度・重み）は `data/settings.json` から読む。無ければ `domain.DefaultRules()` 等の既定値（§8.3）
+- 設定（閾値・上限・鮮度・重み）は `data/settings.json` から読む。無ければ `domain.DefaultRules()` 等の既定値（§8.3）。
+  書かれていないキーは既定値のまま。**未知のキーは終了コード 1**（`confidenceThreshhold` のような打ち間違いで閾値が黙って既定値に戻るのを防ぐ）
+- `--data` の既定は `../data`（`go -C backend run` で動かす前提）
+- `judgments/` が無いときは判定 0 件として扱う（git は空のディレクトリを記録しないので、判定をコミットする前の CI には無い）。
+  `.` で始まるファイル（`.gitkeep` 等）は読まない。中にディレクトリがあれば終了コード 1
+- 外枠の崩れた判定ファイルは 1 本目で止めず全部挙げてから終了コード 1 にする。このとき `recalc` は `state.json` を書かない
+- `recalc` は `rejected` が空でなくても `state.json` を書き出す（何が弾かれたかを `state.json` と端末で見られるように）。そのまま
+  コミットすると `verify` が失敗することを端末に出す
+- 「次にやること」と鮮度は「今日」に依存するので端末の要約にだけ使い、`state.json` には入れない（§3.2）。
+  計算は Go 側の参照実装（`domain.NextActions` / `RollupAll`）で、画面の TypeScript 実装とずれうる。画面が正
 
 CI では `verify` を `main` と全 PR で走らせる。**`state.json` は生成物だがコミットする**（画面が読むため。生成物をコミットして CI で一致を確認するのは、生成物をリポジトリに置く構成での定石）。
 

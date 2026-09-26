@@ -61,10 +61,12 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
   `CLAUDE.md`「判定基準を指示書に書き写さない」の「根拠の種類と上限」を「根拠の種類と印」に直してある
 - [x] `internal/domain` と `internal/llm/output.go` を 2 本の梯子モデルへ変更する（段階 C-1。SPEC.md §1.1・§4.4・§4.5・§5。Go の型名の対応は移行計画 §3）（2026-09-26 完了。V6 の識別子は `V6_failed_check`）
   完了条件：`ItemState` に `VerifiedLevel`（導出）と `Evidenced`、`Judgment` に `Source` / `EvidenceRefs` / `HasConfidence`、`EvidenceLearningActivity`、`evidenceLadder`（Base / Top）がある。V4（`MaxLevelStep` / `ViolationLevelJump`）が消え、V5 は梯子の範囲、V6 は `proposedLevel == 0`、V7 は `source: ai` のときだけ。印がある項目の `preState` は常に `none`。導出（`[3]`→0、`[1,3]`→1、`[1,2,3]`→3、`[1,2,3,4]`→4）・不合格報告・鮮度の更新条件・source 別の V7 がテストにある。`ParseOutput` が `evidenceRefs`（配列・1 件以上・書式）と `confidence` の有無（`ai` なら必須、他は禁止）を検査する。棚上げ中の `store` は改名に機械的に追従するだけ（挙動は変えない）。`EvidenceRefs` は判定材料にしない
-- [ ] 検証と再計算の CLI を作る（段階 C-2。`backend/cmd/skillmatrix`。JSON を読み、形の検査 → V1〜V8 → `ApplyJudgment` → 理解度を書き出す）
+- [x] 検証と再計算の CLI を作る（段階 C-2。`backend/cmd/skillmatrix`。JSON を読み、形の検査 → V1〜V8 → `ApplyJudgment` → 理解度を書き出す）（2026-09-26 完了。下準備として形の検査を `internal/judgment` へ切り出した＝PR #43。書き出しの形は SPEC §3.4 末尾）
   完了条件：`recalc` と `verify` の2モードがある。`recalc` は `data/state.json`（SPEC.md §3.4 の形）を書き出す。`verify` は書き出さず、違反があれば終了コード 1 と違反の一覧（どの項目のどのルールか）を出し、**さらに `state.json` が再計算結果と一致しなければ終了コード 1**。処理順はファイル名の昇順・配列の順。`preState` のゼロ値（`""`）は書き出し時に `"none"` にする（`state.json` は `none` を要求する。PR #41 のレビューで判明）。DB・HTTP・LLM クライアントを import しない。単体テストがある。`backend/testdata/` のダミー判定を `schemaVersion: 2` に更新してある
 - [ ] その CLI を CI で走らせる（`verify` モード）
-  完了条件：`.github/workflows/ci.yml` に組み込まれ、JSON をわざと壊した PR と、`state.json` だけ古い PR の両方で CI が赤くなることを一度確かめてある
+  完了条件：`.github/workflows/ci.yml` に組み込まれ、JSON をわざと壊した PR と、`state.json` だけ古い PR の両方で CI が赤くなることを一度確かめてある。
+  **先に `data/state.json` を `recalc` で作り直す**（今は手書きのダミーで、`verify` は一致しない。`data/judgments/` が空なので全項目 0 になり、
+  公開ビューのダミー表示は消える。段階 D で実物のロードマップに替わるまでの間だけ。`data/README.md` の「今はダミー」節も直す）
 - [ ] `data/roadmap.json` を自分の実物として作る（段階 D。移行計画 §8.3 の対応表から起こす。8 分野・約 40 項目）
   完了条件：`verify` が通る。項目 key はハイフン区切りでカリキュラムに依存しない（`go-syntax-basics`）。`moduleRefs` でモジュールと対応付けてある。`verifyBy` / `outcome` / `goal` / `description` を「所属|企業|面接|転職|人事」で grep して 0 件。`data/state.json` は全項目 0 の初期値で置く。**`backend/testdata/` のダミーとは別物**（ロードマップの定義は個人データではない）
 - [ ] 根拠の出どころの設定ファイル `sources.local.json` を用意する（`.example` だけコミット）

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-10",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "go-02",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "evidenceRefs": [
+        "repo:example/study@0000000/go/logs/2026-09-10-notifier-refactor.md#L4"
+      ],
+      "rationale": "「実装すると宣言しない」設計の利点を Java の interface と比べて説明した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "go-01",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "evidenceRefs": [
+        "repo:example/study@0000000/go/logs/2026-09-10-notifier-refactor.md#L20"
+      ],
+      "rationale": "ゼロ値の確認問題に答えた（既にレベル 2 なので鮮度は更新しない）",
+      "confidence": 0.9
+    }
+  ],
+  "unmatched": []
+}

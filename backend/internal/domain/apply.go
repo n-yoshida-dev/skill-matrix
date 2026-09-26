@@ -225,7 +225,7 @@ func ApplyJudgments(rm Roadmap, states map[ItemKey]ItemState, js []Judgment, rul
 	}
 
 	accepted := 0
-	for _, j := range js {
+	for i, j := range js {
 		// V8: 上限を超えた分は捨てる。移行の判定も免除しない
 		if accepted >= rules.MaxItemsPerLog {
 			out.Violations = append(out.Violations, Violation{
@@ -235,6 +235,7 @@ func ApplyJudgments(rm Roadmap, states map[ItemKey]ItemState, js []Judgment, rul
 				Rejected: true,
 				Detail: fmt.Sprintf("1ファイルの判定は %d 件までのため棄却",
 					rules.MaxItemsPerLog),
+				Index: i,
 			})
 			continue
 		}
@@ -247,6 +248,7 @@ func ApplyJudgments(rm Roadmap, states map[ItemKey]ItemState, js []Judgment, rul
 				Proposed: j.ProposedLevel,
 				Rejected: true,
 				Detail:   fmt.Sprintf("ロードマップに存在しない項目: %q", j.ItemKey),
+				Index:    i,
 			})
 			continue
 		}
@@ -257,7 +259,12 @@ func ApplyJudgments(rm Roadmap, states map[ItemKey]ItemState, js []Judgment, rul
 			cur = ItemState{ItemKey: j.ItemKey}
 		}
 
+		// 位置を付けておくと、呼び出し側が state.json に「どのファイルの何件目か」を書ける（SPEC.md §3.4）
 		res := ApplyJudgment(cur, j, rules)
+		res.Index = i
+		for k := range res.Violations {
+			res.Violations[k].Index = i
+		}
 		out.Violations = append(out.Violations, res.Violations...)
 
 		// V2・V3 で棄却したものは Results に入れない。判定が無かったのと同じ扱いにする。
