@@ -17,6 +17,8 @@
   --l5: #104281;
   --on-light: #16213a;
   --on-dark: #ffffff;
+  /* 要再確認の枠線（作業ビューだけ。SPEC.md §7.1）。地の色とのコントラスト比 4.4 */
+  --attention: #a86400;
 
   color-scheme: light dark;
   font-family: 'IBM Plex Sans JP', 'Hiragino Sans', 'Yu Gothic', sans-serif;
@@ -39,6 +41,7 @@
     --accent: #e8825f;
     --l1: #9ec5f4;
     --l5: #184f95;
+    --attention: #f0b040;
   }
 }
 
