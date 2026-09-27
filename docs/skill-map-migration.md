@@ -138,7 +138,7 @@
 {
   "logs": { "path": "learning-logs" },                    // 既定。Template 利用者
   "repos": {
-    "n-yoshida-dev/study": { "path": "/home/<user>/workspace/study", "logsGlob": "**/logs/*.md" }
+    "n-yoshida-dev/study": { "path": "/home/<user>/workspace/study", "logsGlob": "*/logs/*.md" }
   }
 }
 ```

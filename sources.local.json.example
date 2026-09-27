@@ -5,7 +5,7 @@
   "repos": {
     "n-yoshida-dev/study": {
       "path": "/home/<user>/workspace/study",
-      "logsGlob": "**/logs/*.md"
+      "logsGlob": "*/logs/*.md"
     }
   }
 }
