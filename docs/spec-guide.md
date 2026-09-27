@@ -836,7 +836,7 @@ LLM を呼ばない偽物の判定役に差し替えるモードを作った。�
 
 ### まだ決めていない
 
-- ~~`skill-map.md` との関係~~ → 2026-09-25 に決着。skill-matrix を正本にし、skill-map.md は移行して凍結する（`docs/skill-map-migration.md`）
+- ~~`skill-map.md` との関係~~ → 2026-09-25 に決着。skill-matrix を正本にし、skill-map.md は移行して凍結する（`docs/skill-map-migration.md`）。2026-09-27 に凍結と移行判定まで実施
 - v2（他人にも使わせる）へ進むか、検証ロジックを CLI として配布するか。自分専用版を使ってから決める
 - デプロイ先（Cloud Run / Render）と 1,000人規模のコスト対策 — v2 の話
 

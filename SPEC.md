@@ -28,8 +28,8 @@
 v2 へ進むか、検証ロジックを CLI として配布する道へ進むかは、自分専用版を実際に使ってから決める（`logs/decisions.md` 2026-09-23「見直す条件」）。
 
 **習熟度の正本はこのリポジトリ。** `~/workspace/study/learner-profile/skill-map.md`（同じ5段階モデルの手動台帳）は
-2026-09-25 の決定で skill-matrix へ移行して凍結する（`logs/decisions.md` 2026-09-25「習熟度の正本を…移す」。手順は `docs/skill-map-migration.md` §8）。
-移行が済むまでの間だけ skill-map.md が最新で、移行判定（`source: "migration"`。§3.3）で写し取る。
+2026-09-27 に skill-matrix へ移行して凍結した（凍結は study `284c0f1`。決定は `logs/decisions.md` 2026-09-25「習熟度の正本を…移す」、手順は `docs/skill-map-migration.md` §8）。
+移行判定（`source: "migration"`。§3.3）は `data/judgments/2026-09-27-migration-*.json` の 7 本。以後の習熟度は学習ログからの判定でだけ更新する。
 
 ---
 

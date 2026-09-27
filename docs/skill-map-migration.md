@@ -254,7 +254,7 @@ skill-map.md 冒頭の注記（案）：
 
 - **写しであって再判定ではない。** skill-map の習熟度ラベルは付け直さない。根拠欄の記述を「根拠の種類」ごとに分けて判定にする（1 行から複数の判定が出る）
 - `source: "migration"`、`confidence` 無し、`occurredAt` はその根拠の日付（行に複数の日付があれば最新）
-- `evidenceRefs` の 1 件目は必ず `repo:n-yoshida-dev/study@<凍結コミット>/learner-profile/skill-map.md#L<行>`。2 件目以降は現在も解決できるコミットだけ（orgflow・ai-study-coach）。統合前の study のハッシュ（`d683aa7` 等）は書かない（skill-map 自体に残る）
+- `evidenceRefs` の 1 件目は必ず `repo:n-yoshida-dev/study@<凍結コミット>/learner-profile/skill-map.md#L<行>`。2 件目以降は現在も解決できるコミットだけ（orgflow・ai-study-coach と、凍結コミット時点の study のファイル）。統合前の study のハッシュ（`d683aa7` 等）は書かない（skill-map 自体に残る）
 - `rationale` は技術的な事実だけ。「本人が『全然わからない』と申告」のような記述は書かず「ドリル Q3・Q4 未達（W-008）」の形にする
 - ドリルの失点が根拠欄に明記されている行は `proposedLevel: 0` の `drill` を足し、`needsReview` を立てる（2 件：Testcontainers、CI の実行モデル）
 - 「未着手」の行は判定を作らない
@@ -364,7 +364,7 @@ skill-map.md は冒頭注記に加えて「最終更新」行も実際の日付�
 | 移行直後のマトリクスが 0 だらけに見える | 意図どおり（A で確定）。角の印とサマリー帯の列で「実装根拠あり」を見せる |
 | `rationale` / `verifyBy` に固有名詞・転職の語が混ざる | F と D の完了条件に grep を入れる。禁止語リストを `verify` に足すかは事故が起きてから |
 | 凍結後に study セッションが skill-map を更新する | E で CLAUDE.md と rules を同時に直す。E と F を続けて終える |
-| skill-map が progress.md より古い行（React） | 移行では直さず、G の通常判定で追い付かせる。期待表に「凍結後に上がる見込み」として印を付けておく |
+| skill-map が progress.md より古い行（React） | 移行では直さず、G の通常判定で追い付かせる。対象は §8.3 の備考に書いた（react-render-flow / react-jsx-ts-basics、判定を作らなかった react-hooks） |
 | `Level` の改名で棚上げコード（store）が壊れる | 機械的に追従。挙動は変えない |
 | 古いハッシュを `evidenceRefs` に書いてしまう | 移行の指示書に「解決できるコミットだけ」と書く。`verify` は到達可能性を見ないので目視 |
 | 鮮度が最初から `stale` の項目が多い | 事実どおり。既定値（30 / 90 日）を変えるかは画面を見てから |

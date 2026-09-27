@@ -40,7 +40,7 @@
 - **`data/roadmap.json` の文字列（`verifyBy` / `outcome` / `goal` / `description`）にも同じ縛りを掛ける。** 所属先・企業名・人名・転職活動・人事評価を書かず、
   `verifyBy` は技術的な検証条件だけを書く（「面接想定で説明する」ではなく「ADR を見ずに設計理由とトレードオフを自分の言葉で説明できる」）。
   転職・面接の文脈は study 側に残す（`logs/decisions.md` 2026-09-25「習熟度の正本を…移す」）
-- **習熟度の正本はこのリポジトリ。** `~/workspace/study/learner-profile/skill-map.md` は移行後に凍結する（更新しない）。
+- **習熟度の正本はこのリポジトリ。** `~/workspace/study/learner-profile/skill-map.md` は 2026-09-27 に凍結した（更新しない。移行判定は `data/judgments/*-migration-*.json`）。
   レベルは「印」（`evidencedLevels`）から導出した `verifiedLevel` で、**実装の根拠（3）は基礎理解（1・2）を含意しない**。
   `[3]` だけの項目を「基礎からやり直し」とは扱わず、既存の実装について L1/L2 を確認する行動を出す（`docs/skill-map-migration.md`、`logs/decisions.md` 2026-09-25）
 - **`data/judgments/` は追記のみ、`data/state.json` は手で編集しない。** コミット後の訂正は既存ファイルを触らず `source: "manual"` の判定ファイルを足す
