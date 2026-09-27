@@ -104,7 +104,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 - [x] `internal/llm` にインタフェースと **stub プロバイダ**を実装する（`LLM_PROVIDER=stub`。開発中の課金ゼロ＋テストの決定性）
   完了条件：`llm.New` が `LLM_PROVIDER=stub` で LLM を呼ばない実装を返し、同じ入力に同じ判定を返す。その判定が `domain.ApplyJudgments` を違反なしで通る。返す JSON を差し替えた stub で V1・V2・V4 が記録される。形の崩れた判定は捨てずに `Rejected` に残る（KNOWLEDGE.md 2026-09-19）
   **2026-09-23 に「棚上げ（コードとテストは残す）」と決定。** v1 の手順書と README には登場させない（`logs/decisions.md`）
-- [x] AI への指示書 `prompts/judge.md` を用意する（`internal/llm/prompt.go` の文面を流用する）（2026-09-27 完了。前提を知らないサブエージェントに読ませて 2 回試運転し、`data/` のコピーで `recalc` の棄却 0 件。見つかった穴と判断は KNOWLEDGE.md 2026-09-27「`prompts/judge.md`」）
+- [x] AI への指示書 `prompts/judge.md` を用意する（`internal/llm/prompt.go` の文面を流用する）（2026-09-27 完了。前提を知らないサブエージェントに読ませて 2 回試運転し、`data/` のコピーで `recalc` の棄却 0 件。チャット経路は「ファイルを読めない AI 役」に貼り付け用の束を渡して模擬し、返った JSON が棄却 0 件（本物の ChatGPT では未試行）。見つかった穴と判断は KNOWLEDGE.md 2026-09-27「`prompts/judge.md`」）
   完了条件：Claude Code / ChatGPT にそのファイルを読ませるだけで判定の JSON が出てくる。役割・根拠の種類・印の付き方・禁止事項・出力の形が載っている。**レベルの基準と根拠の印は書き写さず、`data/roadmap.json` の `levels` と `backend/internal/domain/types.go` を読ませる**。禁止事項に「**`rationale` と `evidenceRefs` に**所属先・企業名・人名・転職活動・人事評価に関する記述を含めない」がある。`evidenceRefs` の書式（`repo:<owner>/<repo>@<commit>/<path>#L<n>`・`log:<path>`）と、`sources.local.json` から根拠の出どころを読む手順が載っている。**2026-09-25 追加**：`unaided_implementation` は AI から具体的なコード提示や逐次ガイドを受けていない場合だけ／不合格は `proposedLevel: 0`／`confidence` は必ず書く（`source: ai`）。到達状態（`outcome`）の下書きもこの指示書で作れる
 - [ ] `.claude/skills/judge-log/SKILL.md` を作る（`prompts/judge.md` を読ませる薄い入口）
   完了条件：`/judge-log` で呼べ、`prompts/judge.md` と `sources.local.json` を読み、未判定の学習ログを探して `data/judgments/` に新しいファイルを1つ書くところまで進む。**既存の判定ファイルは書き換えない**。判定基準や禁止事項をこのファイルに書き写していない（`prompts/judge.md` へのリンクだけ）
