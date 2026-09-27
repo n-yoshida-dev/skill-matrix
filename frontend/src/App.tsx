@@ -4,7 +4,7 @@ import { PublicView } from './features/public/PublicView'
 import { PlanView } from './features/plan/PlanView'
 
 // 画面の入口は 2 つ（SPEC.md §7）。
-// 公開ビュー（/）は採用担当者など初めて見る人向け、作業ビュー（/plan）は自分向け。
+// 公開ビュー（/）は初めて見る人（SNS・個人サイトから来た人、友人、採用担当者）向け、作業ビュー（/plan）は自分向け。
 // データはどちらも同じ data/*.json をビルド時に取り込む
 const data = loadData()
 

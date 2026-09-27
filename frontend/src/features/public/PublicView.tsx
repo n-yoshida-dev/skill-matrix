@@ -14,7 +14,7 @@ import {
 import { DEFAULT_REPO_URL } from '../../data/load'
 import './public.css'
 
-// 公開ビュー（SPEC.md §7.3）。採用担当者など初めて見る人向けの 1 画面。
+// 公開ビュー（SPEC.md §7.3）。初めて見る人（SNS・個人サイトから来た人、友人、採用担当者）向けの 1 画面。
 // 出すのは「何をどこまでできるか」と「その根拠」だけ。段階前の状態・鮮度・保留・優先度・検証の記号は出さない。
 
 interface Props {
