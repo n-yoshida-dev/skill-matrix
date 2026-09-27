@@ -50,9 +50,9 @@ skill-map.md からの移行（1 回きり）には使わない。そちらは `
 3. **`proposedLevel` は「この根拠が示した最上段」。** その種類の `Base`〜`Top` の範囲で選ぶ。印は `Base` から `proposedLevel` までまとめて付くので、下の段のために判定を分けなくてよい
    - 段の目安は、その項目の `verifyBy`（次の段を確かめる方法。末尾の「（L1・L2）」などは、その確認で付く段）と `levels` の `criteria`。
      `verifyBy` を使うのは、それが挙げている段を判定するときだけ。挙げていない段は `criteria` で判断する。
-     `verifyBy` が挙げる点がログで全部確かめられたら、書かれた段の上のほう。一部だけなら 1 段下（下の段が無ければ判定せず `unmatched` に回す）。
-     項目の中身には触れていても `verifyBy` の点に 1 つも当たらなければ、判定してよいが `confidence` を `data/settings.json` の `rules.confidenceThreshold` 未満にする
-     （適用されずに保留となり、人が採否を決める）。
+     `verifyBy` が挙げる点がログで全部確かめられたら、書かれた段の上のほう。一部だけなら 1 段下。
+     一部だけで下の段が無いとき、または項目の中身には触れていても `verifyBy` の点に 1 つも当たらないときは、判定してよいが
+     `confidence` を `data/settings.json` の `rules.confidenceThreshold` 未満にする（適用されずに保留となり、人が採否を決める）。
      `rationale` に、確かめられた点と残った点を書く
    - 不合格は `0`（印は付かず「要再確認」になる）。当たるのは、確かめる問いに誤答した・説明を求められて説明できなかったときだけ。
      説明を受ける前に知らなかった・取り違えていたのは不合格ではない（学習の出発点）
@@ -69,7 +69,7 @@ skill-map.md からの移行（1 回きり）には使わない。そちらは `
    弱点の番号（`W-008` 等）、ツール名・ライブラリ名、学習者自身のリポジトリ名は書いてよい
 10. **`occurredAt` は根拠が生じた日。** ログの中に日付があればそれ（何日にもまたがるセッションなら、その出来事の日）。分からなければログの日付
 11. **説明を受けただけの記述は `explained_to` の判定にする**（印がある項目でも履歴に残る）。
-    **どの種類にも当たらない記述は `unmatched` に 1 行ずつ要約する**（技術的な事実だけ）。どの項目にも結び付かない学習、`verifyBy` に届かなかった部分的な根拠、
+    **どの種類にも当たらない記述は `unmatched` に 1 行ずつ要約する**（技術的な事実だけ）。どの項目にも結び付かない学習と、
     ドリルや説明以外の場面での弱点の再発（行動の観察）がここに入る。無ければ `[]`
 
 ## 禁止事項
@@ -175,6 +175,7 @@ skill-map.md からの移行（1 回きり）には使わない。そちらは `
 このファイルに続けて、次を貼ってもらう。
 
 - `data/roadmap.json`（`levels` と `domains`）
+- `data/settings.json` の `rules`
 - `backend/internal/domain/types.go` の `evidenceLadder` と `evidencePreStates`
 - `data/state.json` の `items`（`events` は `occurredAt`・`evidenceType`・`rationale` だけでよい）
 - 判定する学習ログの本文と、その出どころ（`repo:<owner>/<repo>@<commit>/<path>` か `log:<path>`）
