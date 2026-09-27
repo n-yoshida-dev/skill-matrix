@@ -260,7 +260,9 @@ sources.local.json.example           その雛形。こちらはコミットす�
 
 制約：
 
-- ファイル名は `^\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]{0,63}\.json$`。`loggedAt` はファイル名の日付と一致する。移行は `YYYY-MM-DD-migration-<domain>.json`
+- ファイル名は `^\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]{0,63}\.json$`。`loggedAt` はファイル名の日付と一致する。移行は `YYYY-MM-DD-migration-<domain>.json`。
+  学習ログの判定は `<loggedAt>-<ログの日付>-<題材>.json`（例 `2026-09-28-2026-09-27-react-02-step3.json`）。同じ日に複数のログを判定しても、ファイル名の順＝起きた順に適用されるようにするため
+  （同じ項目の不合格と合格が逆順に適用されると `needsReview` が残る。2026-09-27、`prompts/judge.md` の試運転で判明）
 - `judgments` の各要素は §4.3 の出力そのもの。1件の形の検査と V1〜V8 は §4.5
 - `proposedLevel` は「この根拠が示す最上段」。根拠の種類の梯子の範囲内（`self_explanation` なら 1 か 2、`unaided_implementation` なら 3 か 4）か、
   **0 ＝ 不合格の報告**（ドリルに落ちた、説明できなかった）。指示書には常に書かせる。
@@ -358,13 +360,17 @@ AI が学習ログを自分で読みに行くための設定。ローカルの�
 {
   "logs": { "path": "learning-logs" },        // 既定の置き場（リポジトリ内・.gitignore 済み。v1.5 のテンプレート利用者向け）
   "repos": {                                  // リポジトリ名 → ローカルパスと、学習ログとして読むファイルのパターン
-    "n-yoshida-dev/study": { "path": "/home/<user>/workspace/study", "logsGlob": "**/logs/*.md" }
+    "n-yoshida-dev/study": { "path": "/home/<user>/workspace/study", "logsGlob": "*/logs/*.md" }
   }
 }
 ```
 
 `repos` のキーは `evidenceRefs` の `repo:<owner>/<repo>` と同じ名前にする。無ければ AI はユーザーに場所を聞く。
+`logsGlob` は git の glob（`*` は `/` をまたがない）。study では `*/logs/*.md` にして、直下の `logs/`（判断台帳・マイルストーン。学習ログではない）を拾わない。
 判定済みかどうかは `data/judgments/` の `evidenceRefs` の一覧と **path 単位**で突き合わせる（追記型のログなら commit の違いは無視してよい）。
+加えて、**移行判定（`source: "migration"`）の `evidenceRefs` の 1 件目が指すコミット（移行元の台帳を凍結したコミット）より後に一度も変更されていないログは判定済みとみなす**
+（台帳を経由して写し済み。凍結前に書かれ台帳に届いていなかった学習は、凍結後の新しいログで拾う。2026-09-27、`prompts/judge.md` を書く段で判明）。
+コミットされていない変更があるログは、commit を書けないので判定しない。手順の詳細は `prompts/judge.md`「手順」。
 
 ---
 
