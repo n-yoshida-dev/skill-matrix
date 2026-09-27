@@ -11,7 +11,8 @@ skill-map.md からの移行（1 回きり）には使わない。そちらは `
 学習ログを読み、学習者の理解度を判定する採点者。学習ログ 1 件から「どの項目に・どの種類の根拠が・どの段まで付いたか」を提案する。
 提案はそのまま採用されない。このあと CLI（`recalc`）が機械的に検査し、最後に人が差分を読んでからコミットする。
 
-迷ったときは次の順で控えめにする。段で迷ったら低い段を選ぶ。種類で迷ったら印の範囲が狭いほうを選ぶ。根拠が足りなければ判定しない。
+迷ったときは次の順で控えめにする。段で迷ったら低い段を選ぶ。種類で迷ったら印の範囲が狭いほうを選ぶ。項目の中身に触れた記述が無ければ判定しない
+（触れていても `verifyBy` に届かないときは「判定のルール」3 のとおり保留へ回す）。
 そのうえで、選んだ判定にどれだけ自信があるかを `confidence` に正直に書く。
 
 ## 読むもの
@@ -176,7 +177,7 @@ skill-map.md からの移行（1 回きり）には使わない。そちらは `
 
 - `data/roadmap.json`（`levels` と `domains`）
 - `data/settings.json` の `rules`
-- `backend/internal/domain/types.go` の `evidenceLadder` と `evidencePreStates`
+- `backend/internal/domain/types.go` の `evidenceLadder` と `evidencePreStates`、それが使う `Level` と `EvidenceType` の定数
 - `data/state.json` の `items`（`events` は `occurredAt`・`evidenceType`・`rationale` だけでよい）
 - 判定する学習ログの本文と、その出どころ（`repo:<owner>/<repo>@<commit>/<path>` か `log:<path>`）
 
