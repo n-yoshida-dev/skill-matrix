@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-27",
+  "source": "migration",
+  "judgments": [
+    {
+      "itemKey": "ai-collab-agent-cycle",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-07-13",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L87"],
+      "rationale": "AI エージェントへの調査・実装の依頼 → 検証 → diff の確認というサイクルを一通り回した。ガイド付き"
+    },
+    {
+      "itemKey": "ai-collab-output-review",
+      "evidenceType": "learning_activity",
+      "proposedLevel": 0,
+      "occurredAt": "2026-07-14",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L88"],
+      "rationale": "AI の出力をレビューする学習を始めた段階で、自力でレビューした実績はまだ無い"
+    }
+  ],
+  "unmatched": []
+}

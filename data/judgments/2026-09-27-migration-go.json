@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-27",
+  "source": "migration",
+  "judgments": [
+    {
+      "itemKey": "go-syntax-basics",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-07-25",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L67"],
+      "rationale": "基本構文と制御構文のドリル 2 回（3/5、4.5/5）で、var と :=、暗黙の型変換の禁止、for / if / switch、defer の実行順、型なし定数、ゼロ値を確認した"
+    },
+    {
+      "itemKey": "go-struct-slice-map-pointer",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-08-21",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L68"],
+      "rationale": "初回ドリル 2/5 の後、slice の共有とコピーを予想・実行・修正で確かめ、ポインタの用途と nil map への書き込みで panic することにも口頭で答えた（W-009 closed）"
+    },
+    {
+      "itemKey": "go-func-values-closure",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-12",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L69"],
+      "rationale": "関数値は Java のラムダとの対応で説明を受けた。クロージャは仕組みの説明のみで、ドリルは未実施"
+    },
+    {
+      "itemKey": "go-methods",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-26",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L70"],
+      "rationale": "レシーバを「ドットの前の値を受け取る引数」として説明を受け、引数の行き先を問う確認 1 問に正答した。値レシーバとポインタレシーバの違いは未着手"
+    }
+  ],
+  "unmatched": []
+}

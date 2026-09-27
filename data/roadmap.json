@@ -155,7 +155,7 @@
           "description": "state は React が預かる値、props は親から子への受け渡し。子から親の値を変えるには、関数を props で受け取る",
           "outcome": "値を state にするかを判断し、使う部品と更新する部品の共通の親に置ける",
           "dependsOn": ["react-components-destructuring"],
-          "verifyBy": "setX を続けて 2 回呼んだ直後の値と、map が返すものを問うドリルに、実行して確かめる形で答える（L1）",
+          "verifyBy": "ある値を state にするかどうかの判断と、その state を置く部品（使う部品と更新する部品の共通の親）を選んだ理由を、自分の言葉で説明する（L2）",
           "moduleRefs": ["react-01"]
         },
         {

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-27",
+  "source": "migration",
+  "judgments": [
+    {
+      "itemKey": "baas-vs-custom-backend",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-08-14",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L99"],
+      "rationale": "PostgREST が自動で作れるのは CRUD だけで、例外処理や監査ログの書き込みには自前のバックエンドが要ることを、説明の単純化に対して自分から指摘した"
+    },
+    {
+      "itemKey": "baas-supabase-schema",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-16",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L95",
+        "repo:n-yoshida-dev/ai-study-coach@24b4b6e"
+      ],
+      "rationale": "テーブルの DDL を自分で書き、レビューの指摘（スキーマ修飾・date 型・空文字と NULL の統一・制約の命名・FK のインデックス）を反映した。ガイド付き"
+    },
+    {
+      "itemKey": "auth-oauth-oidc",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-21",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L97",
+        "repo:n-yoshida-dev/ai-study-coach@dfee429"
+      ],
+      "rationale": "OAuth 2.0 / OIDC の登場人物の役割と、クライアント ID・シークレットの扱いは説明を受けたのみ。コードは本人の実装ではなく、行ったのはプロバイダの設定と動作確認"
+    },
+    {
+      "itemKey": "baas-rls",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-31",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L96"],
+      "rationale": "USING と WITH CHECK の違いは説明を受けたのみ。他人の行が返らないことと、user_id を偽った INSERT が WITH CHECK で拒否されることは動作で確かめたが、自分の言葉での説明は無い"
+    },
+    {
+      "itemKey": "baas-supabase-js",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-27",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L98",
+        "repo:n-yoshida-dev/ai-study-coach@1372a02"
+      ],
+      "rationale": "supabase-js の CRUD と型の生成は説明を受けたのみ。コードは本人の実装ではなく、行ったのは設計 3 件の選択・型の生成・画面での動作確認"
+    }
+  ],
+  "unmatched": []
+}

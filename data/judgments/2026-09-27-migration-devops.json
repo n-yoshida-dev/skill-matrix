@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-27",
+  "source": "migration",
+  "judgments": [
+    {
+      "itemKey": "devops-pr-workflow",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-06",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L89"],
+      "rationale": "branch → PR → セルフレビュー → squash merge → main の同期を 1 周自分で操作した。ガイド付き"
+    },
+    {
+      "itemKey": "devops-ci-execution-model",
+      "evidenceType": "learning_activity",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-09",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L93"],
+      "rationale": "watch モードのテストが終了せず CI が止まる問題を実際に踏んだが、原因の診断は自力ではなかった"
+    },
+    {
+      "itemKey": "devops-ci-execution-model",
+      "evidenceType": "drill",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-09",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L93"],
+      "rationale": "CI・デプロイのドリル Q1 ✗：vitest と vitest run の違い（watch は終了しない）と、CI がコマンドの終了コードで合否を決める前提を説明できなかった（W-007）"
+    },
+    {
+      "itemKey": "devops-ci-github-actions",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-13",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L38",
+        "repo:n-yoshida-dev/orgflow@de995eb"
+      ],
+      "rationale": "Maven のプロジェクトに GitHub Actions のワークフローを自分で書き、トリガー（pull_request と main への push）を理由付きで選んだ。実行ディレクトリの指定とランタイムのバージョン不一致はレビューで指摘されるまで気付かなかったので、4 は保留"
+    },
+    {
+      "itemKey": "devops-required-checks",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-08-20",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L94"],
+      "rationale": "必須チェックにするかを「落ちたときにコードの問題だと断定できるか」で決める理由を自分で説明した（初回の Q2 ✗ を解消）。ジョブを分けたときにバッジと必須チェックがずれる論点（Q4）は未確認（W-007）"
+    },
+    {
+      "itemKey": "devops-branch-protection",
+      "evidenceType": "unaided_implementation",
+      "proposedLevel": 4,
+      "occurredAt": "2026-08-20",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L91"],
+      "rationale": "項目の指示なしで GitHub の Ruleset を設定し（PR 必須・必須チェック・up-to-date・bypass 空・force push と削除の禁止）、API で保存値を検証して PR が BLOCKED から CLEAN に変わるのを確かめた。有効化の漏れは出力を見て自分で直した"
+    },
+    {
+      "itemKey": "devops-branch-protection",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-08-20",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L91"],
+      "rationale": "必須チェックの選び方・bypass を空にする理由・up-to-date のトレードオフを自分で説明した。force push の意味、削除禁止の対象、PR を必須にする一番の理由（直 push は CI を迂回する）は未達"
+    },
+    {
+      "itemKey": "devops-deploy-preview-production",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-08-09",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L92"],
+      "rationale": "preview と production を分ける理由（検証前のコードを公開しない・開発者以外にも試してもらえる）を、ドリル Q5 で自分の言葉で答えた"
+    },
+    {
+      "itemKey": "devops-cicd-pipeline",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-08",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L90"],
+      "rationale": "lint・test・build の CI と、preview → merge → production の自動デプロイを構築した。ガイド付き（デプロイ側を別のプロジェクトで自力で組んだ実績はまだ無い）"
+    }
+  ],
+  "unmatched": []
+}

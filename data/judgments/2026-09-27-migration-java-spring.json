@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-27",
+  "source": "migration",
+  "judgments": [
+    {
+      "itemKey": "java-rest-openapi",
+      "evidenceType": "learning_activity",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-10",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L35"],
+      "rationale": "OpenAPI の契約先行で API を定義して実践しているが、契約先行を選んだ理由と実装との整合の取り方を自分で説明した記録は無い"
+    },
+    {
+      "itemKey": "java-spring-security-jwt",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-07-16",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L52"],
+      "rationale": "Spring Security の OAuth2 Resource Server で、HS256 の JWT の検証（署名・issuer・exp）を実装した。ガイド付き"
+    },
+    {
+      "itemKey": "java-tenant-switch",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-07-16",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L53"],
+      "rationale": "membership を検証し、current_tenant_id のクレームを付けたトークンを再発行するテナント選択フローを実装した。ガイド付き"
+    },
+    {
+      "itemKey": "java-request-domain",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-07-29",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L56"],
+      "rationale": "申請の状態遷移・版管理・承認ルート・監査ログのスキーマと、draft を作る API を実装した（状態遷移の本体は未実装）。レビューで誤り 3 点を修正した"
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-05",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L57"],
+      "rationale": "例外ハンドラで 401 / 403 / 404 / 422 を振り分け、メンバーでない組織の指定を 422、ロールなしを 403 にして 3 ケースを確認した。検証の順序はテストで固定した"
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-08-23",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L57"],
+      "rationale": "検証の順序（403 を先に返すと利用者が解決しない依頼をしに行く）、404 と 403 の使い分け（存在を明かさない）、500 になる条件を、設計文書を閉じて自分の言葉で説明した（W-006 closed）"
+    },
+    {
+      "itemKey": "java-app-logging",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-29",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L58",
+        "repo:n-yoshida-dev/orgflow@b7d85b7"
+      ],
+      "rationale": "SLF4J のロガーを例外ハンドラ 8 か所に足し、ログレベル（正規の操作で起きうる＝INFO、正規のクライアントからは起きない＝WARN）とスタックトレースの有無を理由付きで決めた。ガイド付き"
+    },
+    {
+      "itemKey": "java-app-logging",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-29",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L58"],
+      "rationale": "SLF4J と Logback の 2 層、既定のレベル INFO、例外を渡すときに {} を使わない理由は、説明を受けたのみで理解は未確認"
+    },
+    {
+      "itemKey": "java-junit",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-05",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L37",
+        "repo:n-yoshida-dev/orgflow@6647ba8"
+      ],
+      "rationale": "ドメインとサービスの単体テスト 5 本を実装した（Mockito のモック・verify・ArgumentCaptor・@BeforeEach、verify(never()) で検証の順序を固定）。逐次のガイド付き"
+    },
+    {
+      "itemKey": "java-test-infra-testcontainers",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-09",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L60",
+        "repo:n-yoshida-dev/orgflow@4a023fa"
+      ],
+      "rationale": "Testcontainers の設定（@Bean と @ServiceConnection）を入れてテストが通ることを確認したが、クラスは説明に沿って書いたもの。@TestConfiguration と @Import、コンテキストのキャッシュ、@ServiceConnection の役割は説明を受けたのみ"
+    },
+    {
+      "itemKey": "java-test-infra-testcontainers",
+      "evidenceType": "drill",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-13",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L60"],
+      "rationale": "結合テスト基盤のドリル未達：Q3（@Transactional のロールバック）と Q4（MockMvc と RANDOM_PORT の違い）が ✗、Q1 と Q5 が △（W-008）"
+    },
+    {
+      "itemKey": "java-adr-design-docs",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-07-16",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L61"],
+      "rationale": "ADR・OpenAPI の契約・DBML の ER 図で設計を文書化した。ガイド付き"
+    },
+    {
+      "itemKey": "java-adr-design-docs",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-08-23",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L61"],
+      "rationale": "ADR を閉じて、決定・背景・制約（整合性を可用性より優先）・不採用案の理由を自分の言葉で説明した（5 問中 4 問と追加の 1 問で通過）。不採用案の利点を先に言えない癖が残る"
+    }
+  ],
+  "unmatched": []
+}

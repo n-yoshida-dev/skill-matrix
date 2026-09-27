@@ -28,8 +28,8 @@
 v2 へ進むか、検証ロジックを CLI として配布する道へ進むかは、自分専用版を実際に使ってから決める（`logs/decisions.md` 2026-09-23「見直す条件」）。
 
 **習熟度の正本はこのリポジトリ。** `~/workspace/study/learner-profile/skill-map.md`（同じ5段階モデルの手動台帳）は
-2026-09-25 の決定で skill-matrix へ移行して凍結する（`logs/decisions.md` 2026-09-25「習熟度の正本を…移す」。手順は `docs/skill-map-migration.md` §8）。
-移行が済むまでの間だけ skill-map.md が最新で、移行判定（`source: "migration"`。§3.3）で写し取る。
+2026-09-27 に skill-matrix へ移行して凍結した（凍結は study `284c0f1`。決定は `logs/decisions.md` 2026-09-25「習熟度の正本を…移す」、手順は `docs/skill-map-migration.md` §8）。
+移行判定（`source: "migration"`。§3.3）は `data/judgments/2026-09-27-migration-*.json` の 7 本。以後の習熟度は学習ログからの判定でだけ更新する。
 
 ---
 
@@ -459,7 +459,8 @@ V4 を廃止した理由：1 件の根拠が同じ梯子の下位を同時に証
 指示書（§4.2 の `unaided_implementation` の条件・`confidence` 必須・`rationale` と `evidenceRefs` 必須）と `git diff` の目視へ移した。
 
 適用の規則（`ApplyJudgment`）：(1) 印を付ける（4.4 の集合を `proposedLevel` で上限を切った範囲）→ (2) `verifiedLevel` を導出し直す →
-(3) 印があれば `preState` は `none`、無ければ根拠の種類が立てる値 → (4) `lastEvidenceAt` は §3.4 の条件で更新 → (5) `proposedLevel` が 0 なら印を付けず `needsReview`。
+(3) 印があれば `preState` は `none`、無ければ根拠の種類が立てる値（立てるのは印を付けない 3 種類だけ。不合格の報告は `preState` を変えない） → (4) `lastEvidenceAt` は §3.4 の条件で更新 → (5) `proposedLevel` が 0 なら印を付けず `needsReview`。
+「説明を受けた → ドリルに落ちた」項目は `explained_only` のまま `needsReview` になる（2026-09-27 に段階 F で見つけた不具合の修正。KNOWLEDGE.md 同日「段階 F」）。
 
 **V1〜V8 の前に、形の検査を通す**（`internal/judgment` の `Parse`。棚上げ中の stub・Claude API クライアントは `internal/llm` の `ParseOutput` 経由で同じ関数を通る。
 V1〜V8 は意味の検査で `internal/domain` が担当し、同じ検査を2か所に書かない）。
