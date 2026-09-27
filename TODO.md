@@ -117,7 +117,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   完了条件：`frontend/src` からテンプレートのデモ画面が消え、`data/roadmap.json`（SPEC.md §2。`schemaVersion: 1`）・`data/state.json`（§3.4。`schemaVersion: 2`）・`data/settings.json`（§8.3）を型付きで読み込んで各画面へ渡せる。ハッシュルーティングで `/` と `/plan` が切り替わる。サーバ通信が無いので TanStack Query は入れない（既定スタックから外れる点は PLAN.md に書いてある）。
   **2-1 の段階 D（実物のロードマップ）より先に着手するため、`data/` にはダミー（`backend/testdata/` と同じ内容を `schemaVersion: 2` にしたもの）を仮置きし、README に「段階 D で実物に差し替える」と書く。`state.json` は CLI が無い間は手書きで、段階 C-2 の `recalc` で生成し直す**
   **`data/` は `frontend/` の外にあるので、dev サーバで読むのに `vite.config.ts` の `server.fs.allow` が要る可能性がある**（PR #32 のレビューで指摘。着手時に実機で確かめる）
-- [x] 公開ビュー（SPEC.md §7.3。採用担当者向け・タイル表示・押すと根拠）（2026-09-25 完了。ダミーデータで表示。実物は 2-1 段階 D・F で入る）
+- [x] 公開ビュー（SPEC.md §7.3。初めて見る人向け・タイル表示・押すと根拠）（2026-09-25 完了。ダミーデータで表示。実物は 2-1 段階 D・F で入る）
   完了条件：`/` を開くと、見出しと 2 文、分野ごとの行（分野名・`goal`・根拠のある項目数）、項目名が常時見えるタイル、押すとその行の直下に根拠（日付・根拠の種類・`rationale`）が出る。§7.3「出さないもの」が 1 つも出ていない。`[3]` の項目が「実装の根拠はあるが基礎の確認が未了」と出る。フッターはリポジトリへのリンクだけ。`docs/demo/public-view.html`（2026-09-25 のデモ）と同じ見た目・画面構成（文言は SPEC.md §7.3・§4.5 に従う）。Vitest で「出さないもの」が描画されないことを 1 本確かめる
 - [ ] マトリクス画面（作業ビュー。可変長グリッド＋サマリー帯、色＝`verifiedLevel`／枠線＝要再確認／角の印＝上位の根拠あり。SPEC.md §7.1）
   完了条件：升目の塗りは `verifiedLevel`。`evidencedLevels` の最上段が `verifiedLevel` より上の升目に角の印が付き、ツールチップに「Verified n / 根拠の印 … / 未確認 …」が出る。サマリー帯に「実装根拠あり・理解未確認」の列がある
@@ -229,7 +229,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 - [x] インポート時のリクエストボディのサイズ制限（2 MiB → 413）と、1フィールドの文字数上限（`too_long`）を入れる（SPEC.md §2）
 - [x] 自分のロードマップの CRUD を実装する（一覧・取得・名前と目標日の更新・削除）。完了条件：`GET /api/roadmaps` `GET/PATCH/DELETE /api/roadmaps/:id` が他人のロードマップには 404 を返し、`depends_on_keys` が `[]string` で読める（KNOWLEDGE.md 2026-08-22）。SPEC.md §6
 - [x] `docs/spec-guide.md` にインポートと CRUD の説明を足す（壊れた JSON を貼るとどうなるか＝何がエラーで何が警告か、`roadmaps.levels` の保存先、他人のロードマップが 404 になる理由）
-  完了条件：SPEC.md §2 §6 の事実を二重に書かず、`docs/spec-guide.md` §3 から SPEC へリンクした状態で、Naoki が読んで「JSON を貼ったら何が起きるか」を説明できる
+  完了条件：SPEC.md §2 §6 の事実を二重に書かず、`docs/spec-guide.md` §3 から SPEC へリンクした状態で、本人が読んで「JSON を貼ったら何が起きるか」を説明できる
 - [x] `internal/llm` に Claude API クライアントとプロンプト組み立てを実装する（共通部を先頭に固める。判定基準は `roadmaps.levels` の `criteria` を使い、コードに書かない）
   完了条件：`llm.New` が `LLM_PROVIDER=anthropic` で Claude API を呼ぶ実装を返す。system に共通部（役割・`criteria`・根拠の種類・禁止事項）とキャッシュの印が載り、ロードマップ・現在の状態・ログ本文は後ろの user ブロックに分かれる。返事は `output_config.format` の JSON Schema で縛り、stub と同じ `ParseOutput` を通す。API を呼ばずに `httptest` で送信内容とエラーの仕分けを検証している（KNOWLEDGE.md 2026-09-23）
   **コードは棚上げ。ただし `prompt.go` の文面（判定の指示）は 2-4 の AI 指示書へ流用する**
@@ -296,14 +296,14 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   `llm_responses.violations` を同じ行に入れるには先に検証が要るため（保存が反映より先である点は図と同じ）。図の順を実装に合わせるかも一緒に判断する。
   さらに §8.3 の環境変数一覧に、この PR で足した `JUDGMENT_MAX_ATTEMPTS`（既定3、1〜10）と
   `JUDGMENT_POLL_INTERVAL_SECONDS`（既定5、1〜300）の2行を足す（`backend/.env.example` には反映済み）
-  完了条件：Naoki が了承し、SPEC.md §3・§4.5 と `backend/migrations/000004_llm_response_raw_text.up.sql`・`internal/store/jobs.go` が同じことを言っている
+  完了条件：本人が了承し、SPEC.md §3・§4.5 と `backend/migrations/000004_llm_response_raw_text.up.sql`・`internal/store/jobs.go` が同じことを言っている
 
 - [x] 【ユーザー確認】SPEC.md §4.2 の表で、system に載せるものから「出力スキーマ」を外す（**2026-09-23 の方針変更で解消。2-0 の SPEC 書き換えに吸収する**。判定の主体が Claude Code / ChatGPT に移り、§4.2 のプロンプト構成そのものを書き直すため。文面は `internal/llm/prompt.go` に残っているので流用できる）
   実装では返事の形を system の文面ではなく `output_config.format`（構造化出力）で指定している。system 側には「JSON 以外の文章を出力しない」とだけ書いてある。
   縛りとしては構造化出力のほうが強いので実装を変える必要はないが、SPEC の表は「system に出力スキーマを書く」と読める。
   直す箇所：SPEC.md §4.2 の表の1行目「判定の役割、5段階の `criteria`、`evidenceType` の許可リストと意味、昇格ルール、出力スキーマ、禁止事項」から「出力スキーマ」を外し、
   代わりに「出力スキーマは §4.3 のとおり `output_config.format` で指定する（system には『JSON 以外を出力しない』とだけ書く）」を注記する
-  完了条件：Naoki が了承し、SPEC.md §4.2 の表と `backend/internal/llm/prompt.go`・`anthropic.go` が同じことを言っている
+  完了条件：本人が了承し、SPEC.md §4.2 の表と `backend/internal/llm/prompt.go`・`anthropic.go` が同じことを言っている
 
 - [ ] 【別セッション】他アプリに溜まったマージ済みローカルブランチを片付ける
   2026-09-21 時点の非 main ブランチは life-plan-simulator 25 本・babyfood-check 7 本・photo-prompt-builder 2 本・app-template 1 本。
@@ -313,11 +313,11 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   **同アプリは 2026-09-21 時点で未コミットの変更が 2 件ある（`frontend/src/features/result/rows.ts` と `timeline.ts`）ので、扱いを先に本人へ確認する**
   完了条件：4 アプリで、マージ済み PR に対応するローカルブランチが残っていない。消さなかった枝は理由が報告されている
 
-- [x] 【ユーザー確認】SPEC.md の stub の説明を実装に合わせて直す（2026-09-20 に Naoki が了承し、同日に反映。同じ言い回しが残っていた `backend/.env.example` と `docs/spec-guide.md` §8 も合わせた。PR #24 で判明。理由は KNOWLEDGE.md 2026-09-19）。直す箇所は 3 つ：
+- [x] 【ユーザー確認】SPEC.md の stub の説明を実装に合わせて直す（2026-09-20 に 本人が了承し、同日に反映。同じ言い回しが残っていた `backend/.env.example` と `docs/spec-guide.md` §8 も合わせた。PR #24 で判明。理由は KNOWLEDGE.md 2026-09-19）。直す箇所は 3 つ：
   §4.6・§8.3 の「固定レスポンスを返す」→「LLM を呼ばず、同じ入力には同じ判定を返す（ロードマップの先頭から未達の項目を 3 件まで選び、現在レベル + 1 を提案する。同じログを繰り返し投稿すると開発環境のマトリクスは先頭から順に埋まる）」／
   §4.5 に「V1〜V8 の前に形の検査（型の不一致・必須欄の欠落・空の rationale・0〜1 の外の confidence）があり、弾いた判定も `llm_responses.violations` に記録する」を追記／
   `backend/internal/config/config.go` の `ProviderStub` のコメントを同じ文面に合わせる
-  完了条件：Naoki が説明を読んで了承し、SPEC.md §4.5・§4.6・§8.3 と config.go のコメントが実装（`backend/internal/llm/stub.go`・`output.go`）と同じことを言っている
+  完了条件：本人が説明を読んで了承し、SPEC.md §4.5・§4.6・§8.3 と config.go のコメントが実装（`backend/internal/llm/stub.go`・`output.go`）と同じことを言っている
 
 - [x] 【ユーザー作業】マージ済みのローカルブランチを削除する（2026-09-19 に本人が実行し、一覧が `main` だけになったことを確認。2026-09-19 に削除で合意。Claude の `git branch -D` は権限設定で拒否されるため本人が実行する。`logs/decisions.md`）
   完了条件：`git branch` の一覧に、PR が MERGED の作業ブランチが残っていない。消す前に「PR が MERGED」「ローカルの先端がその PR の先端と一致」の 2 点を確かめてある（PR #13〜#21 の 9 本は 2026-09-19 に確認済み）。**この項目の「拒否されるため本人が実行する」は 2026-09-19 時点の前提。2026-09-21 に ask へ移し、今は Claude が実行する（`logs/decisions.md` 2026-09-21）**

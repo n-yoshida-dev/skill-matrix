@@ -3,7 +3,7 @@ import type { AppData, ItemState, Level, Roadmap, RoadmapItem, StateEvent } from
 // 公開ビュー（SPEC.md §7.3）のための純粋関数。DOM を触らない。
 // 「何をどこまでできるか」「それは信用できるか」に答えるための集計と文言だけを置く。
 
-/** レベルの名前。採用担当者向けに、基準を短い動詞で言い換えている */
+/** レベルの名前。初めて見る人向けに、基準を短い動詞で言い換えている */
 export const LEVEL_NAMES: Record<Level, string> = {
   0: '未着手',
   1: '基礎を確認した',
