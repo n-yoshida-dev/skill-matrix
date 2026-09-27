@@ -139,6 +139,8 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 - [x] GitHub Actions で lint / typecheck / test / build を通す（テンプレート由来の `.github/workflows/ci.yml` が要件を満たしている。PR #1 で実際に通ることを確認）
 - [ ] README を書く（セットアップ手順・スクリーンショット）
   完了条件：クローン直後の人が README だけで「学習ログを AI に判定させる → JSON を更新する → 画面で見る」を一周できる。画面のスクリーンショットがある
+- [ ] Go の `Staleness` を暦日で数えるようにそろえる（2026-09-27 に PR #66 の受け入れレビューで判明。画面は暦日、Go は時刻の差で、境界の日に CLI の要約と画面で 1 日ずれる。SPEC.md §1.3）
+  完了条件：`domain.Staleness` が「今日の日付 − 最終根拠日」の暦日で鮮度を決め、30 日目・90 日目の境界を、時刻が朝でも夜でも同じに判定するテストがある。`frontend/src/features/plan/matrix.test.ts` と同じ入力で同じ答えになる
 - [ ] `DefaultWeights()` の重みを実データの手触りで調整する（今は仮置き。v1 が動いてから、と本人合意済み）
   完了条件：「次にやること Top N」の並びを本人が見て違和感が無い。変えた重みと理由が KNOWLEDGE.md にあり、単体テストが更新されている
 - [x] `~/workspace/study/learner-profile/skill-map.md` との関係を決める（2026-09-23 に判明 → **2026-09-25 に決定。skill-matrix を正本にし、移行する。** `logs/decisions.md` 2026-09-25 の 4 件。手順は 2-1 の段階 B〜G に分割済み）
