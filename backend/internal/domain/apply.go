@@ -31,7 +31,9 @@ type decision struct {
 	// marks はこの判定が付ける印（梯子の下端から top まで）。空なら印を付けない。
 	marks []Level
 	// top は marks の最上段。印を付けないときは 0。
-	top         Level
+	top Level
+	// preState はこの判定が立てる段階前の状態。立てないときは PreStateNone にする
+	// （ゼロ値の "" のままだと ApplyJudgment が「"" を立てる」と読み、既存の状態を消してしまう）。
 	preState    PreState
 	needsReview bool
 	// refreshEvidence が true のとき LastEvidenceAt を更新する。
@@ -160,7 +162,8 @@ func decide(cur ItemState, j Judgment, vs *[]Violation) decision {
 			Detail: fmt.Sprintf("不合格の報告（根拠 %q）。印は付けず、レベル %d を維持して要再確認とした",
 				j.EvidenceType, cur.VerifiedLevel),
 		})
-		return decision{needsReview: true}
+		// 段階前の状態は立ても消しもしない。「説明を受けた → ドリルに落ちた」は説明済み・理解未確認のまま要再確認
+		return decision{preState: PreStateNone, needsReview: true}
 	}
 
 	// V5: 提案した段が、その根拠の梯子の範囲内か。上限超えは上限へ、下端未満は下端へ。
@@ -195,7 +198,7 @@ func decide(cur ItemState, j Judgment, vs *[]Violation) decision {
 	// 根拠の鮮度を更新するのは、この判定が付けた最上段の印が適用前の表示レベル以上のときだけ。
 	// VerifiedLevel 3 の項目にドリル（印 1）が付いても「3 をまだ保持している」証明にはならない。
 	// 印が [3] で VerifiedLevel 0 の項目にドリルが付いた場合は 1 ≥ 0 なので更新する（SPEC.md §3.4）。
-	return decision{marks: levels, top: target, refreshEvidence: target >= cur.VerifiedLevel}
+	return decision{marks: levels, top: target, preState: PreStateNone, refreshEvidence: target >= cur.VerifiedLevel}
 }
 
 // BatchResult は1つの判定ファイルから得た判定をまとめて適用した結果。

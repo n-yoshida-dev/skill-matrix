@@ -1,4 +1,4 @@
-# skill-map.md → skill-matrix 移行計画（最終案・未実行）
+# skill-map.md → skill-matrix 移行計画（段階 A〜F 実施済み。2026-09-27）
 
 作成 2026-09-25。**確定版（2026-09-25 に ChatGPT レビューの修正 2 点＝preState の扱い・react-state-props の移行を反映）。**
 `study/learner-profile/skill-map.md` の習熟度を skill-matrix へ移し、以後の正本を skill-matrix にするための設計と手順。
@@ -258,12 +258,13 @@ skill-map.md 冒頭の注記（案）：
 - `rationale` は技術的な事実だけ。「本人が『全然わからない』と申告」のような記述は書かず「ドリル Q3・Q4 未達（W-008）」の形にする
 - ドリルの失点が根拠欄に明記されている行は `proposedLevel: 0` の `drill` を足し、`needsReview` を立てる（2 件：Testcontainers、CI の実行モデル）
 - 「未着手」の行は判定を作らない
-- skill-map の最終更新（2026-08-31）より後に progress.md で進んだ項目（React の起動フロー・state/props など）は**移行では直さない**。凍結後に通常の判定で追い付かせる
+- skill-map に書かれないまま progress.md で進んだ項目（React の起動フローなど）は**移行では直さない**。凍結後に通常の判定で追い付かせる。
+  逆に、凍結版の skill-map に書かれていることは写す（2026-09-27 訂正：この計画を書いた時点では skill-map の最終更新を 2026-08-31 と見ていたが、実際は凍結の 2026-09-27 まで React の 2 行が更新されていた。KNOWLEDGE.md 2026-09-27「段階 E」）
 
 ### 8.3 対応表（skill-map の行 → 項目と判定）
 
 分野は 8 つ：`go` / `react` / `java-spring` / `db` / `devops` / `baas-auth` / `ai-collab` / `billing`。
-「印」列がその行から出す判定。行番号は凍結後に確定する。
+「印」列がその行から出す判定。行番号は凍結版（study `284c0f1`）で確定し、判定ファイルの `evidenceRefs` の 1 件目に書いた（2026-09-27）。
 
 | skill-map の行 | 項目 key（分野） | moduleRefs | 出す判定（evidenceType → 印、occurredAt） | 備考 |
 |---|---|---|---|---|
@@ -290,8 +291,8 @@ skill-map.md 冒頭の注記（案）：
 | React 起動フロー | `react-render-flow`（react） | react-01 | `explained_to`（2026-07-14） | progress.md では 9/01 に確認済み。凍結後の通常判定で追い付かせる |
 | JSX / TSX / TS 基礎 | `react-jsx-ts-basics`（react） | react-01 | `explained_to`（2026-07-14） | 同上 |
 | コンポーネント / 親子 / 分割代入 | `react-components-destructuring`（react） | react-01 | `explained_to`（2026-07-21）、`drill` → {1}（2026-08-29） | 分割代入の確認問題 |
-| state / props / データフロー | `react-state-props-dataflow`（react） | react-01 | なし | 「基礎理解を確認（ドリル未実施）」で根拠の種類が確定しないため移行では判定を作らない（写しの原則）。凍結後に progress.md と新しい学習ログから通常判定で追い付かせる |
-| hooks・データ取得・ルーティング・TS 統合 | `react-hooks` `react-data-fetching` `react-routing-forms` `react-ts-integration`（react） | react-02〜05 | なし | 未着手 |
+| state / props / データフロー | `react-state-props-dataflow`（react） | react-01 | `drill` → {1}（2026-09-26） | 2026-09-27 改訂。この表を書いた時点の「基礎理解を確認（ドリル未実施）」から、凍結版では「ドリル 2.5/5 → 再出題 3/3」に進んでいたので写す。W-010 watching |
+| hooks・データ取得・ルーティング・TS 統合 | `react-hooks` `react-data-fetching` `react-routing-forms` `react-ts-integration`（react） | react-02〜05 | なし | 凍結版は「useEffect・依存配列・後片付けのみ基礎理解を確認」だが、根拠は予想と確認 1 問でドリル未実施。旧 state/props 行と同じく根拠の種類が確定しないので判定を作らない（2026-09-27）。残りは未着手 |
 | Codex への依頼・検証サイクル | `ai-collab-agent-cycle`（ai-collab） | | `implementation` → {3}（2026-07-13） | |
 | AI 出力のコードレビュー | `ai-collab-output-review`（ai-collab） | | `learning_activity`（2026-07-14） | |
 | GitHub の PR 運用 | `devops-pr-workflow`（devops） | | `implementation` → {3}（2026-08-06） | |
@@ -307,7 +308,7 @@ skill-map.md 冒頭の注記（案）：
 | BaaS とバックエンド自作の使い分け | `baas-vs-custom-backend`（baas-auth） | | `drill` → {1}（2026-08-14） | |
 | サブスク課金・Webhook | `billing-stripe-overview` `billing-stripe-flow` `billing-stripe-tenant`（billing） | bill-01〜03 | なし | 未着手 |
 
-判定ファイル：`migration-java-spring`（13 件）、`migration-db`（3）、`migration-go`（4）、`migration-react`（4）、`migration-devops`（9）、`migration-baas-auth`（5）、`migration-ai-collab`（2）。いずれも V8（20 件）以内。
+判定ファイル：`migration-java-spring`（13 件）、`migration-db`（3）、`migration-go`（4）、`migration-react`（5。2026-09-27 に 4 から改訂）、`migration-devops`（9）、`migration-baas-auth`（5）、`migration-ai-collab`（2）。いずれも V8（20 件）以内。
 
 ### 8.4 期待表（`recalc` 後の `state.json` の検算に使う）
 
@@ -327,7 +328,7 @@ skill-map.md 冒頭の注記（案）：
 | go-interfaces 〜 go-testing | [] | 0 | none | |
 | react-render-flow / react-jsx-ts-basics | [] | 0 | explained_only | |
 | react-components-destructuring | [1] | 1 | none | |
-| react-state-props-dataflow | [] | 0 | none | 凍結後の通常判定で上がる見込み |
+| react-state-props-dataflow | [1] | 1 | none | （2026-09-27 改訂。旧：[] / 0） |
 | react-hooks 〜 react-ts-integration | [] | 0 | none | |
 | ai-collab-agent-cycle | [3] | 0 | none | |
 | ai-collab-output-review | [] | 0 | learning | |
@@ -340,7 +341,7 @@ skill-map.md 冒頭の注記（案）：
 | baas-vs-custom-backend | [1] | 1 | none | |
 | billing-* | [] | 0 | none | |
 
-verifiedLevel の分布：3 が 2 項目、1 が 7 項目、0 が残り。**上位の根拠あり（印の最上段 > verifiedLevel。§6 の角の印と同じ定義）が 14 項目**（うち 1 が無いものが 13、`devops-branch-protection` は 1 だけあって 2 が無い）。
+verifiedLevel の分布：3 が 2 項目、1 が 8 項目（2026-09-27 に state/props が加わった）、0 が残り。**上位の根拠あり（印の最上段 > verifiedLevel。§6 の角の印と同じ定義）が 14 項目**（うち 1 が無いものが 13、`devops-branch-protection` は 1 だけあって 2 が無い）。
 これが厳密モデルの意図どおりの姿で、次にやることはこの 14 項目の L1/L2 確認に向く。
 
 ### 8.5 変更するファイル・変更しないファイル

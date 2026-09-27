@@ -3,39 +3,111 @@
   "items": [
     {
       "itemKey": "go-syntax-basics",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-07-25",
+      "events": [
+        {
+          "file": "2026-09-27-migration-go.json",
+          "index": 0,
+          "occurredAt": "2026-07-25",
+          "source": "migration",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L67"
+          ],
+          "rationale": "基本構文と制御構文のドリル 2 回（3/5、4.5/5）で、var と :=、暗黙の型変換の禁止、for / if / switch、defer の実行順、型なし定数、ゼロ値を確認した",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "go-struct-slice-map-pointer",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-21",
+      "events": [
+        {
+          "file": "2026-09-27-migration-go.json",
+          "index": 1,
+          "occurredAt": "2026-08-21",
+          "source": "migration",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L68"
+          ],
+          "rationale": "初回ドリル 2/5 の後、slice の共有とコピーを予想・実行・修正で確かめ、ポインタの用途と nil map への書き込みで panic することにも口頭で答えた（W-009 closed）",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "go-func-values-closure",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "none",
+      "preState": "explained_only",
       "needsReview": false,
       "lastEvidenceAt": null,
-      "events": []
+      "events": [
+        {
+          "file": "2026-09-27-migration-go.json",
+          "index": 2,
+          "occurredAt": "2026-08-12",
+          "source": "migration",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L69"
+          ],
+          "rationale": "関数値は Java のラムダとの対応で説明を受けた。クロージャは仕組みの説明のみで、ドリルは未実施",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "go-methods",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "none",
+      "preState": "explained_only",
       "needsReview": false,
       "lastEvidenceAt": null,
-      "events": []
+      "events": [
+        {
+          "file": "2026-09-27-migration-go.json",
+          "index": 3,
+          "occurredAt": "2026-08-26",
+          "source": "migration",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L70"
+          ],
+          "rationale": "レシーバを「ドットの前の値を受け取る引数」として説明を受け、引数の行き先を問う確認 1 問に正答した。値レシーバとポインタレシーバの違いは未着手",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "go-interfaces",
@@ -86,37 +158,125 @@
       "itemKey": "react-render-flow",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "none",
+      "preState": "explained_only",
       "needsReview": false,
       "lastEvidenceAt": null,
-      "events": []
+      "events": [
+        {
+          "file": "2026-09-27-migration-react.json",
+          "index": 0,
+          "occurredAt": "2026-07-14",
+          "source": "migration",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L77"
+          ],
+          "rationale": "index.html → main.tsx → App の起動の流れは説明を受けたのみで、理解の確認は未実施",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "react-jsx-ts-basics",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "none",
+      "preState": "explained_only",
       "needsReview": false,
       "lastEvidenceAt": null,
-      "events": []
+      "events": [
+        {
+          "file": "2026-09-27-migration-react.json",
+          "index": 1,
+          "occurredAt": "2026-07-14",
+          "source": "migration",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L78"
+          ],
+          "rationale": "JSX / TSX と TypeScript の型定義は説明を受けたのみで、理解の確認は未実施",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "react-components-destructuring",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-29",
+      "events": [
+        {
+          "file": "2026-09-27-migration-react.json",
+          "index": 2,
+          "occurredAt": "2026-07-21",
+          "source": "migration",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L79"
+          ],
+          "rationale": "コンポーネントと親子関係の説明を受けた。分割代入は言い換えで説明できたが、配列とオブジェクトの対応の取り方を取り違えていた",
+          "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-09-27-migration-react.json",
+          "index": 3,
+          "occurredAt": "2026-08-29",
+          "source": "migration",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L79"
+          ],
+          "rationale": "オブジェクトの分割代入は名前で対応することを確認問題（{ b, a }）に正答して確認した。アロー関数の {} と return、&& の評価結果、スプレッドの後勝ちも確認済み",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "react-state-props-dataflow",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-09-26",
+      "events": [
+        {
+          "file": "2026-09-27-migration-react.json",
+          "index": 4,
+          "occurredAt": "2026-09-26",
+          "source": "migration",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L80",
+            "repo:n-yoshida-dev/study@284c0f1/go-react/progress.md#L14"
+          ],
+          "rationale": "react-01 の確認ドリルは初回 2.5/5（setX 直後の値と map の戻り値が未達）。落ちた問いを実行して確かめる形の再出題で 3/3 に正答した（W-010 watching）",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "react-hooks",
@@ -158,235 +318,850 @@
       "itemKey": "java-rest-openapi",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "none",
+      "preState": "learning",
       "needsReview": false,
       "lastEvidenceAt": null,
-      "events": []
+      "events": [
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 0,
+          "occurredAt": "2026-08-10",
+          "source": "migration",
+          "evidenceType": "learning_activity",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L35"
+          ],
+          "rationale": "OpenAPI の契約先行で API を定義して実践しているが、契約先行を選んだ理由と実装との整合の取り方を自分で説明した記録は無い",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "java-spring-security-jwt",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-07-16",
+      "events": [
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 1,
+          "occurredAt": "2026-07-16",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L52"
+          ],
+          "rationale": "Spring Security の OAuth2 Resource Server で、HS256 の JWT の検証（署名・issuer・exp）を実装した。ガイド付き",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "java-tenant-switch",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-07-16",
+      "events": [
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 2,
+          "occurredAt": "2026-07-16",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L53"
+          ],
+          "rationale": "membership を検証し、current_tenant_id のクレームを付けたトークンを再発行するテナント選択フローを実装した。ガイド付き",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "java-request-domain",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-07-29",
+      "events": [
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 3,
+          "occurredAt": "2026-07-29",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L56"
+          ],
+          "rationale": "申請の状態遷移・版管理・承認ルート・監査ログのスキーマと、draft を作る API を実装した（状態遷移の本体は未実装）。レビューで誤り 3 点を修正した",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "java-exception-http-status",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 3,
+      "evidencedLevels": [
+        1,
+        2,
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-23",
+      "events": [
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 4,
+          "occurredAt": "2026-08-05",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L57"
+          ],
+          "rationale": "例外ハンドラで 401 / 403 / 404 / 422 を振り分け、メンバーでない組織の指定を 422、ロールなしを 403 にして 3 ケースを確認した。検証の順序はテストで固定した",
+          "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 5,
+          "occurredAt": "2026-08-23",
+          "source": "migration",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 2,
+          "marked": [
+            1,
+            2
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L57"
+          ],
+          "rationale": "検証の順序（403 を先に返すと利用者が解決しない依頼をしに行く）、404 と 403 の使い分け（存在を明かさない）、500 になる条件を、設計文書を閉じて自分の言葉で説明した（W-006 closed）",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "java-app-logging",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-29",
+      "events": [
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 6,
+          "occurredAt": "2026-08-29",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L58",
+            "repo:n-yoshida-dev/orgflow@b7d85b7"
+          ],
+          "rationale": "SLF4J のロガーを例外ハンドラ 8 か所に足し、ログレベル（正規の操作で起きうる＝INFO、正規のクライアントからは起きない＝WARN）とスタックトレースの有無を理由付きで決めた。ガイド付き",
+          "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 7,
+          "occurredAt": "2026-08-29",
+          "source": "migration",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L58"
+          ],
+          "rationale": "SLF4J と Logback の 2 層、既定のレベル INFO、例外を渡すときに {} を使わない理由は、説明を受けたのみで理解は未確認",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "java-junit",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-05",
+      "events": [
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 8,
+          "occurredAt": "2026-08-05",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L37",
+            "repo:n-yoshida-dev/orgflow@6647ba8"
+          ],
+          "rationale": "ドメインとサービスの単体テスト 5 本を実装した（Mockito のモック・verify・ArgumentCaptor・@BeforeEach、verify(never()) で検証の順序を固定）。逐次のガイド付き",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "java-test-infra-testcontainers",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "none",
-      "needsReview": false,
+      "preState": "explained_only",
+      "needsReview": true,
       "lastEvidenceAt": null,
-      "events": []
+      "events": [
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 9,
+          "occurredAt": "2026-08-09",
+          "source": "migration",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L60",
+            "repo:n-yoshida-dev/orgflow@4a023fa"
+          ],
+          "rationale": "Testcontainers の設定（@Bean と @ServiceConnection）を入れてテストが通ることを確認したが、クラスは説明に沿って書いたもの。@TestConfiguration と @Import、コンテキストのキャッシュ、@ServiceConnection の役割は説明を受けたのみ",
+          "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 10,
+          "occurredAt": "2026-08-13",
+          "source": "migration",
+          "evidenceType": "drill",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L60"
+          ],
+          "rationale": "結合テスト基盤のドリル未達：Q3（@Transactional のロールバック）と Q4（MockMvc と RANDOM_PORT の違い）が ✗、Q1 と Q5 が △（W-008）",
+          "confidence": null,
+          "violations": [
+            {
+              "code": "V6_failed_check",
+              "detail": "不合格の報告（根拠 \"drill\"）。印は付けず、レベル 0 を維持して要再確認とした"
+            }
+          ]
+        }
+      ]
     },
     {
       "itemKey": "java-adr-design-docs",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 3,
+      "evidencedLevels": [
+        1,
+        2,
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-23",
+      "events": [
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 11,
+          "occurredAt": "2026-07-16",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L61"
+          ],
+          "rationale": "ADR・OpenAPI の契約・DBML の ER 図で設計を文書化した。ガイド付き",
+          "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-09-27-migration-java-spring.json",
+          "index": 12,
+          "occurredAt": "2026-08-23",
+          "source": "migration",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 2,
+          "marked": [
+            1,
+            2
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L61"
+          ],
+          "rationale": "ADR を閉じて、決定・背景・制約（整合性を可用性より優先）・不採用案の理由を自分の言葉で説明した（5 問中 4 問と追加の 1 問で通過）。不採用案の利点を先に言えない癖が残る",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "db-multitenant-schema",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-07-16",
+      "events": [
+        {
+          "file": "2026-09-27-migration-db.json",
+          "index": 0,
+          "occurredAt": "2026-07-16",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L54"
+          ],
+          "rationale": "共有 DB の各表に tenant_id を持たせ、複合 FK (id, tenant_id) でテナントの境界を DB の制約として強制するスキーマを実装した。ガイド付き",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "db-rbac-schema",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-07-16",
+      "events": [
+        {
+          "file": "2026-09-27-migration-db.json",
+          "index": 1,
+          "occurredAt": "2026-07-16",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L55"
+          ],
+          "rationale": "組織単位のロールを持つ RBAC のスキーマを実装した（アプリ層の認可は未実装）。ガイド付き",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "db-flyway-migration",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-09",
+      "events": [
+        {
+          "file": "2026-09-27-migration-db.json",
+          "index": 2,
+          "occurredAt": "2026-08-09",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L59",
+            "repo:n-yoshida-dev/orgflow@f32322c"
+          ],
+          "rationale": "Flyway で migration を管理し、seed を別のディレクトリへ分けて locations で環境ごとに切り替えた。起動のたびに seed が本番の DB にも入る問題は自分で見つけたが、設定キーと YAML の階層の誤りは自力で見つけられなかった",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "devops-pr-workflow",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-06",
+      "events": [
+        {
+          "file": "2026-09-27-migration-devops.json",
+          "index": 0,
+          "occurredAt": "2026-08-06",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L89"
+          ],
+          "rationale": "branch → PR → セルフレビュー → squash merge → main の同期を 1 周自分で操作した。ガイド付き",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "devops-ci-execution-model",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "none",
-      "needsReview": false,
+      "preState": "learning",
+      "needsReview": true,
       "lastEvidenceAt": null,
-      "events": []
+      "events": [
+        {
+          "file": "2026-09-27-migration-devops.json",
+          "index": 1,
+          "occurredAt": "2026-08-09",
+          "source": "migration",
+          "evidenceType": "learning_activity",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L93"
+          ],
+          "rationale": "watch モードのテストが終了せず CI が止まる問題を実際に踏んだが、原因の診断は自力ではなかった",
+          "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-09-27-migration-devops.json",
+          "index": 2,
+          "occurredAt": "2026-08-09",
+          "source": "migration",
+          "evidenceType": "drill",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L93"
+          ],
+          "rationale": "CI・デプロイのドリル Q1 ✗：vitest と vitest run の違い（watch は終了しない）と、CI がコマンドの終了コードで合否を決める前提を説明できなかった（W-007）",
+          "confidence": null,
+          "violations": [
+            {
+              "code": "V6_failed_check",
+              "detail": "不合格の報告（根拠 \"drill\"）。印は付けず、レベル 0 を維持して要再確認とした"
+            }
+          ]
+        }
+      ]
     },
     {
       "itemKey": "devops-ci-github-actions",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-13",
+      "events": [
+        {
+          "file": "2026-09-27-migration-devops.json",
+          "index": 3,
+          "occurredAt": "2026-08-13",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L38",
+            "repo:n-yoshida-dev/orgflow@de995eb"
+          ],
+          "rationale": "Maven のプロジェクトに GitHub Actions のワークフローを自分で書き、トリガー（pull_request と main への push）を理由付きで選んだ。実行ディレクトリの指定とランタイムのバージョン不一致はレビューで指摘されるまで気付かなかったので、4 は保留",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "devops-required-checks",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-20",
+      "events": [
+        {
+          "file": "2026-09-27-migration-devops.json",
+          "index": 4,
+          "occurredAt": "2026-08-20",
+          "source": "migration",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L94"
+          ],
+          "rationale": "必須チェックにするかを「落ちたときにコードの問題だと断定できるか」で決める理由を自分で説明した（初回の Q2 ✗ を解消）。ジョブを分けたときにバッジと必須チェックがずれる論点（Q4）は未確認（W-007）",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "devops-branch-protection",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1,
+        3,
+        4
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-20",
+      "events": [
+        {
+          "file": "2026-09-27-migration-devops.json",
+          "index": 5,
+          "occurredAt": "2026-08-20",
+          "source": "migration",
+          "evidenceType": "unaided_implementation",
+          "proposedLevel": 4,
+          "marked": [
+            3,
+            4
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L91"
+          ],
+          "rationale": "項目の指示なしで GitHub の Ruleset を設定し（PR 必須・必須チェック・up-to-date・bypass 空・force push と削除の禁止）、API で保存値を検証して PR が BLOCKED から CLEAN に変わるのを確かめた。有効化の漏れは出力を見て自分で直した",
+          "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-09-27-migration-devops.json",
+          "index": 6,
+          "occurredAt": "2026-08-20",
+          "source": "migration",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L91"
+          ],
+          "rationale": "必須チェックの選び方・bypass を空にする理由・up-to-date のトレードオフを自分で説明した。force push の意味、削除禁止の対象、PR を必須にする一番の理由（直 push は CI を迂回する）は未達",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "devops-deploy-preview-production",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-09",
+      "events": [
+        {
+          "file": "2026-09-27-migration-devops.json",
+          "index": 7,
+          "occurredAt": "2026-08-09",
+          "source": "migration",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L92"
+          ],
+          "rationale": "preview と production を分ける理由（検証前のコードを公開しない・開発者以外にも試してもらえる）を、ドリル Q5 で自分の言葉で答えた",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "devops-cicd-pipeline",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-08",
+      "events": [
+        {
+          "file": "2026-09-27-migration-devops.json",
+          "index": 8,
+          "occurredAt": "2026-08-08",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L90"
+          ],
+          "rationale": "lint・test・build の CI と、preview → merge → production の自動デプロイを構築した。ガイド付き（デプロイ側を別のプロジェクトで自力で組んだ実績はまだ無い）",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "baas-vs-custom-backend",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-14",
+      "events": [
+        {
+          "file": "2026-09-27-migration-baas-auth.json",
+          "index": 0,
+          "occurredAt": "2026-08-14",
+          "source": "migration",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L99"
+          ],
+          "rationale": "PostgREST が自動で作れるのは CRUD だけで、例外処理や監査ログの書き込みには自前のバックエンドが要ることを、説明の単純化に対して自分から指摘した",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "baas-supabase-schema",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-08-16",
+      "events": [
+        {
+          "file": "2026-09-27-migration-baas-auth.json",
+          "index": 1,
+          "occurredAt": "2026-08-16",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L95",
+            "repo:n-yoshida-dev/ai-study-coach@24b4b6e"
+          ],
+          "rationale": "テーブルの DDL を自分で書き、レビューの指摘（スキーマ修飾・date 型・空文字と NULL の統一・制約の命名・FK のインデックス）を反映した。ガイド付き",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "auth-oauth-oidc",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "none",
+      "preState": "explained_only",
       "needsReview": false,
       "lastEvidenceAt": null,
-      "events": []
+      "events": [
+        {
+          "file": "2026-09-27-migration-baas-auth.json",
+          "index": 2,
+          "occurredAt": "2026-08-21",
+          "source": "migration",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L97",
+            "repo:n-yoshida-dev/ai-study-coach@dfee429"
+          ],
+          "rationale": "OAuth 2.0 / OIDC の登場人物の役割と、クライアント ID・シークレットの扱いは説明を受けたのみ。コードは本人の実装ではなく、行ったのはプロバイダの設定と動作確認",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "baas-rls",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "none",
+      "preState": "explained_only",
       "needsReview": false,
       "lastEvidenceAt": null,
-      "events": []
+      "events": [
+        {
+          "file": "2026-09-27-migration-baas-auth.json",
+          "index": 3,
+          "occurredAt": "2026-08-31",
+          "source": "migration",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L96"
+          ],
+          "rationale": "USING と WITH CHECK の違いは説明を受けたのみ。他人の行が返らないことと、user_id を偽った INSERT が WITH CHECK で拒否されることは動作で確かめたが、自分の言葉での説明は無い",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "baas-supabase-js",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "none",
+      "preState": "explained_only",
       "needsReview": false,
       "lastEvidenceAt": null,
-      "events": []
+      "events": [
+        {
+          "file": "2026-09-27-migration-baas-auth.json",
+          "index": 4,
+          "occurredAt": "2026-08-27",
+          "source": "migration",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L98",
+            "repo:n-yoshida-dev/ai-study-coach@1372a02"
+          ],
+          "rationale": "supabase-js の CRUD と型の生成は説明を受けたのみ。コードは本人の実装ではなく、行ったのは設計 3 件の選択・型の生成・画面での動作確認",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "ai-collab-agent-cycle",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-07-13",
+      "events": [
+        {
+          "file": "2026-09-27-migration-ai-collab.json",
+          "index": 0,
+          "occurredAt": "2026-07-13",
+          "source": "migration",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L87"
+          ],
+          "rationale": "AI エージェントへの調査・実装の依頼 → 検証 → diff の確認というサイクルを一通り回した。ガイド付き",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "ai-collab-output-review",
       "verifiedLevel": 0,
       "evidencedLevels": [],
-      "preState": "none",
+      "preState": "learning",
       "needsReview": false,
       "lastEvidenceAt": null,
-      "events": []
+      "events": [
+        {
+          "file": "2026-09-27-migration-ai-collab.json",
+          "index": 1,
+          "occurredAt": "2026-07-14",
+          "source": "migration",
+          "evidenceType": "learning_activity",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L88"
+          ],
+          "rationale": "AI の出力をレビューする学習を始めた段階で、自力でレビューした実績はまだ無い",
+          "confidence": null,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "billing-stripe-overview",

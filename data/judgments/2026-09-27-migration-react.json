@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-27",
+  "source": "migration",
+  "judgments": [
+    {
+      "itemKey": "react-render-flow",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-07-14",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L77"],
+      "rationale": "index.html → main.tsx → App の起動の流れは説明を受けたのみで、理解の確認は未実施"
+    },
+    {
+      "itemKey": "react-jsx-ts-basics",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-07-14",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L78"],
+      "rationale": "JSX / TSX と TypeScript の型定義は説明を受けたのみで、理解の確認は未実施"
+    },
+    {
+      "itemKey": "react-components-destructuring",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-07-21",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L79"],
+      "rationale": "コンポーネントと親子関係の説明を受けた。分割代入は言い換えで説明できたが、配列とオブジェクトの対応の取り方を取り違えていた"
+    },
+    {
+      "itemKey": "react-components-destructuring",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-08-29",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L79"],
+      "rationale": "オブジェクトの分割代入は名前で対応することを確認問題（{ b, a }）に正答して確認した。アロー関数の {} と return、&& の評価結果、スプレッドの後勝ちも確認済み"
+    },
+    {
+      "itemKey": "react-state-props-dataflow",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-26",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@284c0f1/learner-profile/skill-map.md#L80",
+        "repo:n-yoshida-dev/study@284c0f1/go-react/progress.md#L14"
+      ],
+      "rationale": "react-01 の確認ドリルは初回 2.5/5（setX 直後の値と map の戻り値が未達）。落ちた問いを実行して確かめる形の再出題で 3/3 に正答した（W-010 watching）"
+    }
+  ],
+  "unmatched": []
+}

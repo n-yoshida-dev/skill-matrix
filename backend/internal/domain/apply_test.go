@@ -185,6 +185,17 @@ func TestApplyJudgment(t *testing.T) {
 			wantViolations: []ViolationCode{ViolationFailedCheck},
 		},
 		{
+			// 「説明を受けた → ドリルに落ちた」は説明済み・理解未確認のまま要再確認（docs/skill-map-migration.md §8.4 の Testcontainers）。
+			// 不合格の報告は段階前の状態を立ても消しもしない
+			name:            "V6 不合格の報告は、印の無い項目の段階前の状態を消さない",
+			cur:             ItemState{ItemKey: "go-01", PreState: PreStateExplainedOnly},
+			j:               aiJudgment("go-01", EvidenceDrill, LevelNone, 0.9, day10),
+			wantPreState:    PreStateExplainedOnly,
+			wantNeedsReview: true,
+			wantChanged:     true,
+			wantViolations:  []ViolationCode{ViolationFailedCheck},
+		},
+		{
 			name:           "V7 確信度が低い AI の判定は適用せず保留にする",
 			cur:            ItemState{ItemKey: "go-01"},
 			j:              aiJudgment("go-01", EvidenceDrill, LevelBasicConfirmed, 0.3, day10),

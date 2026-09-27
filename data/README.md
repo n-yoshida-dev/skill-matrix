@@ -23,8 +23,9 @@ go -C backend run ./cmd/skillmatrix verify --data ../data   # CI と同じ検査
 
 - `roadmap.json` は実物（8 分野・46 項目）。項目の key・分野・`moduleRefs` は `docs/skill-map-migration.md` §8.3 の対応表から起こした。
   `backend/testdata/roadmap-sample.json`（テスト用のダミー）とは別物
-- `judgments/` はまだ空。判定は段階 F（`skill-map.md` からの移行）で初めて入る。それまで `state.json` は全項目レベル 0（未着手）
-- `verifyBy` は移行後の状態（§8.4 の期待表）から見た「次の印の取り方」で書いてある。移行前の今は、書いてある段（L1・L2 など）と画面のレベルがずれる
+- `judgments/` には段階 F の移行判定 7 本（`2026-09-27-migration-<分野>.json`、計 41 件。`source: "migration"`）が入っている。
+  凍結した `skill-map.md`（study `284c0f1`）の写しで、`state.json` は `docs/skill-map-migration.md` §8.4 の期待表と一致する。以後の判定は学習ログから足す
+- `verifyBy` は §8.4 の状態から見た「次の印の取り方」で書いてある。印が付いて段が上がったら書き換える
 
 `roadmap.json` の文字列は `CLAUDE.md`「守ること」の roadmap の縛りに従う（技術的な事実だけを書く）。
 `verifyBy` は、その項目で**次に付く印**を得るための技術的な検証条件を書く。印が付いて段が上がったら、次の段の条件に書き換える。
