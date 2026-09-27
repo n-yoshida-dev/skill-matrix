@@ -353,6 +353,9 @@ verifiedLevel の分布：3 が 2 項目、1 が 7 項目、0 が残り。**上�
 
 変更しない：`weaknesses.md`、`profile.md`、`teaching/`、`go-react/progress.md`・`curriculum.md`、`orgflow-learning/`、orgflow と ai-study-coach、`backend/testdata/`（ダミーのまま。`schemaVersion: 2` へは C で追従）、`backend/internal/{store,httpapi,worker}`（棚上げのまま。`Level` の改名で `store` のコンパイルが落ちるので、そこだけ機械的に追従する）。
 
+**段階 E の実施時の差分（2026-09-27）**：完了条件「更新先が 0 件」を優先し、study では上の一覧に無いファイル（`teaching/` の 2 本、`orgflow-learning/` の 4 本、study-log / aidev-log、各テーマの handoff・計画）も参照先の 1 行だけ直した。
+skill-map.md は冒頭注記に加えて「最終更新」行も実際の日付に直した。内訳と理由は `KNOWLEDGE.md` 2026-09-27「段階 E」。
+
 ### 8.6 リスク
 
 | リスク | 手当て |
