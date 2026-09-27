@@ -1,0 +1,277 @@
+/* 作業ビュー（SPEC.md §7.1）。色は index.css の名前だけを使う。公開ビューと同じく罫線と余白で区切る */
+
+.plan-lead {
+  max-width: 46em;
+  margin: 0;
+  color: var(--dim);
+  font-size: 14px;
+}
+
+.plan-note {
+  margin: 0 0 12px;
+  color: var(--dim);
+  font-size: 13px;
+}
+
+.band-sec,
+.mx-sec {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+
+.band-sec h2,
+.mx-sec h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+/* ---- サマリー帯 ---- */
+
+/* 狭い画面では表だけを横に送る（ページ全体は横にはみ出さない） */
+.band-scroll {
+  overflow-x: auto;
+}
+
+.band {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+
+.band th,
+.band td {
+  padding: 6px 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.band thead th {
+  color: var(--dim);
+  font-weight: 500;
+  vertical-align: bottom;
+}
+
+/* 分野名の列は、表を横に送っても左に残す */
+.band .dom {
+  text-align: left;
+  font-weight: 500;
+  position: sticky;
+  left: 0;
+  background: var(--paper);
+}
+
+.band thead .wide {
+  white-space: normal;
+  min-width: 7em;
+  line-height: 1.35;
+}
+
+.band .sw {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-radius: 2px;
+  background: var(--empty);
+  vertical-align: -1px;
+}
+
+.band td.z {
+  color: var(--rule-strong);
+}
+
+.band tfoot th,
+.band tfoot td {
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 0;
+  font-weight: 700;
+}
+
+/* ---- マトリクス（可変長グリッド） ---- */
+
+/* 吹き出しの位置の基準 */
+.mx-grid {
+  position: relative;
+}
+
+.mx-row {
+  display: grid;
+  grid-template-columns: 12em minmax(0, 1fr);
+  gap: 4px 16px;
+  align-items: center;
+  padding-block: 8px;
+  border-bottom: 1px solid var(--rule);
+}
+
+@media (max-width: 560px) {
+  .mx-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.mx-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.mx-label .cnt {
+  color: var(--dim);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.mx-cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/* 升目 1 つ。塗り = verifiedLevel（公開ビューと同じ 6 階調） */
+.mx-cell {
+  display: block;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: var(--empty);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.mx-cell.l1 {
+  background: var(--l1);
+}
+.mx-cell.l2 {
+  background: var(--l2);
+}
+.mx-cell.l3 {
+  background: var(--l3);
+}
+.mx-cell.l4 {
+  background: var(--l4);
+}
+.mx-cell.l5 {
+  background: var(--l5);
+}
+
+/* 要再確認 = 枠線。濃い塗りの上でも埋もれないよう、内側に地の色の隙間を 1px 挟む */
+.mx-cell.attn {
+  box-shadow:
+    inset 0 0 0 2px var(--attention),
+    inset 0 0 0 3px var(--paper);
+}
+
+/* 上の段にも根拠あり = 右上の三角。地の色の縁取りの上に、最上段の印の色を重ねる */
+.mx-cell.up::before,
+.mx-cell.up::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.mx-cell.up::before {
+  width: 13px;
+  height: 13px;
+  background: var(--paper);
+}
+
+.mx-cell.up::after {
+  width: 10px;
+  height: 10px;
+  background: var(--corner);
+}
+
+.mx-cell.up-l2 {
+  --corner: var(--l2);
+}
+.mx-cell.up-l3 {
+  --corner: var(--l3);
+}
+.mx-cell.up-l4 {
+  --corner: var(--l4);
+}
+.mx-cell.up-l5 {
+  --corner: var(--l5);
+}
+
+.mx-cells .mx-cell:hover {
+  outline: 2px solid var(--rule-strong);
+  outline-offset: 2px;
+}
+
+.mx-cells .mx-cell.on,
+.mx-cells .mx-cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 吹き出し。位置は MatrixView が升目の真下に計算して入れる */
+.mx-tip {
+  position: absolute;
+  z-index: 2;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px solid var(--rule-strong);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  pointer-events: none;
+}
+
+.mx-tip .k {
+  color: var(--dim);
+  font-size: 12px;
+}
+
+.mx-tip .nm {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.mx-tip .sub {
+  color: var(--dim);
+}
+
+/* 「Verified 0 / 根拠の印 3 / 未確認 1, 2」は区切りの間でだけ折り返す */
+.mx-tip .ln .part {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.mx-tip .warn {
+  margin-top: 4px;
+  padding-left: 8px;
+  border-left: 3px solid var(--attention);
+}
+
+/* ---- 凡例 ---- */
+
+.mx-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.mx-legend .lg {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mx-legend .mx-cell {
+  cursor: default;
+}
