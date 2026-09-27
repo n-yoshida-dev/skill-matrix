@@ -69,6 +69,7 @@
 （`--serve` 無しなら `dashboard/data.js` を作るだけで、`dashboard/index.html` を直接開く）。独自の状態は持たない。
 使い方と取得元は `dashboard/README.md`。
 **`TODO.md` の見出し規約・`HANDOFF.md` の節名・CI のジョブ名・Beads の題名規約を変えたら、`dashboard/update.mjs` の読み取りも合わせて直す。**
+**CI のジョブ名を変えたら、`main` のブランチ保護の必須チェック名も直す**（一致しないと存在しないチェックを待ち続けてマージできなくなる。KNOWLEDGE.md 2026-09-27「ブランチ保護」）。
 重要な指標が増えたら表示項目を足してよいが、ダッシュボードのために正本側へ欄を足さない。
 
 ## Claude Code の設定

@@ -893,11 +893,11 @@ CI の「秘密情報が混入していないか」の検査式の両方に足�
 
 ### 2026-09-27：Public 化に合わせて `main` にブランチ保護を入れた
 
-本人の選択（「管理者は迂回可」）で、従来型のブランチ保護を `gh api -X PUT repos/n-yoshida-dev/skill-matrix/branches/main/protection` で設定した。
+本人との合意（`logs/decisions.md` 2026-09-27「`main` にブランチ保護を入れる」）で、従来型のブランチ保護を `gh api -X PUT repos/n-yoshida-dev/skill-matrix/branches/main/protection` で設定した。
 
 | 設定 | 値 | 理由 |
 |---|---|---|
-| 必須チェック | CI の 5 ジョブ（対象の検出・frontend・backend・data/ の検証・秘密情報） | `../CLAUDE.md` の「CI が通るまでマージしない」を、ルールではなく仕組みで守る。本体の変更が無い PR で `if` により飛ばされたジョブは通過扱いになる |
+| 必須チェック | CI の 5 ジョブ（対象の検出・frontend・backend・data/ の検証・秘密情報） | `../CLAUDE.md` の「CI が通るまでマージしない」を、ルールではなく仕組みで守る。「対象の検出」は変更の有無ではなく `frontend/package.json`・`backend/go.mod` があるかを見るので、今は docs だけの PR でも全ジョブが走る（両方が無いときに `if` で飛ばされたジョブは通過扱いになる） |
 | 最新化の強制（strict） | しない | PR は 1 本ずつ順にマージする運用で、毎回ブランチを追い付かせる手間が増えるだけ |
 | PR 必須 | 承認 0 人 | 本人 1 人の運用。PR を経由させることだけが目的 |
 | 管理者の迂回（enforce_admins） | 可 | CI が壊れたときに本人が直せなくなるのを避ける |
