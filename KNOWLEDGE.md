@@ -1002,3 +1002,18 @@ SPEC を直すときに一緒に直すこと：§7.2 は配置関数の入力を
 配置は理解度に左右されないので、実装の入力は「ロードマップの分野（ゴーストの所属を引くために全分野）」。挙動は同じで、SPEC の書き方の更新漏れ。
 
 確かめ方：ツリー表示はボタンで切り替えるので、headless Chrome を DevTools Protocol で動かし、`localStorage` に `tree` を入れて読み込み直してから撮った（作業用のスクリプトはリポジトリの外。E2E で Playwright を入れたら置き換える）。
+
+### 2026-09-29：E2E（Playwright）の組み方（TODO 2-6）
+
+| 判断 | 理由 |
+|---|---|
+| データの置き場を環境変数 `SKILL_MATRIX_DATA_DIR` で差し替えられるようにした（`vite.config.ts`。既定は `../data`） | 画面はデータをビルド時に取り込む（サーバ通信なし）。「JSON を差し替えると画面が変わる」を確かめるには、別のデータでビルドするしかない |
+| 差し替え前・後のダミー（`e2e/fixtures/before`・`after`。違いは `state.json` だけ）でそれぞれビルドし、別のポート（4181・4182）で `vite preview` する | 1 本のテストの中で前後を見比べられる。実データ（`data/`）は更新のたびに変わるので E2E には使わない |
+| CI は frontend ジョブの末尾に「ブラウザを入れる」「E2E」の 2 手順を足した。ジョブは分けていない | ジョブ名を変える・増やすと、`main` のブランチ保護の必須チェック名と `dashboard/update.mjs` も直す必要がある（CLAUDE.md） |
+| Vitest の対象を `src/**/*.test.{ts,tsx}` に絞った | 既定のままだと `e2e/*.spec.ts` まで Vitest が拾って落ちる |
+| `tsconfig.node.json` に `playwright.config.ts` と `e2e/` を入れ、相対 import は `./ports.ts` と拡張子まで書く | この tsconfig は `module: nodenext` で、拡張子の無い相対 import は型検査で弾かれる |
+
+ハマり：ローカルに以前からあった headless Chrome（`chromium_headless_shell-1234`）は Playwright 1.63 の版と合わず、`npx playwright install chromium` で 1243 を入れ直した。
+画面の目視用のスクリーンショットは、作業用スクリプト（DevTools Protocol）の代わりに Playwright の `page.screenshot` でも撮れるようになった。
+
+気づき：`npm audit` で Vitest（`@vitest/mocker`）に中程度の脆弱性 2 件。開発時だけ使う道具で、Playwright とは無関係。上げるなら別の PR で。
