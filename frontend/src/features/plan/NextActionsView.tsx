@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import type { AppData, Level } from '../../data/types'
 import { stateByKey } from '../public/summary'
 import {
@@ -98,7 +99,7 @@ function NextItem({ rank, a, missing, needsReview, lastEvidenceAt, today, cfg }:
       </div>
       <div className="next-name">
         <span className={`lv${a.level >= 1 ? ` l${a.level}` : ''}`} aria-hidden="true" />
-        {a.name}
+        <Link to={`/plan/item/${a.itemKey}`}>{a.name}</Link>
         <span className="num lvtxt">L{a.level}</span>
       </div>
       <p className="next-do">{actionText(a, missing)}</p>

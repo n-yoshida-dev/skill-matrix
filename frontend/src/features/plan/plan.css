@@ -351,6 +351,16 @@
   pointer-events: none;
 }
 
+/* 押して固定した吹き出しは、中のリンクを押せるようにする */
+.mx-tip.pinned {
+  pointer-events: auto;
+}
+
+.mx-tip .more {
+  display: inline-block;
+  margin-top: 6px;
+}
+
 .mx-tip .k {
   color: var(--dim);
   font-size: 12px;

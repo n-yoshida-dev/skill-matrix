@@ -1,13 +1,14 @@
 import { NavLink, Route, Routes } from 'react-router'
 import type { AppData } from '../../data/types'
+import { ItemView } from '../item/ItemView'
 import { PathView } from '../path/PathView'
 import { MatrixView } from './MatrixView'
 import { NextActionsView } from './NextActionsView'
 import { toDateKey } from './matrix'
 
 // 作業ビュー（SPEC.md §7 の 3 画面）。自分向け。
-// /plan はダッシュボード（サマリー帯・マトリクス・次にやること Top N）、/plan/path は学習パス。
-// これから足すもの：項目詳細。
+// /plan はダッシュボード（サマリー帯・マトリクス・次にやること Top N）、/plan/path は学習パス、
+// /plan/item/<項目キー> は項目詳細（ダッシュボード・学習パスから項目名を押して開く）。
 
 interface Props {
   data: AppData
@@ -29,6 +30,7 @@ export function PlanView({ data, today = new Date() }: Props) {
         <Route index element={<Dashboard data={data} today={today} />} />
         <Route path="path" element={<PathView data={data} today={today} />} />
         <Route path="path/:domainKey" element={<PathView data={data} today={today} />} />
+        <Route path="item/:itemKey" element={<ItemView data={data} today={today} />} />
         <Route path="*" element={<Dashboard data={data} today={today} />} />
       </Routes>
     </>

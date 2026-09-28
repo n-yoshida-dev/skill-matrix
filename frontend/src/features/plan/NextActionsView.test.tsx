@@ -1,7 +1,12 @@
-import { render, screen, within } from '@testing-library/react'
+import { render as rtlRender, screen, within } from '@testing-library/react'
+import type { ReactElement } from 'react'
+import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import type { AppData, ItemState } from '../../data/types'
 import { NextActionsView } from './NextActionsView'
+
+/** 項目名が項目詳細へのリンクなので、ルーターの中で描く */
+const render = (ui: ReactElement) => rtlRender(<MemoryRouter>{ui}</MemoryRouter>)
 
 // 作業ビューの「次にやること」Top N（SPEC.md §7.4、TODO 2-5 の完了条件）を確かめる。
 // data/*.json ではなく、このファイルの中の小さなデータで確かめる（data/ が更新されても落ちないように）。
@@ -120,6 +125,14 @@ describe('次にやること', () => {
     expect(row.getByText('深掘り（L1 → L2）')).toBeInTheDocument()
     expect(row.getByText('ゼロ値がある理由を自分の言葉で説明する（L2）')).toBeInTheDocument()
     expect(row.getByText('身につくと：型と値の流れを追える')).toBeInTheDocument()
+  })
+
+  it('項目名を押すと項目詳細へ移れる', () => {
+    render(<NextActionsView data={makeData()} today={today} />)
+    expect(within(entry('go-syntax')).getByRole('link', { name: '基本構文' })).toHaveAttribute(
+      'href',
+      '/plan/item/go-syntax',
+    )
   })
 
   it('到達状態が空なら未記入と出す', () => {

@@ -1,4 +1,4 @@
-import { NavLink, useParams } from 'react-router'
+import { Link, NavLink, useParams } from 'react-router'
 import type { AppData, ItemState, Level } from '../../data/types'
 import { stateByKey, topEvidenced } from '../public/summary'
 import { stalenessConfig } from '../plan/matrix'
@@ -109,7 +109,9 @@ function PathRow({ n, deepen, externals }: RowProps) {
       <div className="body">
         <div className="head">
           <span className="k num">{item.key}</span>
-          <span className="nm">{item.name}</span>
+          <Link className="nm" to={`/plan/item/${item.key}`}>
+            {item.name}
+          </Link>
           <span className="lvtxt">
             <LevelSwatch level={st.verifiedLevel} />
             レベル <span className="num">{st.verifiedLevel}</span>

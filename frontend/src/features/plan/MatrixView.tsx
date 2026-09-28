@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router'
 import type { AppData, ItemState, Level, RoadmapItem } from '../../data/types'
 import { stateByKey, topEvidenced } from '../public/summary'
 import {
@@ -170,7 +171,7 @@ export function MatrixView({ data, today }: Props) {
             <div
               id="mx-tip"
               role="tooltip"
-              className="mx-tip"
+              className={tip.pinned ? 'mx-tip pinned' : 'mx-tip'}
               style={{ left: tip.left, top: tip.top, width: tip.width }}
             >
               <TipBody
@@ -180,6 +181,12 @@ export function MatrixView({ data, today }: Props) {
                 cfg={cfg}
                 levelName={names}
               />
+              {/* 押して固定したときだけ、吹き出しの中を押せるようにして項目詳細へのリンクを出す */}
+              {tip.pinned ? (
+                <Link className="more" to={`/plan/item/${tipItem.key}`}>
+                  項目詳細を開く
+                </Link>
+              ) : null}
             </div>
           ) : null}
         </div>
