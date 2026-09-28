@@ -27,6 +27,10 @@ func (c StalenessConfig) withDefaults() StalenessConfig {
 // 作らないため（SPEC.md §1.3）。代わりにこの指標を別の軸として持ち、
 // 画面では升目の枠線で表す。
 //
+// 経過は暦日で数える（今日の日付 − 最終根拠日。SPEC.md §1.3）。時刻の差で数えると、
+// 境界の日（30 日目・90 日目）に朝と夜で答えが変わり、画面（TypeScript の staleness）と 1 日ずれるため。
+// 境界の設定（FreshWithin / AgingWithin）は日数に切り捨てて使う。
+//
 // lastEvidenceAt がゼロ値（まだ一度も根拠が付いていない）なら StalenessUnknown。
 func Staleness(now, lastEvidenceAt time.Time, cfg StalenessConfig) StalenessLevel {
 	if lastEvidenceAt.IsZero() {
@@ -34,15 +38,31 @@ func Staleness(now, lastEvidenceAt time.Time, cfg StalenessConfig) StalenessLeve
 	}
 	cfg = cfg.withDefaults()
 
-	elapsed := now.Sub(lastEvidenceAt)
+	elapsed := calendarDaysSince(now, lastEvidenceAt)
 	switch {
-	case elapsed <= cfg.FreshWithin:
+	case elapsed <= wholeDays(cfg.FreshWithin):
 		return StalenessFresh
-	case elapsed <= cfg.AgingWithin:
+	case elapsed <= wholeDays(cfg.AgingWithin):
 		return StalenessAging
 	default:
 		return StalenessStale
 	}
+}
+
+// calendarDaysSince は、then の日付から now の日付までの暦日の差を返す。
+// 時刻は見ず、それぞれが持つタイムゾーンでの日付（年・月・日）だけで数える。
+// CLI は now を手元の時刻で渡し、最終根拠日は日付だけ（UTC の 0 時）なので、どちらも「その日」として比べられる。
+func calendarDaysSince(now, then time.Time) int {
+	y1, m1, d1 := now.Date()
+	y2, m2, d2 := then.Date()
+	a := time.Date(y1, m1, d1, 0, 0, 0, 0, time.UTC)
+	b := time.Date(y2, m2, d2, 0, 0, 0, 0, time.UTC)
+	return int(a.Sub(b) / (24 * time.Hour))
+}
+
+// wholeDays は期間を日数にする（端数は切り捨て）。
+func wholeDays(d time.Duration) int {
+	return int(d / (24 * time.Hour))
 }
 
 // NeedsAttention はその項目が「要再確認」として目立たせるべきかを返す。
