@@ -275,17 +275,104 @@
           "rationale": "react-01 の確認ドリルは初回 2.5/5（setX 直後の値と map の戻り値が未達）。落ちた問いを実行して確かめる形の再出題で 3/3 に正答した（W-010 watching）",
           "confidence": null,
           "violations": []
+        },
+        {
+          "file": "2026-09-28-2026-09-26-react-02-step0-2.json",
+          "index": 1,
+          "occurredAt": "2026-09-26",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-26.md#L12"
+          ],
+          "rationale": "検索欄の文字と絞り込み後の一覧のどちらを state にするかを問う確認質問に、検索欄の文字だけを state にし一覧は計算で出す、と正答した。state を置く部品を選んだ理由の説明（L2）はこのログに無い",
+          "confidence": 0.7,
+          "violations": []
         }
       ]
     },
     {
       "itemKey": "react-hooks",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-09-27",
+      "events": [
+        {
+          "file": "2026-09-28-2026-09-26-react-02-step0-2.json",
+          "index": 2,
+          "occurredAt": "2026-09-26",
+          "source": "ai",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-26.md#L13"
+          ],
+          "rationale": "useEffect がある理由（部品の本体は描画のたびに呼ばれるので、タブの題名・サーバー・タイマーなど外の世界との用事はそこに書けない）の説明を受けた",
+          "confidence": 0.8,
+          "violations": []
+        },
+        {
+          "file": "2026-09-28-2026-09-26-react-02-step0-2.json",
+          "index": 3,
+          "occurredAt": "2026-09-26",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-26.md#L14-L19",
+            "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-26.md#L33"
+          ],
+          "rationale": "document.title の Effect・依存配列の有無による実行回数・setInterval の後片付けの予想 8/8 に正答し、[clicks] を依存に setClicks する Effect が無限ループになることを描画→Effect→state 更新→再描画の順で答えた。依存配列 [] が初回だけ走る理由は「最初の描画時のみ動く」止まり",
+          "confidence": 0.75,
+          "violations": []
+        },
+        {
+          "file": "2026-09-28-2026-09-26-react-02-step0-2.json",
+          "index": 4,
+          "occurredAt": "2026-09-26",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-26.md#L27-L28"
+          ],
+          "rationale": "振り返りで useEffect を自分の言葉で「描画後に動き、描画時には動かない。依存配列で指定した値が変わると発火する」と説明した。用事が外の世界との同期であることは補足を受けたので、自分で説明できる段（2）は付けない",
+          "confidence": 0.6,
+          "violations": []
+        },
+        {
+          "file": "2026-09-28-2026-09-27-react-02-step3.json",
+          "index": 0,
+          "occurredAt": "2026-09-27",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-27.md#L8-L10"
+          ],
+          "rationale": "ヒント無しの想起で、useEffect の用事と描画後に走ること、依存配列 [] で初回だけ走る理由に正答した。後片付けが走る時点は「部品が消えるとき」が出ず、再説明後の確認で React が自動で後片付けするという取り違えが出たが、絞った 1 問で正答した",
+          "confidence": 0.7,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "react-data-fetching",
@@ -1191,6 +1278,28 @@
       "events": []
     }
   ],
-  "deferred": [],
+  "deferred": [
+    {
+      "file": "2026-09-28-2026-09-26-react-02-step0-2.json",
+      "index": 0,
+      "itemKey": "react-data-fetching",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.30 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-09-28-2026-09-27-react-02-step3.json",
+      "index": 1,
+      "itemKey": "react-data-fetching",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-09-28-2026-09-27-react-02-step3.json",
+      "index": 2,
+      "itemKey": "react-data-fetching",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    }
+  ],
   "rejected": []
 }

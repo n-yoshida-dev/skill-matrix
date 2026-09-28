@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-28",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "react-data-fetching",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-26",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-26.md#L8-L11"],
+      "rationale": "学習前の非同期の診断で、await の実行順の予想に正答した（setTimeout(…, 0) の順番と fetch の戻り値が Promise であることは外れ）。verifyBy の点（fetch と TanStack Query の通信回数）には当たらない",
+      "confidence": 0.3
+    },
+    {
+      "itemKey": "react-state-props-dataflow",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-26",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-26.md#L12"],
+      "rationale": "検索欄の文字と絞り込み後の一覧のどちらを state にするかを問う確認質問に、検索欄の文字だけを state にし一覧は計算で出す、と正答した。state を置く部品を選んだ理由の説明（L2）はこのログに無い",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "react-hooks",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-09-26",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-26.md#L13"],
+      "rationale": "useEffect がある理由（部品の本体は描画のたびに呼ばれるので、タブの題名・サーバー・タイマーなど外の世界との用事はそこに書けない）の説明を受けた",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "react-hooks",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-26",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-26.md#L14-L19",
+        "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-26.md#L33"
+      ],
+      "rationale": "document.title の Effect・依存配列の有無による実行回数・setInterval の後片付けの予想 8/8 に正答し、[clicks] を依存に setClicks する Effect が無限ループになることを描画→Effect→state 更新→再描画の順で答えた。依存配列 [] が初回だけ走る理由は「最初の描画時のみ動く」止まり",
+      "confidence": 0.75
+    },
+    {
+      "itemKey": "react-hooks",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-26",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-26.md#L27-L28"],
+      "rationale": "振り返りで useEffect を自分の言葉で「描画後に動き、描画時には動かない。依存配列で指定した値が変わると発火する」と説明した。用事が外の世界との同期であることは補足を受けたので、自分で説明できる段（2）は付けない",
+      "confidence": 0.6
+    }
+  ],
+  "unmatched": [
+    "振り返りの行動ルールとして、親から渡された関数を書くときは props の名前の後ろに (引数) が付いて呼ぶ形になっているかと、親での定義を確かめる、を挙げた"
+  ]
+}
