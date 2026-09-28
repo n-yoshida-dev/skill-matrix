@@ -68,18 +68,30 @@
   text-align: left;
 }
 
+/* 上の行。項目キーと段を横に並べ、重ならないようにキーのほうを縮める（長いキーは「…」で省略） */
+.cell .head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
 .cell .n {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 11px;
-  line-height: 1;
+  line-height: 1.2;
   opacity: 0.8;
 }
 
 .cell .lv {
-  position: absolute;
-  top: 8px;
-  right: 10px;
+  flex: none;
   font-size: 11px;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .cell .name {

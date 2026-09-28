@@ -40,6 +40,12 @@
           "outcome": "応用できる",
           "verifyBy": "応用のドリルに答える（L1）",
           "dependsOn": ["e2e-basics"]
+        },
+        {
+          "key": "e2e-long-item-key-for-tile-overlap",
+          "name": "長い項目キー",
+          "outcome": "公開ビューのタイルで、長い項目キーと段の表示が重ならないことを確かめるための項目",
+          "verifyBy": "（E2E 用）"
         }
       ]
     }

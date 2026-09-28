@@ -67,8 +67,13 @@ export function PublicView({ data }: Props) {
                     aria-controls={`detail-${domain.key}`}
                     onClick={() => setOpenKey(expanded ? null : it.key)}
                   >
-                    <span className="n num">{it.key}</span>
-                    <span className="lv num">{tileLevelLabel(st)}</span>
+                    {/* 上の行：項目キー（長ければ「…」で省略）と段。段は必ず全部見せる */}
+                    <span className="head">
+                      <span className="n num" title={it.key}>
+                        {it.key}
+                      </span>
+                      <span className="lv num">{tileLevelLabel(st)}</span>
+                    </span>
                     <span className="name">{shortName(it.name)}</span>
                   </button>
                 )
