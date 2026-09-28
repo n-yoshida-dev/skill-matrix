@@ -81,10 +81,18 @@ export function actionKind(a: Action): string {
  */
 export function actionText(a: Action, missing: Level[]): string {
   if (a.pendingLevels.length > 0 && missing.length > 0) {
-    const levels = missing.map((l) => `L${l}`).join(' / ')
-    return `既存の実装について ${levels} を短いドリル・自己説明で確認する`
+    return pendingCheckText(missing)
   }
   return a.verifyBy ?? '次の確認方法が未記入（roadmap.json の verifyBy）'
+}
+
+/**
+ * 実装の根拠はあるが基礎の確認が未了の項目で、次にやることの文言（SPEC.md §7.4）。
+ * 「次にやること」と項目詳細で同じ言葉を使うため 1 か所に置く。例：[1, 2] →「既存の実装について L1 / L2 を…」
+ */
+export function pendingCheckText(missing: Level[]): string {
+  const levels = missing.map((l) => `L${l}`).join(' / ')
+  return `既存の実装について ${levels} を短いドリル・自己説明で確認する`
 }
 
 /** 項目の状態。state.json に無ければ未着手。範囲外のレベルは 0〜5 に丸める（Go の stateOf） */

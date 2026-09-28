@@ -152,6 +152,18 @@ describe('作業ビューのマトリクス', () => {
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
   })
 
+  it('固定した吹き出しにだけ、項目詳細へのリンクが出る', async () => {
+    render(<PlanView data={data} today={today} />)
+    await userEvent.hover(cell('go-syntax'))
+    expect(
+      within(screen.getByRole('tooltip')).queryByRole('link', { name: '項目詳細を開く' }),
+    ).toBeNull()
+    await userEvent.click(cell('go-syntax'))
+    expect(
+      within(screen.getByRole('tooltip')).getByRole('link', { name: '項目詳細を開く' }),
+    ).toHaveAttribute('href', '/plan/item/go-syntax')
+  })
+
   it('サマリー帯に L0〜L5 の件数と「実装根拠あり・理解未確認」の列がある', () => {
     render(<PlanView data={data} today={today} />)
     const table = screen.getByRole('table')

@@ -156,6 +156,14 @@ describe('学習パス・一列表示', () => {
     expect(row('go-http').queryByText('前提が未達')).toBeNull()
   })
 
+  it('項目名を押すと項目詳細へ移れる', () => {
+    renderAt('/plan/path/go')
+    expect(row('go-http').getByRole('link', { name: 'HTTP サーバ' })).toHaveAttribute(
+      'href',
+      '/plan/item/go-http',
+    )
+  })
+
   it('到達状態を出し、空なら未記入と出す', () => {
     renderAt('/plan/path/go')
     expect(row('go-http').getByText('身につくと：最小の API を書ける')).toBeInTheDocument()

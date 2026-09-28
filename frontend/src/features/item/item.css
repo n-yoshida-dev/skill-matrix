@@ -1,0 +1,136 @@
+/* 項目詳細（SPEC.md §7・§7.4）。作業ビューと同じく罫線と余白で区切り、色は index.css の名前だけを使う */
+
+.item-sec {
+  margin-top: 20px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.item-crumb {
+  margin: 0;
+  color: var(--dim);
+  font-size: 13px;
+}
+
+.item-key {
+  margin: 16px 0 0;
+  color: var(--dim);
+  font-size: 12px;
+}
+
+.item-sec h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.item-desc {
+  margin: 4px 0 0;
+  color: var(--dim);
+}
+
+.item-sec h3 {
+  margin: 28px 0 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.item-sec p {
+  margin: 4px 0;
+}
+
+/* 見出しの 3 行（Verified Level／付いている印／未確認の段） */
+.item-levels {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 2px 16px;
+  margin: 16px 0 0;
+}
+
+.item-levels > div {
+  display: contents;
+}
+
+.item-levels dt {
+  color: var(--dim);
+}
+
+.item-levels dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.item-facts {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--dim);
+}
+
+.item-facts .warn {
+  color: var(--ink);
+  padding-left: 8px;
+  border-left: 3px solid var(--attention);
+}
+
+.item-events,
+.item-pending {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item-event {
+  padding-block: 10px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.item-event .ev-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  font-size: 13px;
+}
+
+.item-event .marked {
+  font-weight: 700;
+}
+
+.item-event .src {
+  color: var(--dim);
+}
+
+.item-event .ev-violation {
+  padding-left: 8px;
+  border-left: 3px solid var(--attention);
+  font-size: 13px;
+}
+
+/* 根拠の出どころ（evidenceRefs）は長い 1 語なので、どこでも折り返す */
+.item-event .ev-refs {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--dim);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.item-event .ev-file {
+  color: var(--dim);
+  font-size: 12px;
+}
+
+.item-pending li {
+  padding-block: 4px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.item-sec .unset {
+  color: var(--dim);
+  font-style: italic;
+}
