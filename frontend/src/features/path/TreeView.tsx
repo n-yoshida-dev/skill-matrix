@@ -58,8 +58,9 @@ export function TreeView({ data, path, deepen, today }: Props) {
             const x2 = xOf(b.col) + NODE_W / 2
             const y2 = yOf(b.row)
             const mid = (y2 - y1) / 2
-            // 行き先がまだ解放されていなければ線も薄く（SPEC.md §7.2）
-            const locked = pathNode.get(e.to)?.ready === false
+            // 行き先の節が未解放なら線も薄く（SPEC.md §7.2）。前提が未達でも習得済みの節へ入る線は薄くしない
+            const to = pathNode.get(e.to)
+            const locked = to ? nodeKind(to.state, to.ready) === 'locked' : false
             const cls = ['edge', e.ghost ? 'ghost' : '', locked ? 'locked' : ''].filter(Boolean)
             return (
               <path
@@ -109,6 +110,8 @@ export function TreeView({ data, path, deepen, today }: Props) {
                 {deepen.has(n.key) && kind === 'done' ? (
                   <span className="tb">深掘り候補</span>
                 ) : null}
+                {/* 到達状態が空の項目は「未記入」と分かるように（SPEC.md §7.2「両表示に共通の制約」） */}
+                {pn?.item.outcome ? null : <span className="tb unset">到達状態 未記入</span>}
               </span>
             </Link>
           )

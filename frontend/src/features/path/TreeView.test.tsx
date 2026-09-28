@@ -37,11 +37,13 @@ const data: AppData = {
         key: 'go',
         name: 'Go',
         items: [
-          { key: 'go-01', name: '基本構文' },
+          { key: 'go-01', name: '基本構文', outcome: '型と値の流れを追える' },
           { key: 'go-02', name: 'メソッド', dependsOn: ['go-01'] },
           { key: 'go-03', name: 'エラー', dependsOn: ['go-02'] },
           { key: 'go-04', name: 'HTTP', dependsOn: ['go-01', 'react-01'] },
           { key: 'go-05', name: '古い項目' },
+          // 前提（go-03）は未達だが、この項目自体は習得済み
+          { key: 'go-06', name: 'テスト', dependsOn: ['go-03'] },
         ],
       },
       { key: 'react', name: 'React', items: [{ key: 'react-01', name: 'fetch' }] },
@@ -62,6 +64,12 @@ const data: AppData = {
         verifiedLevel: 1,
         evidencedLevels: [1],
         lastEvidenceAt: '2026-05-02',
+      }),
+      item({
+        itemKey: 'go-06',
+        verifiedLevel: 2,
+        evidencedLevels: [1, 2],
+        lastEvidenceAt: '2026-09-25',
       }),
     ],
     deferred: [],
@@ -92,6 +100,22 @@ describe('スキルツリー表示', () => {
     expect(n).toHaveAccessibleName(/未解放/)
     // go-02 → go-03 の線（go-03 は未解放）
     expect(container.querySelectorAll('path.edge.locked').length).toBeGreaterThan(0)
+  })
+
+  it('前提が未達でも習得済みの節は未解放にせず、そこへ入る線も薄くしない', () => {
+    const { container } = renderTree()
+    expect(node('go-06')).toHaveClass('done', 'l2')
+    expect(node('go-06').querySelector('svg.lock')).toBeNull()
+    // 線は go-01→go-02、go-02→go-03、go-01→go-04、react-01→go-04、go-03→go-06 の順に描く
+    const edges = container.querySelectorAll('path.edge')
+    expect(edges).toHaveLength(5)
+    expect(edges[4]).not.toHaveClass('locked')
+  })
+
+  it('到達状態が空の節は「到達状態 未記入」と分かる', () => {
+    renderTree()
+    expect(node('go-02')).toHaveTextContent('到達状態 未記入')
+    expect(node('go-01')).not.toHaveTextContent('未記入')
   })
 
   it('解放済み・未着手は枠を強調し、今ここの節に札が付く', () => {
