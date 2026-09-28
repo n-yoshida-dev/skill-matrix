@@ -14,7 +14,8 @@ import './tree.css'
 
 /** 節の幅・高さと間隔（px） */
 const NODE_W = 172
-const NODE_H = 70
+// 高さは、札（今ここ・深掘り候補・到達状態 未記入）が 2 行に折り返しても収まる分を取る
+const NODE_H = 88
 const GAP_X = 24
 const GAP_Y = 40
 const PAD = 4
@@ -111,7 +112,7 @@ export function TreeView({ data, path, deepen, today }: Props) {
                   <span className="tb">深掘り候補</span>
                 ) : null}
                 {/* 到達状態が空の項目は「未記入」と分かるように（SPEC.md §7.2「両表示に共通の制約」） */}
-                {pn?.item.outcome ? null : <span className="tb unset">到達状態 未記入</span>}
+                {pn?.item.outcome ? null : <span className="tb blank">到達状態 未記入</span>}
               </span>
             </Link>
           )

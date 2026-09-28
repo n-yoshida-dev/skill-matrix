@@ -66,10 +66,12 @@
   overflow: hidden;
 }
 
+/* レベルと札の行。札が多いと 2 行に折り返す（節の幅から切れて読めなくならないように） */
 .tnode .ts {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 2px 6px;
   font-size: 11px;
   white-space: nowrap;
 }
@@ -80,7 +82,8 @@
   border-radius: 3px;
 }
 
-.tnode .tb.unset {
+/* 到達状態が未記入の札。字の色は節の字の色のまま（塗った節の上でも読めるように。学習パスの .unset の灰色は使わない） */
+.tnode .tb.blank {
   border-style: dashed;
   font-style: italic;
 }
