@@ -1,8 +1,13 @@
-import { render, screen, within } from '@testing-library/react'
+import { render as rtlRender, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { ReactElement } from 'react'
+import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import type { AppData, ItemState } from '../../data/types'
 import { PlanView } from './PlanView'
+
+/** 作業ビューは中で画面を切り替えるので、ルーターの中で描く（初期の画面はダッシュボード） */
+const render = (ui: ReactElement) => rtlRender(<MemoryRouter>{ui}</MemoryRouter>)
 
 // 作業ビューのマトリクス（SPEC.md §7.1、TODO 2-5 の完了条件）を確かめる。
 // data/*.json ではなく、このファイルの中の小さなデータで確かめる（data/ が更新されても落ちないように）。
