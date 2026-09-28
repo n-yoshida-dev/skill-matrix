@@ -33,6 +33,48 @@ func TestStaleness(t *testing.T) {
 	}
 }
 
+// 経過は暦日で数えるので、同じ日なら時刻が朝でも夜でも同じ答えになること（SPEC.md §1.3）。
+// 入力は frontend/src/features/plan/matrix.test.ts の「暦日で数えるので…」と同じ日付。
+// 最終根拠日は state.json と同じく日付だけ（UTC の 0 時）、今日は手元の時刻（日本時間）で渡す。
+func TestStaleness_暦日で数える(t *testing.T) {
+	jst := time.FixedZone("JST", 9*60*60)
+	date := func(s string) time.Time {
+		d, err := time.Parse("2006-01-02", s)
+		if err != nil {
+			t.Fatalf("日付を読めない: %v", err)
+		}
+		return d
+	}
+
+	tests := []struct {
+		name string
+		last string
+		want StalenessLevel
+	}{
+		{"30日前（境界。fresh に含む）", "2026-07-11", StalenessFresh},
+		{"31日前", "2026-07-10", StalenessAging},
+		{"90日前（境界。aging に含む）", "2026-05-12", StalenessAging},
+		{"91日前", "2026-05-11", StalenessStale},
+	}
+	times := []struct {
+		name string
+		now  time.Time
+	}{
+		{"朝（0時0分1秒）", time.Date(2026, 8, 10, 0, 0, 1, 0, jst)},
+		{"夜（23時59分59秒）", time.Date(2026, 8, 10, 23, 59, 59, 0, jst)},
+	}
+
+	for _, tt := range tests {
+		for _, tm := range times {
+			t.Run(tt.name+"・"+tm.name, func(t *testing.T) {
+				if got := Staleness(tm.now, date(tt.last), DefaultStalenessConfig()); got != tt.want {
+					t.Errorf("Staleness(%s, %s) = %q, want %q", tm.now.Format(time.RFC3339), tt.last, got, tt.want)
+				}
+			})
+		}
+	}
+}
+
 // StalenessConfig のゼロ値を渡しても既定の境界ではたらくこと。
 func TestStaleness_ゼロ値の設定は既定値で埋まる(t *testing.T) {
 	now := time.Date(2026, 8, 10, 0, 0, 0, 0, time.UTC)
