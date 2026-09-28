@@ -46,6 +46,39 @@
   color: var(--dim);
 }
 
+/* 一列／ツリーの切り替え。押されている側を濃くする */
+.path-mode {
+  display: inline-flex;
+  margin-top: 10px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.path-mode button {
+  padding: 2px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--dim);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.path-mode button + button {
+  border-left: 1px solid var(--rule-strong);
+}
+
+.path-mode button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.path-mode button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
 .unset {
   color: var(--dim);
   font-style: italic;

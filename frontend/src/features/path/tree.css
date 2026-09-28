@@ -1,0 +1,199 @@
+/* スキルツリー表示（SPEC.md §7.2）。色は index.css の名前だけを使い、塗り・枠線・角の三角はマトリクス（§7.1）と同じ符号化 */
+
+/* 図が画面より広いときは、図だけを横に送る（ページ全体は横にはみ出さない） */
+.tree-scroll {
+  overflow-x: auto;
+  margin-top: 16px;
+  padding-bottom: 8px;
+}
+
+.tree {
+  position: relative;
+}
+
+.tree-lines {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.tree-lines .edge {
+  fill: none;
+  stroke: var(--rule-strong);
+  stroke-width: 1.5;
+}
+
+/* 行き先がまだ解放されていない線は薄く */
+.tree-lines .edge.locked {
+  opacity: 0.45;
+}
+
+/* ゴーストノードからの線は点線 */
+.tree-lines .edge.ghost {
+  stroke-dasharray: 4 3;
+}
+
+/* 節 1 つ。塗りは verifiedLevel（公開ビュー・マトリクスと同じ 6 階調） */
+.tnode {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--empty);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 1.35;
+  overflow: hidden;
+}
+
+.tnode .tk {
+  color: var(--dim);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 項目名は 2 行まで */
+.tnode .tn {
+  font-weight: 700;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tnode .ts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.tnode .tb {
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+}
+
+.tnode .tb.now {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--paper);
+}
+
+/* 未解放：灰色・鍵マーク */
+.tnode.locked {
+  color: var(--dim);
+  opacity: 0.8;
+}
+
+.tnode .lock {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+/* 解放済み・未着手：枠を強調 */
+.tnode.open {
+  background: var(--panel);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+/* 今ここ：朱の枠（公開ビューの選択中と同じ「目を向ける 1 か所」の色） */
+.tnode.open.current {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+/* 習得済み：塗り = verifiedLevel。L1 は明るい地に濃い字、L2 以上は濃い地に白い字 */
+.tnode.l1 {
+  background: var(--l1);
+  color: var(--on-light);
+}
+.tnode.l2 {
+  background: var(--l2);
+  color: var(--on-dark);
+}
+.tnode.l3 {
+  background: var(--l3);
+  color: var(--on-dark);
+}
+.tnode.l4 {
+  background: var(--l4);
+  color: var(--on-dark);
+}
+.tnode.l5 {
+  background: var(--l5);
+  color: var(--on-dark);
+}
+
+.tnode.l1 .tk,
+.tnode.l2 .tk,
+.tnode.l3 .tk,
+.tnode.l4 .tk,
+.tnode.l5 .tk {
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* 要再確認 = 枠線（マトリクスと同じ橙。内側に地の色の隙間を挟む） */
+.tnode.attn {
+  box-shadow:
+    inset 0 0 0 2px var(--attention),
+    inset 0 0 0 3px var(--paper);
+}
+
+/* 上の段にも根拠あり = 右上の三角（マトリクスと同じ） */
+.tnode.up::before,
+.tnode.up::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.tnode.up::before {
+  width: 17px;
+  height: 17px;
+  background: var(--paper);
+}
+
+.tnode.up::after {
+  width: 14px;
+  height: 14px;
+  background: var(--corner);
+}
+
+.tnode.up-l2 {
+  --corner: var(--l2);
+}
+.tnode.up-l3 {
+  --corner: var(--l3);
+}
+.tnode.up-l4 {
+  --corner: var(--l4);
+}
+.tnode.up-l5 {
+  --corner: var(--l5);
+}
+
+/* 他分野の前提（ゴーストノード）：灰色の点線。押すとその分野へ移る */
+.tnode.ghost {
+  background: transparent;
+  color: var(--dim);
+  border: 1.5px dashed var(--rule-strong);
+}
+
+.tnode:hover {
+  outline: 2px solid var(--rule-strong);
+  outline-offset: 2px;
+}
+
+.tnode:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
