@@ -1,10 +1,11 @@
 import type { AppData } from '../../data/types'
 import { MatrixView } from './MatrixView'
+import { NextActionsView } from './NextActionsView'
 import { toDateKey } from './matrix'
 
 // 作業ビュー（SPEC.md §7 の 3 画面）。自分向け。画面は TODO 2-5 で順に足す。
-// 今あるもの：マトリクス（サマリー帯・可変長グリッド）。
-// これから足すもの：次にやること Top N、学習パス、項目詳細。
+// 今あるもの：マトリクス（サマリー帯・可変長グリッド）と次にやること Top N。
+// これから足すもの：学習パス、項目詳細。
 
 interface Props {
   data: AppData
@@ -26,6 +27,7 @@ export function PlanView({ data, today = new Date() }: Props) {
         項目、判定の保留 {data.state.deferred.length} 件、棄却 {data.state.rejected.length} 件）
       </p>
       <MatrixView data={data} today={today} />
+      <NextActionsView data={data} today={today} />
     </>
   )
 }

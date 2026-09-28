@@ -135,6 +135,15 @@ func TestNextActions(t *testing.T) {
 		}
 	})
 
+	// frontend/src/features/plan/next.test.ts の「並びが Go と同じになる」と同じ期待値（SPEC.md §5）。
+	t.Run("未着手の全件の並び", func(t *testing.T) {
+		got := keysOf(NextActions(planRoadmap(), nil, now, cfg, w, 10))
+		want := []ItemKey{"go-01", "react-01", "go-02", "go-03", "go-04"}
+		if !slices.Equal(got, want) {
+			t.Errorf("並び = %v, want %v", got, want)
+		}
+	})
+
 	t.Run("依存が満たされると着手可能になる", func(t *testing.T) {
 		rm := planRoadmap()
 		states := map[ItemKey]ItemState{

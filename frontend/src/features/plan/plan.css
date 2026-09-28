@@ -14,6 +14,7 @@
 }
 
 .band-sec,
+.next-sec,
 .mx-sec {
   margin-top: 40px;
   padding-top: 20px;
@@ -21,6 +22,7 @@
 }
 
 .band-sec h2,
+.next-sec h2,
 .mx-sec h2 {
   font-size: 18px;
   font-weight: 700;
@@ -88,6 +90,106 @@
   border-top: 1px solid var(--rule-strong);
   border-bottom: 0;
   font-weight: 700;
+}
+
+/* ---- 次にやること（SPEC.md §7.4） ---- */
+
+.next-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.next-item {
+  padding-block: 12px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.next-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  color: var(--dim);
+  font-size: 12px;
+}
+
+.next-head .rank {
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 1.2em;
+}
+
+/* 何をする項目か（基礎の確認・着手・深掘り）。色ではなく文字で分ける */
+.next-head .kind {
+  padding: 0 6px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
+  color: var(--ink);
+}
+
+.next-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-weight: 700;
+}
+
+.next-name .lvtxt {
+  color: var(--dim);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* 升目と同じ 6 階調の小さな見本 */
+.next-name .lv {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--empty);
+}
+
+.next-name .lv.l1 {
+  background: var(--l1);
+}
+.next-name .lv.l2 {
+  background: var(--l2);
+}
+.next-name .lv.l3 {
+  background: var(--l3);
+}
+.next-name .lv.l4 {
+  background: var(--l4);
+}
+.next-name .lv.l5 {
+  background: var(--l5);
+}
+
+.next-do {
+  margin: 4px 0 0;
+}
+
+.next-sub {
+  margin: 2px 0 0;
+  color: var(--dim);
+  font-size: 13px;
+}
+
+.next-sub .unset {
+  font-style: italic;
+}
+
+.next-warn {
+  margin: 4px 0 0;
+  padding-left: 8px;
+  border-left: 3px solid var(--attention);
+  font-size: 13px;
 }
 
 /* ---- マトリクス（可変長グリッド） ---- */
