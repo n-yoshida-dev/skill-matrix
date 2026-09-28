@@ -77,9 +77,11 @@ Claude Code / ChatGPT、検証は CI、画面は静的サイト。DB・ログイ
 - [x] `skill-map.md` から移行判定を作り `data/judgments/` に置く（段階 F。段階 E の直後、同じ日か翌日に）（2026-09-27 完了。7 本・41 件で `state.json` が §8.4 と 46 項目一致。
   凍結版との突き合わせで state/props を「判定なし」→ `drill` {1} に改訂。途中で見つけた `ApplyJudgment` の不具合（ドリル不合格が「説明済み」を消す）をテスト付きで直した。KNOWLEDGE.md 2026-09-27「段階 F」）
   完了条件：`prompts/migrate-skill-map.md`（移行計画 §8.2 を指示にしたもの。通常の `judge.md` には混ぜない）がある。`data/judgments/YYYY-MM-DD-migration-<domain>.json` が 7 本（java-spring 13 件・db 3・go 4・react 5（凍結版との突き合わせで 4 から改訂。§8.3）・devops 9・baas-auth 5・ai-collab 2）。`recalc` 後の `state.json` が移行計画 §8.4 の期待表と一致し、その表が PR 本文にある。`data/` を「所属|企業|面接|転職|人事」で grep して 0 件。`evidenceRefs` の 1 件目が凍結コミットの `skill-map.md` の行を指し、統合前の study のハッシュを書いていない。CI 緑
-- [x] 【study / personal-ai-context 側】正本の切り替えを終える（段階 G。段階 F の後）（2026-09-28 完了。study `220bbae` で `go-react/logs/` に react-02 の 09-26・09-27 を記録から書き起こし、`/judge-log` で判定 2 本（`react-hooks` 0→1。`react-data-fetching` の 3 件は `verifyBy` が TanStack Query 前提のため保留のまま、と本人了承）。
+- [x] 【study / personal-ai-context 側】正本の切り替えを終える（段階 G。段階 F の後）（2026-09-28 完了。study `220bbae` で `go-react/logs/` に react-02 の 09-26・09-27 を記録から書き起こし、`/judge-log` で判定 2 本（`react-hooks` 0→1。`react-data-fetching` の 3 件は `verifyBy` が TanStack Query 前提のため保留のまま。本人は保留を含む判定一覧を読んで「OK」）。
   personal-ai-context はコミット `9631750` まで（push は本人の確認待ち）。KNOWLEDGE.md 2026-09-28「段階 G」）
   完了条件：`personal-ai-context/learning/technical-skills.md` と `learning-history.md` のリンク先が skill-matrix。study に `go-react/logs/` があり、`CLAUDE.md` に「学習ログは `logs/` に追記し、習熟度は skill-matrix の判定経由でのみ更新する。`state.json` は読むだけで編集しない。読めなければ習熟度不明として支援レベルを下げない」が書いてある（習熟度の文は段階 E で study の `CLAUDE.md`「横断学習プロファイルと習熟度の運用」に書き済み。G で足すのは `logs/` の文）。**凍結後の学習ログ 1 件から `/judge-log` で通常判定を 1 本作り、`state.json` が動いた**（2-4 の `judge.md` と `judge-log` が先に要る）
+- [ ] react-01 の記録からログを書き起こして判定し、`react-render-flow` と `react-jsx-ts-basics` を追い付かせる（移行計画 §8.6 で段階 G に割り当てた 3 項目の残り。G では `react-hooks` だけを追い付かせた。PR #68 の受け入れレビューで判明）
+  完了条件：study の `go-react/logs/` に、react-01 のうち該当する出来事（起動の流れ・JSX の確認）の日のログがあり（記録から書き起こしたことを冒頭に書く）、`/judge-log <ファイル>` で判定した。移行判定の `rationale` が「説明を受けたのみ」とした 2 項目について、台帳に写っていない出来事だけを判定している
 - [x] `CLAUDE.md` に「`apps-workflow:handoff` を誰が実行するか」を正しく書く（当初は「ユーザー起動限定なのでユーザーに頼む」を追記する予定だったが、2026-09-18 の apps-workflow v1.4.2 で限定が外れたため、逆の内容＝Claude が自分で呼ぶ、に改めた。KNOWLEDGE.md 2026-09-14 / 2026-09-18）
   完了条件：`CLAUDE.md` の「セッション開始時にすること」節に、区切りでは Claude が handoff を自分で呼ぶこと、ユーザー起動限定は `pr-check` だけであることが書かれ、`../CLAUDE.md` と矛盾しない
 
