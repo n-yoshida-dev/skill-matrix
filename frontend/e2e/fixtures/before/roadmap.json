@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "name": "E2E 用のロードマップ（ダミー）",
+  "description": "E2E テストで、JSON を差し替えると画面が変わることを確かめるためのダミー。実データではない",
+  "origin": "manual",
+  "levels": [
+    {
+      "level": 1,
+      "name": "基礎理解を確認",
+      "criteria": "確認質問・ドリル・自分の言葉での説明で基礎理解を確認できた"
+    },
+    {
+      "level": 2,
+      "name": "自分で説明可能",
+      "criteria": "他人（または AI）に自分の言葉で説明できる"
+    },
+    { "level": 3, "name": "ガイド付き実装", "criteria": "AI や資料の助けを借りれば実装できる" },
+    {
+      "level": 4,
+      "name": "自力実装・レビュー",
+      "criteria": "独力で実装でき、他者のコードをレビューできる"
+    },
+    { "level": 5, "name": "別文脈へ応用", "criteria": "学んだ文脈と異なる場面で使える" }
+  ],
+  "domains": [
+    {
+      "key": "e2e",
+      "name": "E2E 分野",
+      "goal": "E2E テストの目標",
+      "items": [
+        {
+          "key": "e2e-basics",
+          "name": "基礎",
+          "outcome": "基礎を身につける",
+          "verifyBy": "基礎のドリルに答える（L1）"
+        },
+        {
+          "key": "e2e-next",
+          "name": "応用",
+          "outcome": "応用できる",
+          "verifyBy": "応用のドリルに答える（L1）",
+          "dependsOn": ["e2e-basics"]
+        }
+      ]
+    }
+  ]
+}

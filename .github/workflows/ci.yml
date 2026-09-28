@@ -72,6 +72,14 @@ jobs:
       - name: ビルド
         run: npm run build
 
+      # E2E（TODO 2-6）はジョブを分けずにここで走らせる。ジョブ名を変える・増やすと、
+      # main のブランチ保護の必須チェック名と dashboard/update.mjs の読み取りも直す必要があるため（CLAUDE.md「開発ダッシュボード」）
+      - name: E2E 用のブラウザを入れる
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E（JSON を差し替えると画面が変わるか）
+        run: npm run e2e
+
   backend:
     name: backend (vet / test / build)
     needs: detect

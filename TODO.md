@@ -138,7 +138,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 
 ### 2-6. 仕上げ
 
-- [ ] E2E（Playwright）で、JSON を差し替えるとマトリクスと学習パスが変わることを1本通す
+- [x] E2E（Playwright）で、JSON を差し替えるとマトリクスと学習パスが変わることを1本通す（2026-09-29 完了。`frontend/e2e/`。ビルドのモード `e2e-before` / `e2e-after` のときだけ差し替え前・後のダミーを取り込むようにし、それぞれビルドして配信する（SPEC §8.3 に合わせて環境変数は使わない）。CI は frontend ジョブの末尾に手順を足した＝ジョブ名は変えていない）
   完了条件：ビルドした静的サイトに対して Playwright が1本通り、CI で走る
 - [x] GitHub Actions で lint / typecheck / test / build を通す（テンプレート由来の `.github/workflows/ci.yml` が要件を満たしている。PR #1 で実際に通ることを確認）
 - [ ] README を書く（セットアップ手順・スクリーンショット）

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "items": [
+    {
+      "itemKey": "e2e-basics",
+      "verifiedLevel": 2,
+      "evidencedLevels": [1, 2],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": "2026-09-01",
+      "events": [
+        {
+          "file": "2026-09-01-e2e.json",
+          "index": 0,
+          "occurredAt": "2026-09-01",
+          "source": "manual",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 2,
+          "marked": [1, 2],
+          "evidenceRefs": ["log:learning-logs/e2e.md"],
+          "rationale": "E2E 用のダミーの判定",
+          "confidence": null,
+          "violations": []
+        }
+      ]
+    }
+  ],
+  "deferred": [],
+  "rejected": []
+}
