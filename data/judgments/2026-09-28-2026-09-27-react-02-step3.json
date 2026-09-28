@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-28",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "react-hooks",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-27",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-27.md#L8-L10"],
+      "rationale": "ヒント無しの想起で、useEffect の用事と描画後に走ること、依存配列 [] で初回だけ走る理由に正答した。後片付けが走る時点は「部品が消えるとき」が出ず、再説明後の確認で React が自動で後片付けするという取り違えが出たが、絞った 1 問で正答した",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "react-data-fetching",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-27",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-27.md#L11",
+        "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-27.md#L13-L20"
+      ],
+      "rationale": "sandbox で useEffect 内の fetch と loading / error / success の status、ignore フラグを段階的に書き、setTimeout(…, 0) の実行順・取得失敗時の表示・ignore で捨てられる応答の数の予想に正答した。status を 1 つの state にする理由は場面を絞って正答。verifyBy の点（fetch と TanStack Query の通信回数）には当たらない",
+      "confidence": 0.4
+    },
+    {
+      "itemKey": "react-data-fetching",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-27",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-27.md#L12",
+        "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-27.md#L21",
+        "repo:n-yoshida-dev/study@220bbae/go-react/logs/2026-09-27.md#L29-L30"
+      ],
+      "rationale": "await で止まるのは同じ関数の中だけと実行結果から自分で説明し、ignore の 3 行を「後片付けの後は return で抜けて setTenants を呼ばせない」と言い直して説明した。振り返りでは status を Promise の中身と説明して補足を受けた。verifyBy の点（fetch と TanStack Query の通信回数）には当たらない",
+      "confidence": 0.4
+    }
+  ],
+  "unmatched": [
+    "振り返りの行動ルールとして、await や後片付けの順番を問われたら、その await がどの関数の中かと return で渡した関数があるかをコードで指してから答える、を挙げた",
+    "確認質問の振り返りから、boolean の state が 2 つ並んだら同時に true になったときの表示を口に出す、という行動ルールを足した",
+    "JSON ファイルの書き方（変数名なし・セミコロンなし）の説明を受けた"
+  ]
+}
