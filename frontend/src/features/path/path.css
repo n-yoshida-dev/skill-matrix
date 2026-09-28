@@ -1,0 +1,169 @@
+/* 学習パス（SPEC.md §7.2）。作業ビューと同じく罫線と余白で区切り、色は index.css の名前だけを使う */
+
+.path-sec {
+  margin-top: 28px;
+}
+
+/* 分野の切り替え。狭い画面では折り返す */
+.path-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px;
+}
+
+.path-tabs a {
+  color: var(--dim);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  padding-bottom: 2px;
+}
+
+.path-tabs a.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+.path-head {
+  margin-top: 20px;
+}
+
+.path-head h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.path-head .goal,
+.path-head .progress {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+
+.path-head .progress {
+  color: var(--dim);
+}
+
+.unset {
+  color: var(--dim);
+  font-style: italic;
+}
+
+.path-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.path-node {
+  display: grid;
+  grid-template-columns: 1.6em minmax(0, 1fr);
+  gap: 0 8px;
+  padding-block: 10px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.path-node .mark {
+  font-weight: 700;
+  text-align: center;
+}
+
+.path-node.upcoming .mark {
+  color: var(--dim);
+}
+
+/* 今ここは左に朱の線（公開ビューで選択中にだけ使う朱と同じ意味：目を向ける 1 か所） */
+.path-node.current {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.path-node.current .mark {
+  color: var(--accent);
+}
+
+.path-node .head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+
+.path-node .k {
+  color: var(--dim);
+  font-size: 12px;
+}
+
+.path-node .nm {
+  font-weight: 700;
+}
+
+.path-node .lvtxt {
+  color: var(--dim);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.path-node .badge {
+  padding: 0 6px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.path-node .badge.now {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.path-node .badge.dim {
+  color: var(--dim);
+}
+
+.path-node .outcome,
+.path-node .verify,
+.path-node .ext {
+  margin: 2px 0 0;
+}
+
+.path-node .outcome,
+.path-node .ext {
+  color: var(--dim);
+  font-size: 13px;
+}
+
+/* 升目と同じ 6 階調の見本 */
+.path-node .sw,
+.path-legend .sw {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-radius: 2px;
+  background: var(--empty);
+  vertical-align: -1px;
+}
+
+.path-node .sw.l1 {
+  background: var(--l1);
+}
+.path-node .sw.l2 {
+  background: var(--l2);
+}
+.path-node .sw.l3 {
+  background: var(--l3);
+}
+.path-node .sw.l4 {
+  background: var(--l4);
+}
+.path-node .sw.l5 {
+  background: var(--l5);
+}
+
+.path-legend {
+  margin-top: 12px;
+}

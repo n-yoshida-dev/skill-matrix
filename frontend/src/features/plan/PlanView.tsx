@@ -1,11 +1,13 @@
+import { NavLink, Route, Routes } from 'react-router'
 import type { AppData } from '../../data/types'
+import { PathView } from '../path/PathView'
 import { MatrixView } from './MatrixView'
 import { NextActionsView } from './NextActionsView'
 import { toDateKey } from './matrix'
 
-// 作業ビュー（SPEC.md §7 の 3 画面）。自分向け。画面は TODO 2-5 で順に足す。
-// 今あるもの：マトリクス（サマリー帯・可変長グリッド）と次にやること Top N。
-// これから足すもの：学習パス、項目詳細。
+// 作業ビュー（SPEC.md §7 の 3 画面）。自分向け。
+// /plan はダッシュボード（サマリー帯・マトリクス・次にやること Top N）、/plan/path は学習パス。
+// これから足すもの：項目詳細。
 
 interface Props {
   data: AppData
@@ -14,10 +16,30 @@ interface Props {
 }
 
 export function PlanView({ data, today = new Date() }: Props) {
-  const total = data.roadmap.domains.reduce((n, d) => n + d.items.length, 0)
   return (
     <>
       <h1>作業ビュー</h1>
+      <nav className="plan-tabs" aria-label="作業ビューの画面">
+        <NavLink to="/plan" end>
+          ダッシュボード
+        </NavLink>
+        <NavLink to="/plan/path">学習パス</NavLink>
+      </nav>
+      <Routes>
+        <Route index element={<Dashboard data={data} today={today} />} />
+        <Route path="path" element={<PathView data={data} today={today} />} />
+        <Route path="path/:domainKey" element={<PathView data={data} today={today} />} />
+        <Route path="*" element={<Dashboard data={data} today={today} />} />
+      </Routes>
+    </>
+  )
+}
+
+/** ダッシュボード。どこまで確かめたか・どこが古いか・次に何をやるかを 1 画面で見る */
+function Dashboard({ data, today }: { data: AppData; today: Date }) {
+  const total = data.roadmap.domains.reduce((n, d) => n + d.items.length, 0)
+  return (
+    <>
       <p className="plan-lead">
         自分向けの画面。どこまで確かめたか・どこが古いかを見る。鮮度は今日（
         <span className="num">{toDateKey(today)}</span>）から数えている。
