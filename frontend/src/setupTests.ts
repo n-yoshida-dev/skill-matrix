@@ -7,4 +7,6 @@ import { afterEach } from 'vitest'
 // （片付けないと前のテストの DOM が残り、同じ名前の要素が複数見つかる）
 afterEach(() => {
   cleanup()
+  // 学習パスの表示の記憶（localStorage）が次のテストへ持ち越されないように
+  localStorage.clear()
 })

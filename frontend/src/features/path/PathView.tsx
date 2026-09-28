@@ -1,14 +1,19 @@
+import { useState } from 'react'
 import { Link, NavLink, useParams } from 'react-router'
 import type { AppData, ItemState, Level } from '../../data/types'
 import { stateByKey, topEvidenced } from '../public/summary'
 import { stalenessConfig } from '../plan/matrix'
 import { nextActions, nextLimitFrom, stateOf, weightsFrom } from '../plan/next'
 import { buildPath, type PathNode } from './path'
+import { TreeView } from './TreeView'
+import { readViewMode, writeViewMode, type PathViewMode } from './viewMode'
 import './path.css'
 
-// 学習パス・一列表示（SPEC.md §7.2）。分野を選ぶと、その分野の項目が依存順に縦一列で並ぶ。
+// 学習パス（SPEC.md §7.2）。分野を選ぶと、その分野の項目を一列表示かスキルツリー表示で見せる。
+// 一列表示は依存順に縦一列（次に何をやるか）、ツリー表示は前提が上・派生が下の階層図（どの前提を取ると何が解放されるか）。
 // マトリクスが「今の状態」を見せるのに対し、こちらは「道筋」を見せる。
 // 常に上部に分野の目標と進捗を出し、「あと何個でどうなるか」が視界から消えないようにする。
+// 表示の選択はブラウザに記憶する（初回は一列表示）。
 
 interface Props {
   data: AppData
@@ -21,6 +26,7 @@ const MARKS = { done: '✓', current: '▶', upcoming: '・' } as const
 
 export function PathView({ data, today }: Props) {
   const { domainKey } = useParams()
+  const [mode, setMode] = useState<PathViewMode>(() => readViewMode())
   const domains = data.roadmap.domains
   const domain = domains.find((d) => d.key === domainKey) ?? domains[0]
   if (!domain) {
@@ -40,6 +46,12 @@ export function PathView({ data, today }: Props) {
   )
   const deepen = new Set(top.map((a) => a.itemKey))
   const names = new Map(domains.flatMap((d) => d.items.map((it) => [it.key, it.name])))
+
+  /** 表示を切り替え、選択を記憶する */
+  const choose = (m: PathViewMode) => {
+    setMode(m)
+    writeViewMode(m)
+  }
 
   return (
     <section className="path-sec" aria-labelledby="path-title">
@@ -66,27 +78,49 @@ export function PathView({ data, today }: Props) {
           進捗：<span className="num">{path.totalCount}</span> 項目中{' '}
           <span className="num">{path.doneCount}</span> 項目（レベル 1 以上）
         </p>
+        <div className="path-mode" role="group" aria-label="表示の切り替え">
+          <button type="button" aria-pressed={mode === 'list'} onClick={() => choose('list')}>
+            一列
+          </button>
+          <button type="button" aria-pressed={mode === 'tree'} onClick={() => choose('tree')}>
+            ツリー
+          </button>
+        </div>
       </header>
 
-      <ol className="path-list">
-        {path.nodes.map((n) => (
-          <PathRow
-            key={n.item.key}
-            n={n}
-            deepen={n.status === 'done' && deepen.has(n.item.key)}
-            externals={n.externalDeps.map((k) => ({
-              key: k,
-              name: names.get(k) ?? k,
-              st: stateOf(states, k),
-            }))}
-          />
-        ))}
-      </ol>
-      <p className="plan-note path-legend">
-        ✓ 済（レベル 1 以上）／▶
-        今ここ（依存順で最初の、まだ済んでいない着手できる項目）／・この先。
-        「深掘り候補」は、済んだ項目のうち「次にやること」に入っているもの。
-      </p>
+      {mode === 'list' ? (
+        <>
+          <ol className="path-list">
+            {path.nodes.map((n) => (
+              <PathRow
+                key={n.item.key}
+                n={n}
+                deepen={n.status === 'done' && deepen.has(n.item.key)}
+                externals={n.externalDeps.map((k) => ({
+                  key: k,
+                  name: names.get(k) ?? k,
+                  st: stateOf(states, k),
+                }))}
+              />
+            ))}
+          </ol>
+          <p className="plan-note path-legend">
+            ✓ 済（レベル 1 以上）／▶
+            今ここ（依存順で最初の、まだ済んでいない着手できる項目）／・この先。
+            「深掘り候補」は、済んだ項目のうち「次にやること」に入っているもの。
+          </p>
+        </>
+      ) : (
+        <>
+          <TreeView data={data} path={path} deepen={deepen} today={today} />
+          <p className="plan-note path-legend">
+            上が前提、下がそれを前提にする項目。灰色に鍵＝未解放（前提にレベル 0
+            がある）／太枠＝解放済み・未着手（朱の枠が今ここ）／
+            塗り＝習得済み（濃さがレベル。橙の枠線は要再確認、右上の三角は上の段にも根拠あり）／「深掘り候補」の札＝済んだ項目のうち「次にやること」に入っているもの／
+            点線の枠＝ほかの分野の前提（押すとその分野へ移る）。節を押すと項目詳細が開く。
+          </p>
+        </>
+      )}
     </section>
   )
 }

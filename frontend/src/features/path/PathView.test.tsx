@@ -184,6 +184,22 @@ describe('学習パス・一列表示', () => {
     )
   })
 
+  it('ツリーに切り替えると階層図になり、選択を記憶する（次に開いてもツリー）', async () => {
+    localStorage.clear()
+    const first = renderAt('/plan/path/go')
+    expect(screen.getByRole('button', { name: '一列' })).toHaveAttribute('aria-pressed', 'true')
+    await userEvent.click(screen.getByRole('button', { name: 'ツリー' }))
+    expect(screen.getByRole('button', { name: 'ツリー' })).toHaveAttribute('aria-pressed', 'true')
+    // ツリーでは縦一列の一覧が消え、節（項目詳細へのリンク）とゴーストノードが出る
+    expect(screen.queryByRole('list')).toBeNull()
+    expect(screen.getByText('他分野：データベース')).toBeInTheDocument()
+    first.unmount()
+    // 開き直してもツリーのまま
+    renderAt('/plan/path/go')
+    expect(screen.getByRole('button', { name: 'ツリー' })).toHaveAttribute('aria-pressed', 'true')
+    localStorage.clear()
+  })
+
   it('分野のタブを押すと、その分野の学習パスに切り替わる', async () => {
     renderAt('/plan/path/go')
     await userEvent.click(screen.getByRole('link', { name: 'データベース' }))
