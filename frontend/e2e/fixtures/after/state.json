@@ -23,6 +23,15 @@
           "violations": []
         }
       ]
+    },
+    {
+      "itemKey": "e2e-long-item-key-for-tile-overlap",
+      "verifiedLevel": 0,
+      "evidencedLevels": [3],
+      "preState": "none",
+      "needsReview": false,
+      "lastEvidenceAt": "2026-09-01",
+      "events": []
     }
   ],
   "deferred": [],
