@@ -301,7 +301,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   (2) `prompts/judge.md` は、凍結前の記録から新しく書き起こしたログを、自動の探索で全文判定する。「台帳に写っていない出来事だけ判定する」を自動の探索にも当てはめるか（PR #68 の受け入れレビュー）
   (3) Vitest（テスト用の道具）に中程度の脆弱性 2 件（`npm audit`）。別の小さな PR で上げるか
   完了条件：3 件それぞれに本人の答えがあり、採るものはタスクになっている
-- [ ] 【ユーザー確認】`../CLAUDE.md` に 3 点を足すか（2026-09-26 に判明）：(1)「同じリポジトリの作業ディレクトリを複数セッションで同時に使わない」
+- [ ] 【ユーザー確認】`../CLAUDE.md` に 3 点を足すか（2026-09-26 に判明。付箋 `ops-dhj.13`）：(1)「同じリポジトリの作業ディレクトリを複数セッションで同時に使わない」
   （2026-09-25 に別セッションが同じチェックアウトで main を進め、ローカルブランチが消えるなど衝突の余地があった）。
   (2)「`internal/store` を触る PR は、コミット前に `docker compose up -d postgres` を立てて `TEST_DATABASE_URL` 付きで DB テストを回す」
   （ローカルでは Postgres 無しだとスキップされ、PR #41 で CI だけが落ちた）。
@@ -311,7 +311,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 - [ ] 【別リポジトリ】claude-plugins の `check-edited.sh`（PostToolUse）を `package.json` の `lint` スクリプトを呼ぶ形に直す
   （このリポジトリは oxlint で eslint が無く、frontend の編集のたびに「eslint 失敗（missing packages）」が出る。KNOWLEDGE.md 2026-09-25）
   完了条件：skill-matrix の frontend でファイルを編集しても eslint のエラー表示が出ず、oxlint の結果が出る
-- [ ] 【ユーザー作業】全アプリの apps-workflow を v1.4.4 に更新する（`/plugin` から。反映は各アプリの次のセッションから）
+- [x] 【ユーザー作業】全アプリの apps-workflow を v1.4.4 に更新する（`/plugin` から。反映は各アプリの次のセッションから）（2026-09-29 に済んでいることを確認：`installed_plugins.json` で 7 アプリとも 1.5.5。付箋 ops-46d.1（v1.5.0 への更新）も閉じている）
   v1.4.4 は claude-plugins の PR #14 で main にマージ済み（2026-09-21）。pr-flow の後始末が「Claude が確認 2 点のうえ削除する」に変わる。
   `/plugin` に 1.4.4 が出ないときはマーケットプレイスを取得し直す（ローカルのカタログは更新するまで 1.4.3 のまま）。
   2026-09-21 時点の導入版は skill-matrix が 1.4.3、app-template / home-site-finder / babyfood-check /
