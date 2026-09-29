@@ -154,8 +154,9 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   **【ユーザー作業】リポジトリを Public にする操作はユーザーが行う**（公開設定の変更は不可逆。URL は実施時に添える）
   **2026-09-27：Public 化と、`data/judgments/` 全 41 件の目視確認（全件そのままで可）は済んだ。** 残りは画面の完成を待って Pages に上げること
   **2026-09-29：公開用のワークフロー `.github/workflows/pages.yml` を用意した**（`main` への push でビルドし、Pages が「GitHub Actions から公開」で有効なときだけ公開。無効の間は公開を飛ばして緑のまま）。
-  残りは【ユーザー作業】GitHub の Settings → Pages → Source を「GitHub Actions」にすること（公開設定の変更なので本人が行う）と、その後の公開の確認。
-  2026-09-28 に足した判定 2 本（8 件）は、本人が一覧を読んで「OK」済み
+  残りは【ユーザー作業】GitHub の Settings → Pages → Source を「GitHub Actions」にすること（公開設定の変更なので本人が行う。https://github.com/n-yoshida-dev/skill-matrix/settings/pages ）と、その後の公開の確認。
+  2026-09-28 に足した判定 2 本（8 件）：本人が「OK」と言ったのは、項目・根拠の種類・段・確信度・要点の一覧（`rationale` と `evidenceRefs` の全文ではない）。
+  `rationale` と `evidenceRefs` の固有名詞は、Claude が禁止語の grep（0 件）と目視で確かめただけで、本人の目視ではない（リポジトリは既に Public なので、判定は PR #68 のマージで公開済み）
 
 ### 2-7. 開発環境（v1 の機能ではない。Claude Code に任せた開発を人間が観測するための道具）
 

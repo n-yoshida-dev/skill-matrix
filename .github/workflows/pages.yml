@@ -37,8 +37,19 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
+        # Pages が無効なら API は 404 を返す（標準エラーに「HTTP 404」）。そのときだけ公開を飛ばす。
+        # 権限不足・API の障害など 404 以外の失敗は、黙って飛ばさずに赤にする（有効なのに公開されない、を見逃さないため）
         run: |
-          BUILD_TYPE=$(gh api "repos/$REPO/pages" --jq .build_type 2>/dev/null || true)
+          ERR="$RUNNER_TEMP/pages-api-error.txt"
+          if BUILD_TYPE=$(gh api "repos/$REPO/pages" --jq .build_type 2>"$ERR"); then
+            :
+          elif grep -q "HTTP 404" "$ERR"; then
+            BUILD_TYPE=""
+          else
+            echo "::error::GitHub Pages の設定を読めなかった（404 以外の失敗）"
+            cat "$ERR"
+            exit 1
+          fi
           if [ "$BUILD_TYPE" = "workflow" ]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
