@@ -244,6 +244,9 @@ function readGithub() {
   const list = runJson('gh', [
     'run',
     'list',
+    // CI のワークフローだけを見る。GitHub Pages の公開（pages.yml）の実行を CI のジョブと取り違えないように
+    '--workflow',
+    'ci.yml',
     '--limit',
     '15', // 画面の「最近の実行」は main だけを出すので、PR の実行に埋もれないよう多めに取る
     '--json',

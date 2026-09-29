@@ -1,0 +1,79 @@
+name: Pages
+
+# main に入ったら画面（静的サイト）をビルドして GitHub Pages に上げる（TODO 2-6。SPEC.md §8.2）。
+# Pages が「GitHub Actions から公開する」設定で有効になっていない間は、ビルドだけして公開を飛ばす（赤くしない）。
+# 有効にするのは公開設定の変更なので、本人が GitHub の画面（Settings → Pages → Source を GitHub Actions）から行う。
+# CI（ci.yml）とは別のワークフロー。PR では走らない
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 公開は 1 本ずつ。走っている公開は途中で止めない
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: 画面をビルド
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.pages.outputs.enabled }}
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: GitHub Pages が GitHub Actions からの公開で有効か確かめる
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          BUILD_TYPE=$(gh api "repos/$REPO/pages" --jq .build_type 2>/dev/null || true)
+          if [ "$BUILD_TYPE" = "workflow" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::GitHub Pages が GitHub Actions からの公開で有効になっていないので、公開は飛ばす（今の設定: ${BUILD_TYPE:-無効}）。Settings → Pages → Source を GitHub Actions にすると、次の main への push から公開される"
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 依存をインストール
+        run: npm ci
+
+      - name: ビルド
+        run: npm run build
+
+      - name: 公開用に固める
+        if: steps.pages.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    name: GitHub Pages に公開
+    needs: build
+    if: needs.build.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: 公開
+        id: deployment
+        uses: actions/deploy-pages@v4
