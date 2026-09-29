@@ -25,39 +25,39 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
 ## 進捗
 
 ```
-進捗（TODO.md より自動集計・2026-09-28）
+進捗（TODO.md より自動集計・2026-09-29）
 
 ████████████████████ 100%  残り  0 / 11  フェーズ1：設計（完了）
-█████████████░░░░░░░  66%  残り 14 / 42  フェーズ2：v1 実装（自分専用版。ゴールは「画面で自分のマトリクスが見える」こと）
-██████████████░░░░░░  73%  残り 14 / 53  合計
-あなたの回答待ち：4 件（回答済み 4 件）
+██████████████████░░  90%  残り  4 / 44  フェーズ2：v1 実装（自分専用版。ゴールは「画面で自分のマトリクスが見える」こと）
+██████████████████░░  92%  残り  4 / 55  合計
+あなたの回答待ち：8 件（回答済み 4 件）
 保留（合計に含めない）：19 件（済み 15 件）
 
-前回の区切り（2026-09-27）から：完了 +1 件、新たに見つかったタスク +1 件
+前回の区切り（2026-09-28）から：完了 +12 件、新たに見つかったタスク +2 件
 ```
 
 ## 1. 現在地
 
 `main` はクリーン。作業中のブランチは無い。
 
-- **段階 F まで済み。** `data/judgments/` に移行判定 7 本（41 件）。`state.json` は移行計画 §8.4 の期待表と 46 項目一致（レベル 3 が 2・1 が 8・0 が 36）。
-  凍結コミットは study の `284c0f1`。study 側はもう skill-map を更新せず、習熟度は「skill-matrix の判定で拾う」運用に切り替え済み
-- **学習ログから判定を作る入口ができた**（指示書 `prompts/judge.md`・スキル `/judge-log`。PR #58・#59）。本物の `/judge-log` は呼べて、今は「未判定 0 件」で止まる。
-  study の `*/logs/*.md` 30 件はすべて凍結前で、自動の探索では「移行で写し済み」として外れるため。凍結後の学習（react-02 など）は progress.md に溜まっていて、まだログの形になっていない
-- **リポジトリは Public**（2026-09-27）。`main` はブランチ保護あり（PR 経由のみ・CI の 5 ジョブが必須・管理者は迂回可）
-- CI の独立ジョブ「data/ の検証（verify）」が全 PR と main で `verify` を走らせる。`sources.local.json` は手元にだけある（study のパス入り）
-- **画面は公開ビュー（`/`）と、作業ビュー（`/plan`）のマトリクス（サマリー帯・升目・吹き出し。PR #66）まで動き、実データで描ける**。
-  作業ビューの残りは「次にやること Top N」・学習パス・項目詳細（TODO 2-5）
-- 以後の細部は既存方針と整合する範囲で Claude が判断してよい。止めて確認するのは重大な矛盾・データ損失・公開情報上の問題だけ（2026-09-25 ユーザー指示）
+- **フェーズ 2 のうち Claude が進められるものは終わった。** 画面は公開ビュー（`#/`）と作業ビュー（`#/plan`：ダッシュボード・学習パスの一列／ツリー・項目詳細）が実データで動く。
+  E2E（Playwright）が CI の frontend ジョブで走る。GitHub Pages の公開ワークフローはあるが、Pages が無効なので公開は飛ばしている（緑）
+- 段階 G（正本の切り替え）は済み。study の `go-react/logs/` から最初の通常判定 2 本（`react-hooks` 0→1）。`react-data-fetching` の 3 件は保留
+- **残り 4 件はどれも本人の判断・操作が先**：重みの調整（Top 5 の並びを本人が見る）／Pages を有効にする（本人の操作）／SPEC を実装に追い付かせる（本人の了承が先）／
+  react-01 の記録から `react-render-flow`・`react-jsx-ts-basics` を追い付かせる（判定がほぼ保留になり、本人が採否を決める作業。本人と一緒に進める）
+- **本人は、前回の返答で頼んだ 5 件（確認待ちの上 4 件＋Pages の有効化）に、まだ一つも手をつけていない。** ダッシュボードも起動していない
+- リポジトリは Public。`main` はブランチ保護あり（PR 経由のみ・CI の 5 ジョブが必須）。細部は既存方針と整合する範囲で Claude が判断してよい（2026-09-25）
 
 ## 2. 次セッションで最初にやること
 
-**TODO 2-1 段階 G。** 画面を続けるなら、その次は TODO 2-5「次にやること Top N」（Go の `NextActions` を TypeScript に写す）。
-`NextActions` は鮮度を使うので、先に TODO 2-6「Go の `Staleness` を暦日にそろえる」を済ませると、Go のテスト例をそのまま写して答えを突き合わせられる。
+**本人へのヒアリングと作業のお願いから始める。** 2026-09-29 本人：「次のセッションでは、私の確認・操作・判断をするところから始める。なので、ヒアリングとか作業指示とかを出すところから始めて」
 
-段階 G「正本の切り替えを終える」の完了条件は TODO.md の該当行。study に `go-react/logs/` を作り、凍結後の学習（react-02 など）をログ 1 件にしてコミットしてから、`/judge-log` で最初の通常判定を作る。
-**判定ファイルは 2026-09-28 以降に書く**（同じ日付だと移行ファイルより先に適用される。KNOWLEDGE.md 2026-09-27「`prompts/judge.md`」）。
-凍結前にしか根拠が無い分（React の起動フローなど）は、`/judge-log <ファイル>` で指定すれば台帳に無い出来事だけを判定できる。
+1. 最初の返答で、画面とダッシュボードの開き方を本人に渡す（下の「動作確認コマンド」の 2 つ。コピペで動く形・URL 付き）
+2. TODO.md「確認待ち」の上 4 件（付箋 `ops-dhj.8`・`.9`・`.11`・`.12`）と、Pages の有効化（`ops-dhj.4.1`。
+   https://github.com/n-yoshida-dev/skill-matrix/settings/pages ）、Top 5 の並び（`ops-dhj.10`）を、**1 メッセージ 1 件ずつ**聞く。
+   順番は、画面を見る 2 件（`.8` 見せ方 → `.10` Top 5）→ 文面の `.9` → 操作の `.4.1` → `.11` → `.12`。
+   各件は「何のためか」を先に噛み砕き、選択肢とおすすめを添える。Pages の前には「9/28 の判定 8 件は根拠の全文をまだ本人が読んでいない。有効にする前に読むか」も聞く
+3. 答えをもらったものから Claude が片付ける（SPEC への写し・`verifyBy`・重み・personal-ai-context の push など）。答えが無いものは付箋に残す
 
 ## 3. 動作確認コマンド
 
@@ -77,10 +77,10 @@ docker compose up -d postgres
 TEST_DATABASE_URL='postgres://skillmatrix:skillmatrix@localhost:5432/skillmatrix?sslmode=disable' go -C backend test ./internal/store/
 docker compose stop postgres
 
-# 画面（frontend）。#/ が公開ビュー、#/plan が作業ビュー
-cd frontend && npm ci && npm run dev
-# CI と同じ検査
-cd frontend && npm run format:check && npm run lint && npm run typecheck && npx vitest run && npm run build
+# 画面（frontend）。http://localhost:5173/#/ が公開ビュー、#/plan が作業ビュー。JSON を変えると自動で作り直される
+(cd frontend && npm ci && npm run dev)
+# CI と同じ検査（E2E は Playwright。初回は npx playwright install chromium）
+(cd frontend && npm run format:check && npm run lint && npm run typecheck && npx vitest run && npm run build && npm run e2e)
 ```
 
 ## ここに書かないもの（行き先）
