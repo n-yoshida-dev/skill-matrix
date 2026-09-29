@@ -141,7 +141,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 - [x] E2E（Playwright）で、JSON を差し替えるとマトリクスと学習パスが変わることを1本通す（2026-09-29 完了。`frontend/e2e/`。ビルドのモード `e2e-before` / `e2e-after` のときだけ差し替え前・後のダミーを取り込むようにし、それぞれビルドして配信する（SPEC §8.3 に合わせて環境変数は使わない）。CI は frontend ジョブの末尾に手順を足した＝ジョブ名は変えていない）
   完了条件：ビルドした静的サイトに対して Playwright が1本通り、CI で走る
 - [x] GitHub Actions で lint / typecheck / test / build を通す（テンプレート由来の `.github/workflows/ci.yml` が要件を満たしている。PR #1 で実際に通ることを確認）
-- [ ] README を書く（セットアップ手順・スクリーンショット）
+- [x] README を書く（セットアップ手順・スクリーンショット）（2026-09-29 完了。前提を知らないサブエージェントに、作業用の複製で README だけを見て一周させた（学習ログ → 判定 → recalc → verify → 画面のビルド）。詰まった 14 点を直した。KNOWLEDGE.md 2026-09-29「README」）
   完了条件：クローン直後の人が README だけで「学習ログを AI に判定させる → JSON を更新する → 画面で見る」を一周できる。画面のスクリーンショットがある
 - [x] Go の `Staleness` を暦日で数えるようにそろえる（2026-09-27 に PR #66 の受け入れレビューで判明。画面は暦日、Go は時刻の差で、境界の日に CLI の要約と画面で 1 日ずれる。SPEC.md §1.3）（2026-09-28 完了。`calendarDaysSince` で年月日だけを比べる。境界の設定は日数に切り捨てて使う）
   完了条件：`domain.Staleness` が「今日の日付 − 最終根拠日」の暦日で鮮度を決め、30 日目・90 日目の境界を、時刻が朝でも夜でも同じに判定するテストがある。`frontend/src/features/plan/matrix.test.ts` と同じ入力で同じ答えになる
@@ -155,7 +155,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   **2026-09-27：Public 化と、`data/judgments/` 全 41 件の目視確認（全件そのままで可）は済んだ。** 残りは画面の完成を待って Pages に上げること
   **2026-09-29：公開用のワークフロー `.github/workflows/pages.yml` を用意した**（`main` への push でビルドし、Pages が「GitHub Actions から公開」で有効なときだけ公開。無効の間は公開を飛ばして緑のまま）。
   残りは【ユーザー作業】GitHub の Settings → Pages → Source を「GitHub Actions」にすること（公開設定の変更なので本人が行う。https://github.com/n-yoshida-dev/skill-matrix/settings/pages ）と、その後の公開の確認。
-  2026-09-28 に足した判定 2 本（8 件）：本人が「OK」と言ったのは、項目・根拠の種類・段・確信度・要点の一覧（`rationale` と `evidenceRefs` の全文ではない）。
+  2026-09-28 に足した判定 2 本（8 件）：本人が「OK」と言ったのは、セッションのチャットで見せた一覧（ログ・項目・根拠の種類・段・確信度と、Claude が `rationale` を短くまとめた「何を見たか」の列。`rationale` と `evidenceRefs` の全文ではない）。
   `rationale` と `evidenceRefs` の固有名詞は、Claude が禁止語の grep（0 件）と目視で確かめただけで、本人の目視ではない（リポジトリは既に Public なので、判定は PR #68 のマージで公開済み）
 
 ### 2-7. 開発環境（v1 の機能ではない。Claude Code に任せた開発を人間が観測するための道具）
