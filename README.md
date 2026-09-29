@@ -77,7 +77,7 @@ mkdir -p learning-logs
   /judge-log <ログのパス>        # ファイルを指定して判定する
   ```
 
-- **ファイルを読めるほかのエージェント（Codex CLI など）なら**、`prompts/judge.md` を読ませ、その「手順」どおりに進めさせる。判定ファイルを 1 つ書くところまで自分で進む
+- **ファイルを読めるほかのエージェント（Codex CLI など）なら**、`prompts/judge.md` を読ませ、その「手順」どおりに進めさせる。判定ファイルを 1 つ書くところまで自分で進む（ただし Codex CLI などでの実機確認はまだしていない）
 - **ChatGPT などファイルを読めない AI なら**、`prompts/judge.md` の本文と、その末尾「チャットに貼って使う場合」に並んでいるファイル（ロードマップ・設定・理解度・学習ログなど）を貼り付ける。
   返ってきた JSON を、AI が添えたファイル名で `data/judgments/` に保存する（名前の先頭は判定を書いた日、続けてログの日付と題材。英小文字・数字・ハイフンだけ）
 
@@ -95,8 +95,9 @@ go -C backend run ./cmd/skillmatrix recalc --data ../data
 クローン直後は作者の判定の保留も毎回出るので、自分の判定ファイル名の行と「変わった項目」を見る。
 棄却が出たら判定ファイルを直す。保留は適用されず、人が採否を決める（採用するなら `source: "manual"` の判定ファイルを足す）。
 
-新しい判定ファイルはまだ git に追跡されていないので `git diff` には出ない。`git status` で新しいファイルを確かめ、そのファイルを開いて
-`rationale` と `evidenceRefs` を読む（`git diff` に出るのは `state.json` の差分だけ）。納得したら、判定ファイルと `state.json` を一緒にコミットする。
+新しい判定ファイルはまだ git に追跡されていないので、そのままの `git diff` には出ない（出るのは `state.json` の差分だけ）。`git status` で新しいファイルを確かめて開くか、
+`git add -N data/judgments/<ファイル>`（中身は入れずに「追跡する予定」とだけ登録する）のあと `git diff` で、`rationale` と `evidenceRefs` を読む。
+納得したら、判定ファイルと `state.json` を一緒にコミットする。
 コミット後の訂正は、既存のファイルを直さずに新しい判定ファイルを足す。
 
 ### 5. 画面で見る
@@ -126,15 +127,20 @@ go -C backend run ./cmd/skillmatrix recalc --data ../data
 ## 自分のロードマップにする
 
 `data/roadmap.json` を自分のロードマップに書き換え、`data/judgments/` を空に、`data/state.json` を `recalc` で作り直す。
-形は `SPEC.md` §2、出典（`source`）と確認日（`checkedAt`）を必ず書く。`verifyBy` にはその項目で次の段を確かめる方法を書く。
+形は `SPEC.md` §2。外部のロードマップ（roadmap.sh など）を元にするなら（`origin: "external"`）、出典（`source`）と確認日（`checkedAt`）を書く。
+`verifyBy` にはその項目で次の段を確かめる方法を書き、印が付いて段が上がったら次の段の方法に書き換える（`data/README.md`）。
+
+画面のヘッダーとフッターは `data/settings.json` の `site.repoUrl` のリポジトリを指す。自分のリポジトリの URL に変える（変えないと作者のリポジトリへのリンクのまま公開される）。
 
 ## 開発
 
+どれもリポジトリ直下で 1 行ずつ打つ（括弧の中だけ `frontend/` に移る）。
+
 ```bash
 # 画面（CI と同じ検査）
-cd frontend && npm run format:check && npm run lint && npm run typecheck && npm test && npm run build
+(cd frontend && npm run format:check && npm run lint && npm run typecheck && npm test && npm run build)
 # E2E（ビルドした画面で、JSON を差し替えると表示が変わることを確かめる）
-cd frontend && npx playwright install chromium && npm run e2e
+(cd frontend && npx playwright install chromium && npm run e2e)
 
 # 判定の検査・再計算の CLI と単体テスト
 go -C backend test ./internal/... ./cmd/skillmatrix
