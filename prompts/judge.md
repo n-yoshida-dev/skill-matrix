@@ -128,7 +128,7 @@ skill-map.md からの移行（1 回きり）には使わない。そちらは `
 | 学習ログの場所 | 書き方 |
 |---|---|
 | `sources.local.json` の `repos` にあるリポジトリ | `repo:<owner>/<repo>@<commit>/<path>#L<n>-L<m>`。`<owner>/<repo>` は `repos` のキー。`<commit>` はそのログを最後に変更したコミットの 7 桁（`git -C <path> log -1 --format=%h -- <file>`）。`<path>` はリポジトリ内の相対パス。行番号はそのコミット時点のもの。1 行だけなら `#L<n>` |
-| `logs.path`（コミットしない置き場） | `log:<path>`（commit も行番号も付けない） |
+| `logs.path`（コミットしない置き場） | `log:<path>`（commit も行番号も付けない。`<path>` はこのリポジトリの直下からのパスで、置き場の名前も含める。例 `log:learning-logs/2026-09-29.md`） |
 
 ## 手順
 

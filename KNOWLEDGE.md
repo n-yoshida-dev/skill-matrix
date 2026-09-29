@@ -1035,3 +1035,25 @@ SPEC を直すときに一緒に直すこと：§7.2 は配置関数の入力を
 | 最初の手順で `gh api repos/<repo>/pages --jq .build_type` を見て、`workflow` のときだけ公開する。それ以外（無効・ブランチからの公開）は notice を出して公開を飛ばし、緑で終わる | Pages を有効にするのは公開設定の変更で、本人が画面から行う（`../CLAUDE.md` の止まる条件）。有効になる前に赤い実行が `main` に並ばないように |
 | ダッシュボードの「main の最近の実行」は `gh run list --workflow ci.yml` に絞った | 絞らないと、`main` の最新の実行が Pages の実行になり、ジョブ別の結果に「画面をビルド」「GitHub Pages に公開」が CI として出る（CLAUDE.md「開発ダッシュボード」の、CI まわりを変えたら読み取りも直す） |
 | ビルドは `vite.config.ts` の `base: './'`（相対パス）とハッシュルーティングのまま | `https://<user>.github.io/skill-matrix/` の下でも独自ドメインでも同じ成果物で動く（SPEC §8.2） |
+
+マージ後の最初の実行（2026-09-29）で、notice「今の設定: 無効」・公開のジョブは skipped・全体は success を確かめた。
+`gh api` は 404 のとき本文の JSON を標準出力に出す（`--jq` を付けても）。失敗の枝で `BUILD_TYPE` を空にしているので notice は「無効」になる。
+本人が有効にした後の最初の実行で `enabled=true` になるか（`GITHUB_TOKEN` で `build_type: workflow` が読めるか）は、まだ確かめていない。
+
+### 2026-09-29：README を「初めての人が一周できるか」で試した
+
+確かめ方：`git clone` した作業用の複製に新しい README だけを置き、前提を知らないサブエージェントに「README とそこからリンクされたファイルだけで一周して」と頼んだ
+（CLAUDE.md・HANDOFF・KNOWLEDGE・SPEC は読ませない。本体には書き込ませない）。学習ログのダミーを 1 本書かせ、`prompts/judge.md` で判定させ、`recalc`・`verify`・ビルドまで通った。
+
+詰まった・分かりにくかった 14 点のうち、主なもの：
+
+| 見つかったこと | 直し方 |
+|---|---|
+| 手順 1 の `cd skill-matrix/frontend` のまま手順 2 の `cp` と手順 4 の `go -C backend` を打つと失敗する。`npm run dev` はターミナルを占有する | 「別のターミナルでリポジトリ直下で進める」と、手順 2・4 に「リポジトリ直下で」を書いた |
+| クローン直後は `learning-logs/` が無い | `mkdir -p learning-logs` を足した |
+| 新しい判定ファイルは未追跡なので `git diff` に出ない | `git status` で見つけてファイルを開いて読む、に直した |
+| 判定の入口が Claude Code とチャットの 2 つだけで、ファイルを読める他のエージェント（Codex CLI など）の経路が無い（`judge.md` には書いてある） | 3 つ目の入口として足した |
+| そのまま進むと自分の判定が作者の理解度に混ざる | 手順 1 の後に「自分用に使うなら先に作者の判定を外す」を置いた |
+| `log:<path>` の `<path>` に置き場の名前を含めるか分からない（`judge.md`） | 例 `log:learning-logs/2026-09-29.md` を足した |
+
+分かったこと：`npm run dev` を開いたまま `data/` の JSON を変えると、画面は自動で作り直される（`frontend/` の外のファイルでも、Vite は読み込んだファイルを監視する。作業用の複製で `state.json` を書き換え、配信される中身が変わることを確かめた）。
