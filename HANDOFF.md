@@ -43,8 +43,8 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
   「表現されていることが重要。じゃないと、ただ学んだスキルを羅列するのと変わらないからね。」（原文は台帳 2026-10-03）。Fable・GPT-6 Astra との壁打ちと凡例なしの読み取りテストを経て、本人が 7 点を了承（`logs/decisions.md` 2026-10-02〜03 の 3 件、SPEC §7.2、経緯は KNOWLEDGE.md 2026-10-03）。
   実装は TODO の**フェーズ2b（5 本。構造 → 意味 → 状態 → ゲージ → 見た目の順）**で、まだ手を付けていない
 - フェーズ 2 の残り 4 件はどれも本人の判断・操作が先（重み・Pages・SPEC の追い付き・react-01）。画面は公開ビュー（`#/`）と作業ビュー（`#/plan`）が実データで動く
-- 本人の答え待ちの付箋：`ops-dhj.10` Top 5 → `.9` verifyBy → `.4.1` Pages（https://github.com/n-yoshida-dev/skill-matrix/settings/pages ）→ `.11` personal-ai-context → `.12` 提案 3 件 → `.13` `../CLAUDE.md` の 3 点。
-  `.14`（作業ビューの残りの細部）はフェーズ2b のあとに画面で聞く。`.8` はツリーの 3 点に答えをもらったので、PR #79 のマージ後に閉じる
+- 本人の答え待ちの付箋：`ops-dhj.10` Top 5 → `.9` verifyBy → `.4.1` Pages（https://github.com/n-yoshida-dev/skill-matrix/settings/pages ）→ `.11` personal-ai-context → `.12` 提案 3 件 → `.13` `../CLAUDE.md` の 3 点 →
+  react-01 の追い付かせ（TODO 2-1）をいつ一緒に進めるか。`.14`（作業ビューの残りの細部）はフェーズ2b のあとに画面で聞く。`.8` はツリーの 3 点に答えをもらったので、PR #79 のマージ後に閉じる
 - **ai-review の試行 2**（付箋 `ops-h49` の設計欄、手順 7〜11）をこのリポジトリで行う。試行 1（portfolio）の結果は `ops-h49` のコメントにある
 - リポジトリは Public。`main` はブランチ保護あり（PR 経由のみ・CI の 5 ジョブが必須）。細部は既存方針と整合する範囲で Claude が判断してよい（2026-09-25）
 
