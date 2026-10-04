@@ -33,6 +33,21 @@
   stroke-dasharray: 4 3;
 }
 
+/* 合流点：前提からの線が集まる横棒と、項目へ下りる 1 本。合流点そのものは小さな点 */
+.tree-lines .junction path {
+  fill: none;
+  stroke: var(--rule-strong);
+  stroke-width: 1.5;
+}
+
+.tree-lines .junction circle {
+  fill: var(--rule-strong);
+}
+
+.tree-lines .junction.locked {
+  opacity: 0.45;
+}
+
 /* 節 1 つ。塗りは verifiedLevel（公開ビュー・マトリクスと同じ 6 階調） */
 .tnode {
   position: absolute;
@@ -189,11 +204,18 @@
   --corner: var(--l5);
 }
 
-/* 他分野の前提（ゴーストノード）：灰色の点線。押すとその分野へ移る */
+/* 他分野の前提（ゴーストノード）：灰色の点線で、節より小さい。押すとその分野へ移る */
 .tnode.ghost {
+  padding: 4px 8px;
   background: transparent;
   color: var(--dim);
   border: 1.5px dashed var(--rule-strong);
+  font-size: 11px;
+}
+
+/* 項目名は 1 行（全体は分野のツリーへ移ると読める） */
+.tnode.ghost .tn {
+  -webkit-line-clamp: 1;
 }
 
 .tnode:hover {

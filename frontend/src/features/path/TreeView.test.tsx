@@ -142,6 +142,15 @@ describe('スキルツリー表示', () => {
     expect(node('go-02')).not.toHaveTextContent('深掘り候補')
   })
 
+  it('前提が 2 つ以上の項目（go-04）の上に合流点を描き、行き先が未解放なら薄くする', () => {
+    const { container } = renderTree()
+    // go-04 の前提は go-01（レベル 2）と react-01（他分野・レベル 0）
+    const junctions = container.querySelectorAll('g.junction')
+    expect(junctions).toHaveLength(1)
+    expect(junctions[0]).toHaveClass('locked')
+    expect(junctions[0].querySelector('circle')).not.toBeNull()
+  })
+
   it('他分野の前提はゴーストノードで、押すとその分野の学習パスへ移る', () => {
     renderTree()
     const ghost = screen.getByText('他分野：React').closest('a') as HTMLElement
