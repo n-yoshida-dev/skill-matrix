@@ -213,7 +213,8 @@ data/
     2026-09-20-tour-basics.json      判定。学習ログ1件 = 1ファイル。作ったら以後触らない（§3.3）
     2026-09-22-http-server.json
   state.json                         理解度。導出値。CLI が毎回まるごと書き直す。手で編集しない（§3.4）
-  settings.json                      検証ルール・鮮度・重みの設定（§8.3）。省略可
+  settings.json                      検証ルール・鮮度・重み・禁止語の設定（§8.3）。省略可
+  forbidden-words.local.json         本人しか知らない禁止語。コミットしない。省略可（§6）
 sources.local.json                   根拠の出どころ（学習ログのパス等）。コミットしない（§3.5）
 sources.local.json.example           その雛形。こちらはコミットする
 ```
@@ -621,7 +622,7 @@ go -C backend run ./cmd/skillmatrix verify --data ../data   # 検証だけ。sta
 
 | モード | やること | 終了コード 1 になる条件 |
 |---|---|---|
-| `recalc` | `roadmap.json` の検査（§2）→ `judgments/` を順に読み、形の検査と V1〜V8 → `state.json` を書き出す → 要約（分野ごとの進捗、変わった項目、違反、次にやること Top 5）を端末に出す | `roadmap.json` にエラー / 判定ファイルが読めない（外枠が壊れている・ファイル名と `loggedAt` の不一致・**外枠の**未知のフィールド。判定1件の中の問題は `rejected` に記録して続行。§3.3） |
+| `recalc` | `roadmap.json` の検査（§2）→ `judgments/` を順に読み、形の検査と V1〜V8 → `state.json` を書き出す → 要約（分野ごとの進捗、変わった項目、違反、次にやること Top 5）を端末に出す → 禁止語の検査 | `roadmap.json` にエラー / 判定ファイルが読めない（外枠が壊れている・ファイル名と `loggedAt` の不一致・**外枠の**未知のフィールド。判定1件の中の問題は `rejected` に記録して続行。§3.3） / **禁止語がある**（`state.json` は書いたうえで 1 を返す） |
 | `verify` | `recalc` と同じ検証を走らせ、**書き出す代わりに、コミットされた `state.json` と再計算結果をバイト単位で比べる** | `recalc` の条件に加えて：`rejected` が空でない / `state.json` が一致しない / `state.json` が無い |
 
 - 違反は「どのファイルの何件目の、どの項目の、どのルールか」を一覧で出す。V5〜V7 は記録されるが `verify` を失敗にはしない
@@ -629,6 +630,10 @@ go -C backend run ./cmd/skillmatrix verify --data ../data   # 検証だけ。sta
 - `rejected` で失敗にするのは、ロードマップに無い項目や範囲外のレベルが**コミットされた判定ファイルに残っている**のは
   直すべき不備だから。コミット前に `recalc` で気づいて直す。CI はその取りこぼしを止める
 - `state.json` の一致まで見るのは「AI が判定ファイルを書いたのに `recalc` を走らせ忘れた」「`state.json` を手でいじった」を止めるため
+- **禁止語の検査**：判定ファイルの公開される文（各判定の `rationale`・`evidenceRefs` と `unmatched`）に、`data/settings.json` の `forbiddenWords` と
+  `data/forbidden-words.local.json` の `forbiddenWords` の語が含まれていないかを調べる（英字の大文字・小文字は区別しない）。見つかったら「どのファイルのどの欄にどの語か」を全部出す。
+  `forbidden-words.local.json` は本人しか知らない語（勤め先の名前など）を書く手元のファイルで、コミットしない（`*.local.json`）。無ければ飛ばす（CI には無い）。
+  GitHub のユーザー名は `evidenceRefs` に必ず出るので、その一部を語にしない。形の検査で弾いた判定は見ない（棄却があればそれだけで `verify` は失敗する）
 - 終了コード：0 = 問題なし、1 = 上の条件、2 = 使い方の誤り・ファイル IO の失敗
 - 設定（閾値・上限・鮮度・重み）は `data/settings.json` から読む。無ければ `domain.DefaultRules()` 等の既定値（§8.3）。
   書かれていないキーは既定値のまま。**未知のキーは終了コード 1**（`confidenceThreshhold` のような打ち間違いで閾値が黙って既定値に戻るのを防ぐ）
@@ -893,11 +898,14 @@ CLI と画面が共通で読む。秘密情報は入らないのでコミット�
   "staleness": { "freshWithinDays": 30, "agingWithinDays": 90 },                          // §1.3。domain.DefaultStalenessConfig()
   "weights":   { "readiness": 1.0, "gap": 0.8, "staleness": 0.3, "unlocks": 0.5 },        // §5.1。domain.DefaultWeights()
   "nextActions": { "limit": 5 },
-  "site": { "repoUrl": "https://github.com/n-yoshida-dev/skill-matrix" }   // 画面のヘッダ・フッターが指すリポジトリ（§7.3）。v1.5 の利用者は自分のものに変える
+  "site": { "repoUrl": "https://github.com/n-yoshida-dev/skill-matrix" },  // 画面のヘッダ・フッターが指すリポジトリ（§7.3）。v1.5 の利用者は自分のものに変える
+  "forbiddenWords": ["所属", "企業", "面接", "転職", "応募", "人事"]          // 公開される文に入れてはいけない語（§6・§9）。CLI だけが使う。コードに既定の語は持たない
 }
 ```
 
-環境変数は v1 では使わない（サーバ版の一覧は §10.8）。ローカル固有の値は `sources.local.json`（§3.5）だけ。
+`forbiddenWords` には誰が見てもよい一般的な語だけを書く（このファイルはコミットされ、画面のビルドにも取り込まれる）。
+
+環境変数は v1 では使わない（サーバ版の一覧は §10.8）。ローカル固有の値は `sources.local.json`（§3.5）と `data/forbidden-words.local.json`（本人しか知らない禁止語。§6）だけ。
 
 ---
 
@@ -912,7 +920,8 @@ CLI と画面が共通で読む。秘密情報は入らないのでコミット�
   同梱に切り替える理由（オフライン閲覧・訪問者のプライバシー方針）が出たら `frontend/public/fonts/` に置く（2026-09-26 に本人了承）
 - **`data/judgments/` と `data/state.json` は実物をコミットする。** これは `../CLAUDE.md`「実データをコミットしない」の
   例外で、上の3点（本文を置かない・技術的事実だけ・公開前の目視）を守ることが条件。`backend/testdata/` は引き続きダミーだけ
-- 目視で固有名詞を拾い損ねる事故が起きたら、`verify` に禁止語リストの検査を足す。それでも不安なら Public をやめて Private に戻す（仕組みは変えずに済む）
+- **`recalc` と `verify` が禁止語を検査する**（§6。2026-10-04 に入れた。以前は「目視で拾い損ねる事故が起きたら足す」としていたのを、事故を待たずに前倒しした。`logs/decisions.md` 2026-10-03）。
+  本人しか知らない語（勤め先の名前など）は `data/forbidden-words.local.json` に書く。それでも不安なら Public をやめて Private に戻す（仕組みは変えずに済む）
 
 ---
 

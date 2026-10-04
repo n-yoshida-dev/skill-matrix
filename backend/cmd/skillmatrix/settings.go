@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/n-yoshida-dev/skill-matrix/internal/domain"
@@ -20,6 +21,9 @@ type settings struct {
 	weights   domain.Weights
 	// nextActionsLimit は recalc の要約に出す「次にやること」の件数。
 	nextActionsLimit int
+	// forbiddenWords は公開される文に入れてはいけない語（SPEC.md §9）。誰が見てもよい一般的な語だけを書く。
+	// 本人しか知らない語は forbidden-words.local.json（コミットしない）に書き、main.go で足す。
+	forbiddenWords []string
 }
 
 // defaultSettings は settings.json が無いときの既定値。値の正本は domain の Default*（SPEC.md §8.3）。
@@ -54,6 +58,7 @@ type wireSettings struct {
 	NextActions *struct {
 		Limit *int `json:"limit"`
 	} `json:"nextActions"`
+	ForbiddenWords *[]string `json:"forbiddenWords"`
 	// Site は画面だけが使う（ヘッダ・フッターのリンク先）。CLI は読まないが、未知のキーとして弾かないために定義する。
 	Site *struct {
 		RepoURL *string `json:"repoUrl"`
@@ -100,7 +105,49 @@ func parseSettings(raw []byte) (settings, error) {
 	if s.nextActionsLimit < 0 {
 		return settings{}, fmt.Errorf("settings.json: nextActions.limit は 0 以上にしてください（%d）", s.nextActionsLimit)
 	}
+	if w.ForbiddenWords != nil {
+		if err := checkWords(settingsFile, *w.ForbiddenWords); err != nil {
+			return settings{}, err
+		}
+		s.forbiddenWords = *w.ForbiddenWords
+	}
 	return s, nil
+}
+
+// localForbiddenFile は本人しか知らない禁止語を書くファイル（data/ の中。`*.local.json` なのでコミットされない）。
+const localForbiddenFile = "forbidden-words.local.json"
+
+// parseLocalForbidden は forbidden-words.local.json を読み、禁止語のリストを返す。
+// 形は `{"forbiddenWords": ["…"]}` だけ。未知のキーはエラーにする（打ち間違いで検査が黙って空になるのを防ぐ）。
+func parseLocalForbidden(raw []byte) ([]string, error) {
+	var w struct {
+		ForbiddenWords *[]string `json:"forbiddenWords"`
+	}
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&w); err != nil {
+		return nil, fmt.Errorf("%s を読めません: %w", localForbiddenFile, err)
+	}
+	if err := dec.Decode(new(json.RawMessage)); !errors.Is(err, io.EOF) {
+		return nil, fmt.Errorf("%s: JSON オブジェクトの後ろに余分なデータがあります", localForbiddenFile)
+	}
+	if w.ForbiddenWords == nil {
+		return nil, fmt.Errorf("%s: forbiddenWords がありません", localForbiddenFile)
+	}
+	if err := checkWords(localForbiddenFile, *w.ForbiddenWords); err != nil {
+		return nil, err
+	}
+	return *w.ForbiddenWords, nil
+}
+
+// checkWords は禁止語のリストに空の語が無いことを確かめる。空の語はどの文にも含まれるので、全部の判定が引っかかってしまう。
+func checkWords(file string, words []string) error {
+	for i, w := range words {
+		if strings.TrimSpace(w) == "" {
+			return fmt.Errorf("%s: forbiddenWords[%d] が空です", file, i)
+		}
+	}
+	return nil
 }
 
 // setIf は値が書かれていたときだけ上書きする。
