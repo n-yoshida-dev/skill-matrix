@@ -11,6 +11,7 @@ import { layoutTree, type Box, type Point, type TreeLayout } from './layout'
 // - 2 本の線が重なって 1 本に見えるところが無い（平行な線どうしは 8px 以上離れている。合流点の横棒と下りる線も含む）
 // - 前提が 2 つ以上ある項目には、すぐ上に合流点がある。前提からの線（他分野の前提を含む）はすべてその横棒に入り、
 //   合流点は項目の中心の真上にある。横棒と、そこから項目へ下りる線を、ほかの線が横切らない
+// - 合流点の文字（「n つとも必要 x/n」）の枠は、横棒と項目のあいだ・項目の幅の内側にあり、線と四角に重ならない
 // - 他分野の前提はゴーストノードとして、最上段ではなく、それを必要とする項目のすぐ上の段のあいだに置く。
 //   合流点がある項目では横棒の横、前提がそれ 1 つだけの項目では真上。ゴースト自身の依存は描かない
 // - 同じ他分野の前提を 2 つの項目が指すと、それぞれの横に 1 つずつ置く
@@ -224,6 +225,21 @@ function problems(l: TreeLayout): string[] {
       }
       if (!v && strictlyIn(s.a.y, j.y, t.y) && strictlyIn(j.x, s.a.x, s.b.x)) {
         out.push(`${s.edge} が ${j.to} の合流点から下りる線を横切る`)
+      }
+    }
+    // 合流点の文字：横棒と項目のあいだで、項目の幅の内側。線（横棒・下りる線を含む）と四角に重ならない
+    const lb = j.label
+    if (lb.x < t.x || lb.x + lb.w > t.x + t.w || lb.y <= j.y || lb.y + lb.h > t.y) {
+      out.push(`${j.to} の合流点の文字が、横棒と項目のあいだ・項目の幅の内側に無い`)
+    }
+    for (const s of lines)
+      if (cutsBox(s, lb)) out.push(`${s.edge} が ${j.to} の合流点の文字に重なる`)
+    for (const b of boxes) {
+      if (
+        overlaps(lb.x, lb.x + lb.w, b.box.x, b.box.x + b.box.w) &&
+        overlaps(lb.y, lb.y + lb.h, b.box.y, b.box.y + b.box.h)
+      ) {
+        out.push(`${b.name} が ${j.to} の合流点の文字に重なる`)
       }
     }
   }

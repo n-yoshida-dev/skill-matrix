@@ -5,6 +5,7 @@ import { needsAttention, stalenessConfig } from '../plan/matrix'
 import { stateOf } from '../plan/next'
 import { KIND_LABELS, layoutTree, nodeKind, type NodeKind, type Point } from './layout'
 import type { Path } from './path'
+import { isJunctionOpen, isLit, junctionCount, junctionLabel, missingPrereqs } from './unlock'
 import './tree.css'
 
 // スキルツリー表示（SPEC.md §7.2）。同じ分野の項目を、前提が上・派生が下になる階層図として描く。
@@ -12,6 +13,8 @@ import './tree.css'
 // 節は HTML の四角（文字の折り返しとキーボード操作のため）、線と合流点だけを SVG で引く。
 // 節の状態は 4 つ：未解放（灰・鍵）／解放済み・未着手（枠を強調。今ここに札）／習得済み（塗り = verifiedLevel）／深掘り候補（札）。
 // 他分野の前提は灰色の点線のゴーストノードで、合流点の横に小さく置き、押すとその分野のツリーへ移る。
+// 解放の条件の見せ方（2026-10-03 本人了承の 2・3）：前提が確認済みの線に色を付け、合流点に「n つとも必要 x/n」、
+// 鍵の項目に確認済みでない直接の前提の名前（「必要：○○」）を出す。どれも unlock.ts の同じ判定から出す。
 
 /** 線の曲がり角を丸める半径（px）。曲がり角と、線どうしの交差を見分けやすくする */
 const CORNER_R = 4
@@ -34,18 +37,18 @@ export function TreeView({ data, path, deepen, today }: Props) {
   const pathNode = new Map(path.nodes.map((n) => [n.item.key, n]))
   const names = new Map(data.roadmap.domains.flatMap((d) => d.items.map((it) => [it.key, it.name])))
   const domainNames = new Map(data.roadmap.domains.map((d) => [d.key, d.name]))
-  // 行き先の節が未解放なら、そこへ入る線と合流点も薄く（SPEC.md §7.2）。前提が未達でも習得済みの節へ入る線は薄くしない
-  const lockedTo = (key: string) => {
-    const to = pathNode.get(key)
-    return to ? nodeKind(to.state, to.ready) === 'locked' : false
-  }
+  const nameOf = (key: string) => shortName(names.get(key) ?? key)
+  // 色の付いた線を後から描き、交差するところでは色の付いた線が上に来るようにする
+  const edges = [...layout.edges].sort(
+    (a, b) => Number(isLit(a, states)) - Number(isLit(b, states)),
+  )
 
   return (
     <div className="tree-scroll">
       <div className="tree" style={{ width: layout.width, height: layout.height }}>
         <svg className="tree-lines" width={layout.width} height={layout.height} aria-hidden="true">
-          {layout.edges.map((e) => {
-            const cls = ['edge', e.ghost ? 'ghost' : '', lockedTo(e.to) ? 'locked' : ''].filter(
+          {edges.map((e) => {
+            const cls = ['edge', e.ghost ? 'ghost' : '', isLit(e, states) ? 'lit' : ''].filter(
               Boolean,
             )
             return (
@@ -55,12 +58,16 @@ export function TreeView({ data, path, deepen, today }: Props) {
           {layout.junctions.map((j) => {
             const to = byKey.get(j.to)
             if (!to) return null
-            const cls = ['junction', lockedTo(j.to) ? 'locked' : ''].filter(Boolean)
-            // 横棒と、合流点から項目の上辺へ下りる 1 本。合流点には小さな点を打つ
+            const count = junctionCount(j.to, layout.edges, states)
+            const cls = ['junction', isJunctionOpen(count) ? 'open' : ''].filter(Boolean)
+            // 横棒と、合流点から項目の上辺へ下りる 1 本。合流点には小さな点を打ち、下りる線の右に「n つとも必要 x/n」
             return (
               <g key={`junction-${j.to}`} className={cls.join(' ')}>
                 <path d={`M ${j.x1} ${j.y} H ${j.x2} M ${j.x} ${j.y} V ${to.y}`} />
                 <circle cx={j.x} cy={j.y} r={3} />
+                <text x={j.label.x} y={j.label.y + j.label.h - 3}>
+                  {junctionLabel(count)}
+                </text>
               </g>
             )
           })}
@@ -87,19 +94,24 @@ export function TreeView({ data, path, deepen, today }: Props) {
           const st = pn?.state ?? stateOf(states, n.key)
           const kind = nodeKind(st, pn?.ready ?? true)
           const cls = nodeClass(kind, st, needsAttention(st, today, cfg), pn?.status === 'current')
+          // 鍵の項目には、確認済みでない直接の前提の名前を出す（レベルは 0 と決まっているので出さない）
+          const need =
+            kind === 'locked' && pn
+              ? `必要：${missingPrereqs(pn.item, states).map(nameOf).join('、')}`
+              : ''
           return (
             <Link
               key={n.key}
               to={`/plan/item/${n.key}`}
               className={cls}
               style={style}
-              aria-label={`${n.key} ${names.get(n.key) ?? ''}（${KIND_LABELS[kind]}・レベル ${st.verifiedLevel}）`}
+              aria-label={`${n.key} ${names.get(n.key) ?? ''}（${KIND_LABELS[kind]}・レベル ${st.verifiedLevel}）${need}`}
             >
               <span className="tk">{n.key}</span>
-              <span className="tn">{shortName(names.get(n.key) ?? n.key)}</span>
+              <span className="tn">{nameOf(n.key)}</span>
               <span className="ts">
                 {kind === 'locked' ? <LockIcon /> : null}
-                レベル {st.verifiedLevel}
+                {need ? <span className="need">{need}</span> : <>レベル {st.verifiedLevel}</>}
                 {pn?.status === 'current' ? <span className="tb now">今ここ</span> : null}
                 {deepen.has(n.key) && kind === 'done' ? (
                   <span className="tb">深掘り候補</span>
