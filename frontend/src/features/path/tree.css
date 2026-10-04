@@ -23,9 +23,10 @@
   stroke-width: 1.5;
 }
 
-/* 行き先がまだ解放されていない線は薄く */
-.tree-lines .edge.locked {
-  opacity: 0.45;
+/* 前提が確認済みの線に色を付ける（2026-10-03 本人了承の 2）。色は確認済みの節の塗りと同じ系統 */
+.tree-lines .edge.lit {
+  stroke: var(--l3);
+  stroke-width: 2.5;
 }
 
 /* ゴーストノードからの線は点線 */
@@ -33,7 +34,8 @@
   stroke-dasharray: 4 3;
 }
 
-/* 合流点：前提からの線が集まる横棒と、項目へ下りる 1 本。合流点そのものは小さな点 */
+/* 合流点：前提からの線が集まる横棒と、項目へ下りる 1 本。合流点そのものは小さな点。
+   前提がすべて確認済み（x = n）になったら、横棒と下りる線にも色を付ける */
 .tree-lines .junction path {
   fill: none;
   stroke: var(--rule-strong);
@@ -44,8 +46,19 @@
   fill: var(--rule-strong);
 }
 
-.tree-lines .junction.locked {
-  opacity: 0.45;
+.tree-lines .junction text {
+  fill: var(--dim);
+  font-size: 10px;
+}
+
+.tree-lines .junction.open path {
+  stroke: var(--l3);
+  stroke-width: 2.5;
+}
+
+.tree-lines .junction.open circle,
+.tree-lines .junction.open text {
+  fill: var(--l3);
 }
 
 /* 節 1 つ。塗りは verifiedLevel（公開ビュー・マトリクスと同じ 6 階調） */
@@ -118,6 +131,17 @@
 .tnode .lock {
   fill: currentColor;
   stroke: currentColor;
+}
+
+/* 鍵の項目の「必要：○○」。名前が長いので折り返し、3 行まで（はみ出す分は「…」） */
+.tnode .need {
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* 解放済み・未着手：枠を強調 */

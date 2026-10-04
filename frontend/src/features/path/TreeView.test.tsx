@@ -8,7 +8,9 @@ import { TreeView } from './TreeView'
 // スキルツリー表示の描き分け（SPEC.md §7.2 の 4 状態とゴーストノード）を確かめる。
 // 配置の計算そのものは layout.test.ts が確かめる。ここは「どの節がどう見えるか」だけ。
 // 「何を保証しているか」：
-// - 未解放（前提にレベル 0 がある）は灰色で鍵マーク、そこへ入る線は薄い
+// - 未解放（前提にレベル 0 がある）は灰色で鍵マーク、確認済みでない直接の前提の名前が「必要：」で出る
+// - 前提が確認済みの線だけに色が付く（行き先の状態は見ない）
+// - 前提が 2 つ以上の項目には合流点があり、「n つとも必要 x/n」が出る。そろったときだけ下りる線に色が付く
 // - 解放済み・未着手は枠を強調し、今ここの節に「今ここ」の札
 // - 習得済みは塗り = verifiedLevel。要再確認は枠線、上の段にも根拠があれば角の三角
 // - 深掘り候補は習得済みの節にだけ札が付く
@@ -92,24 +94,31 @@ function renderTree(deepen: string[] = []) {
 const node = (key: string) => screen.getByText(key).closest('a') as HTMLElement
 
 describe('スキルツリー表示', () => {
-  it('未解放は灰色で鍵マーク、そこへ入る線は薄い', () => {
-    const { container } = renderTree()
+  it('未解放は灰色で鍵マーク、確認済みでない直接の前提の名前が「必要：」で出る', () => {
+    renderTree()
     const n = node('go-03')
     expect(n).toHaveClass('locked')
     expect(n.querySelector('svg.lock')).not.toBeNull()
     expect(n).toHaveAccessibleName(/未解放/)
-    // go-02 → go-03 の線（go-03 は未解放）
-    expect(container.querySelectorAll('path.edge.locked').length).toBeGreaterThan(0)
+    expect(n).toHaveTextContent('必要：メソッド')
+    // go-04 の前提は go-01（確認済み）と react-01（他分野・未確認）。出るのは react-01 だけ
+    expect(node('go-04')).toHaveTextContent('必要：fetch')
+    expect(node('go-04')).not.toHaveTextContent('基本構文')
   })
 
-  it('前提が未達でも習得済みの節は未解放にせず、そこへ入る線も薄くしない', () => {
+  it('前提が確認済みの線だけに色が付く。行き先が未解放でも付く', () => {
     const { container } = renderTree()
+    // 線は 5 本：go-01→go-02、go-02→go-03、go-01→go-04、react-01→go-04、go-03→go-06
+    expect(container.querySelectorAll('path.edge')).toHaveLength(5)
+    // 色が付くのは前提が go-01（レベル 2）の 2 本だけ。go-01→go-04 の行き先 go-04 は未解放
+    expect(container.querySelectorAll('path.edge.lit')).toHaveLength(2)
+  })
+
+  it('前提が未達でも習得済みの節は未解放にせず、「必要：」も出さない', () => {
+    renderTree()
     expect(node('go-06')).toHaveClass('done', 'l2')
     expect(node('go-06').querySelector('svg.lock')).toBeNull()
-    // 線は go-01→go-02、go-02→go-03、go-01→go-04、react-01→go-04、go-03→go-06 の順に描く
-    const edges = container.querySelectorAll('path.edge')
-    expect(edges).toHaveLength(5)
-    expect(edges[4]).not.toHaveClass('locked')
+    expect(node('go-06')).not.toHaveTextContent('必要：')
   })
 
   it('到達状態が空の節は「到達状態 未記入」と分かる', () => {
@@ -142,13 +151,15 @@ describe('スキルツリー表示', () => {
     expect(node('go-02')).not.toHaveTextContent('深掘り候補')
   })
 
-  it('前提が 2 つ以上の項目（go-04）の上に合流点を描き、行き先が未解放なら薄くする', () => {
+  it('前提が 2 つ以上の項目（go-04）の上に合流点を描き、「2 つとも必要 1/2」と出す', () => {
     const { container } = renderTree()
     // go-04 の前提は go-01（レベル 2）と react-01（他分野・レベル 0）
     const junctions = container.querySelectorAll('g.junction')
     expect(junctions).toHaveLength(1)
-    expect(junctions[0]).toHaveClass('locked')
+    expect(junctions[0]).toHaveTextContent('2 つとも必要 1/2')
     expect(junctions[0].querySelector('circle')).not.toBeNull()
+    // 前提がそろっていないので、合流点から下りる線には色が付かない
+    expect(junctions[0]).not.toHaveClass('open')
   })
 
   it('他分野の前提はゴーストノードで、押すとその分野の学習パスへ移る', () => {

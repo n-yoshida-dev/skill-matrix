@@ -10,9 +10,9 @@ import type { ItemState, RoadmapDomain } from '../../data/types'
 
 /** 大きさと間隔（px）。画面（TreeView）はここで計算した位置に四角と線を置く */
 export const TREE_GEOMETRY = {
-  /** 節の幅・高さ。高さは札（今ここ・深掘り候補・到達状態 未記入）が 2 行に折り返しても収まる分 */
+  /** 節の幅・高さ。高さは、項目名 2 行と鍵の項目の「必要：」3 行（前提 3 つの名前）が収まる分 */
   nodeW: 172,
-  nodeH: 88,
+  nodeH: 104,
   /** 列のあいだ。2 段以上離れた線がちょうど 1 本通れる幅（laneMargin の 2 倍） */
   gapX: 24,
   /** 段のあいだ（最小） */
@@ -40,8 +40,17 @@ export const TREE_GEOMETRY = {
   topMargin: 20,
   /** 合流点の帯（無ければ最後の横の線）から、次の段の節の上辺まで */
   bottomMargin: 12,
-  /** 合流点の帯の高さ（ゴーストノードを置かないとき） */
-  junctionBand: 12,
+  /** 合流点の帯の高さ（ゴーストノードを置かないとき）。横棒の下に合流点の文字が入る分 */
+  junctionBand: 24,
+  /** 合流点の帯の上端から横棒まで（ゴーストノードを置かないとき） */
+  junctionBarTop: 6,
+  /** 合流点の文字「n つとも必要 x/n」の枠。項目へ下りる線のすぐ右、横棒（ゴーストノードがあればその下端）の下に置く */
+  labelW: 80,
+  labelH: 13,
+  /** 文字と、項目へ下りる線のあいだ */
+  labelSide: 6,
+  /** 文字と、その上の横棒・ゴーストノードのあいだ */
+  labelGap: 3,
   /** ゴーストノードのまわりのすき間 */
   ghostClear: 6,
   /** ゴーストノードと横棒をつなぐ線の長さ（最短） */
@@ -103,6 +112,8 @@ export interface Junction {
   y: number
   x1: number
   x2: number
+  /** 合流点の文字（「n つとも必要 x/n」）を置く枠。項目の幅の内側にあり、線と四角に重ならない */
+  label: Box
 }
 
 export interface TreeLayout {
@@ -249,6 +260,7 @@ export function layoutTree(
   // 縦の位置：段のあいだの高さは、横に走る線の本数と合流点の帯（ゴーストノードを積む段数）で決まる
   const rowTop: number[] = []
   const barY: number[] = []
+  const labelY: number[] = []
   let y = g.pad
   byRow.forEach((row, r) => {
     rowTop[r] = y
@@ -269,7 +281,9 @@ export function layoutTree(
         : hasJunction
           ? g.junctionBand
           : 0
-    barY[r] = levels > 0 ? cursor + bandH - g.ghostClear - g.ghostH / 2 : cursor + bandH / 2
+    barY[r] = levels > 0 ? cursor + bandH - g.ghostClear - g.ghostH / 2 : cursor + g.junctionBarTop
+    // 合流点の文字は横棒の下。ゴーストノードのある段のあいだでは、横に並ぶゴーストノードの下端より下
+    labelY[r] = barY[r] + (levels > 0 ? g.ghostH / 2 : 0) + g.labelGap
     y = Math.max(bottom + g.minGapY, cursor + bandH + g.bottomMargin)
   })
   const top = (s: Slot) => rowTop[s.row]
@@ -354,7 +368,14 @@ export function layoutTree(
   const junctionList: Junction[] = [...junctions].map((key) => {
     const t = slots.get(key) as Slot
     const bar = bars.get(key) as Bar
-    return { to: key, x: t.cx + dx, y: barY[t.row - 1], x1: bar.x1 + dx, x2: bar.x2 + dx }
+    // 文字は項目へ下りる線のすぐ右。項目の幅の内側なので、ほかの項目へ下りる線や段を縦に貫く線とは重ならない
+    const label = {
+      x: t.cx + g.labelSide + dx,
+      y: labelY[t.row - 1],
+      w: g.labelW,
+      h: g.labelH,
+    }
+    return { to: key, x: t.cx + dx, y: barY[t.row - 1], x1: bar.x1 + dx, x2: bar.x2 + dx, label }
   })
 
   return {
