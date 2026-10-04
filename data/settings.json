@@ -18,5 +18,6 @@
   },
   "site": {
     "repoUrl": "https://github.com/n-yoshida-dev/skill-matrix"
-  }
+  },
+  "forbiddenWords": ["所属", "企業", "面接", "転職", "応募", "人事"]
 }

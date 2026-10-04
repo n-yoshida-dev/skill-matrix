@@ -27,7 +27,7 @@ import (
 // 終了コード（SPEC.md §6）。
 const (
 	exitOK     = 0 // 問題なし
-	exitFailed = 1 // データの不備（ロードマップのエラー・判定ファイルの外枠の崩れ・verify の棄却や不一致）
+	exitFailed = 1 // データの不備（ロードマップのエラー・判定ファイルの外枠の崩れ・禁止語・verify の棄却や不一致）
 	exitUsage  = 2 // 使い方の誤り・ファイルの読み書きの失敗
 )
 
@@ -84,12 +84,13 @@ func run(args []string, stdout, stderr io.Writer, now time.Time) int {
 		fmt.Fprintf(stderr, "エラー: %v\n", err)
 		return exitUsage
 	}
+	hits := findForbidden(in.files, in.forbiddenWords)
 
 	statePath := filepath.Join(*dataDir, stateFile)
 	if mode == "recalc" {
-		return doRecalc(statePath, encoded, in, res, stdout, stderr, now)
+		return doRecalc(statePath, encoded, in, res, hits, stdout, stderr, now)
 	}
-	return doVerify(statePath, encoded, res, stdout, stderr)
+	return doVerify(statePath, encoded, res, hits, stdout, stderr)
 }
 
 // dataError はデータの不備を表す（終了コード 1）。これ以外のエラーはファイルの読み書きの失敗（終了コード 2）。
@@ -121,6 +122,8 @@ type inputs struct {
 	roadmap  domain.Roadmap
 	settings settings
 	files    []judgment.File
+	// forbiddenWords は公開される文に入れてはいけない語。settings.json の語に forbidden-words.local.json の語を足したもの。
+	forbiddenWords []string
 	// warnings はロードマップの警告。止めずに表示だけする。
 	warnings []string
 }
@@ -158,6 +161,21 @@ func load(dataDir string) (inputs, error) {
 			return in, &dataError{problems: []string{err.Error()}}
 		}
 		in.settings = s
+	}
+	in.forbiddenWords = append([]string(nil), in.settings.forbiddenWords...)
+
+	// 本人しか知らない禁止語は省略できる（コミットしないので、CI のチェックアウトには無い。SPEC.md §9）
+	raw, err = os.ReadFile(filepath.Join(dataDir, localForbiddenFile))
+	switch {
+	case errors.Is(err, fs.ErrNotExist):
+	case err != nil:
+		return in, fmt.Errorf("%s を読めません: %w", localForbiddenFile, err)
+	default:
+		words, err := parseLocalForbidden(raw)
+		if err != nil {
+			return in, &dataError{problems: []string{err.Error()}}
+		}
+		in.forbiddenWords = append(in.forbiddenWords, words...)
 	}
 
 	in.files, err = loadJudgments(filepath.Join(dataDir, judgmentsDir))
@@ -216,7 +234,8 @@ func loadJudgments(dir string) ([]judgment.File, error) {
 
 // doRecalc は state.json を書き直し、要約を出す。
 // 棄却があっても書き出す（何が弾かれたかを state.json で見られるように）が、verify は失敗することを知らせる。
-func doRecalc(statePath string, encoded []byte, in inputs, res recalcResult, stdout, stderr io.Writer, now time.Time) int {
+// 禁止語があっても書き出すが、終了コード 1 を返す（公開される文なので、コミット前に必ず直させる。SPEC.md §6）。
+func doRecalc(statePath string, encoded []byte, in inputs, res recalcResult, hits []forbiddenHit, stdout, stderr io.Writer, now time.Time) int {
 	// 変わった項目を出すために、書き直す前の state.json を読む。無い・読めないときは比べない
 	var prev *stateDoc
 	raw, err := os.ReadFile(statePath)
@@ -245,16 +264,34 @@ func doRecalc(statePath string, encoded []byte, in inputs, res recalcResult, std
 	if len(res.doc.Rejected) > 0 {
 		fmt.Fprintf(stdout, "\n棄却された判定が %d 件あります。このままコミットすると CI の verify が失敗します。判定ファイルを直してください\n", len(res.doc.Rejected))
 	}
+	if len(hits) > 0 {
+		printForbidden(stderr, hits)
+		fmt.Fprintln(stderr, "失敗: 公開される文に禁止語があります。判定ファイルの文を言い換えてから、もう一度 recalc してください")
+		return exitFailed
+	}
 	return exitOK
 }
 
-// doVerify は state.json を書かずに、棄却が無いことと、コミットされた state.json が再計算結果とバイト単位で一致することを確かめる。
-func doVerify(statePath string, encoded []byte, res recalcResult, stdout, stderr io.Writer) int {
+// printForbidden は禁止語が見つかった場所を1行ずつ出す。
+func printForbidden(w io.Writer, hits []forbiddenHit) {
+	fmt.Fprintf(w, "禁止語が %d 件あります\n", len(hits))
+	for _, h := range hits {
+		fmt.Fprintf(w, "  %s\n", h)
+	}
+}
+
+// doVerify は state.json を書かずに、棄却と禁止語が無いことと、コミットされた state.json が再計算結果とバイト単位で一致することを確かめる。
+func doVerify(statePath string, encoded []byte, res recalcResult, hits []forbiddenHit, stdout, stderr io.Writer) int {
 	printViolations(stdout, res.doc)
 
 	failed := false
 	if len(res.doc.Rejected) > 0 {
 		fmt.Fprintf(stderr, "失敗: 棄却された判定が %d 件あります。判定ファイルを直して recalc してください\n", len(res.doc.Rejected))
+		failed = true
+	}
+	if len(hits) > 0 {
+		printForbidden(stderr, hits)
+		fmt.Fprintln(stderr, "失敗: 公開される文に禁止語があります。判定ファイルの文を言い換えてください")
 		failed = true
 	}
 
@@ -276,7 +313,7 @@ func doVerify(statePath string, encoded []byte, res recalcResult, stdout, stderr
 	if failed {
 		return exitFailed
 	}
-	fmt.Fprintf(stdout, "\nOK: 棄却は 0 件で、%s は再計算結果と一致しています\n", stateFile)
+	fmt.Fprintf(stdout, "\nOK: 棄却と禁止語は 0 件で、%s は再計算結果と一致しています\n", stateFile)
 	return exitOK
 }
 

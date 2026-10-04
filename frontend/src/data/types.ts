@@ -107,6 +107,8 @@ export interface Settings {
   nextActions?: { limit?: number }
   /** 画面のフッターとヘッダが指すリポジトリ（v1.5 のテンプレート利用者は自分のものに変える） */
   site?: { repoUrl?: string }
+  /** 公開される文に入れてはいけない語。CLI の recalc / verify だけが使い、画面は読まない（SPEC.md §8.3） */
+  forbiddenWords?: string[]
 }
 
 /** 画面に渡す一式 */

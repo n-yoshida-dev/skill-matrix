@@ -255,6 +255,73 @@ func TestRun_設定(t *testing.T) {
 	})
 }
 
+func TestRun_禁止語(t *testing.T) {
+	// わざと語を入れた判定（理由の文に「伏せる語」、付かなかった記述に「ダミー社」）
+	tainted := strings.Replace(okJudgment, `"rationale": "確認問題に答えた"`, `"rationale": "伏せる語の想定問題に答えた"`, 1)
+	tainted = strings.Replace(tainted, `"unmatched": []`, `"unmatched": ["ダミー社の話をした"]`, 1)
+
+	t.Run("settings.json の語があれば verify は終了コード 1 で、場所を出す", func(t *testing.T) {
+		dir := newDataDir(t, map[string]string{"2026-08-01-tour.json": tainted})
+		writeFile(t, filepath.Join(dir, settingsFile), `{"forbiddenWords": ["伏せる語"]}`)
+		runCLI("recalc", "--data", dir)
+		code, _, errOut := runCLI("verify", "--data", dir)
+		if code != exitFailed || !strings.Contains(errOut, "2026-08-01-tour.json: judgments[0].rationale に「伏せる語」") {
+			t.Errorf("終了コード = %d, stderr = %s", code, errOut)
+		}
+	})
+
+	t.Run("recalc も終了コード 1。state.json は書く（棄却と同じく、何が起きたかを見られるように）", func(t *testing.T) {
+		dir := newDataDir(t, map[string]string{"2026-08-01-tour.json": tainted})
+		writeFile(t, filepath.Join(dir, settingsFile), `{"forbiddenWords": ["伏せる語"]}`)
+		code, _, errOut := runCLI("recalc", "--data", dir)
+		if code != exitFailed || !strings.Contains(errOut, "禁止語が 1 件") {
+			t.Errorf("終了コード = %d, stderr = %s", code, errOut)
+		}
+		if _, err := os.Stat(filepath.Join(dir, stateFile)); err != nil {
+			t.Errorf("state.json が書かれていない: %v", err)
+		}
+	})
+
+	t.Run("forbidden-words.local.json の語も調べる", func(t *testing.T) {
+		dir := newDataDir(t, map[string]string{"2026-08-01-tour.json": tainted})
+		writeFile(t, filepath.Join(dir, localForbiddenFile), `{"forbiddenWords": ["ダミー社"]}`)
+		runCLI("recalc", "--data", dir)
+		code, _, errOut := runCLI("verify", "--data", dir)
+		if code != exitFailed || !strings.Contains(errOut, "unmatched[0] に「ダミー社」") {
+			t.Errorf("終了コード = %d, stderr = %s", code, errOut)
+		}
+	})
+
+	t.Run("語のファイルがどちらも無ければ調べずに通る（CI には手元のファイルが無い）", func(t *testing.T) {
+		dir := newDataDir(t, map[string]string{"2026-08-01-tour.json": tainted})
+		runCLI("recalc", "--data", dir)
+		if code, _, errOut := runCLI("verify", "--data", dir); code != exitOK {
+			t.Errorf("終了コード = %d, stderr = %s", code, errOut)
+		}
+	})
+
+	t.Run("語の無い判定は通る", func(t *testing.T) {
+		dir := newDataDir(t, map[string]string{"2026-08-01-tour.json": okJudgment})
+		writeFile(t, filepath.Join(dir, settingsFile), `{"forbiddenWords": ["伏せる語"]}`)
+		writeFile(t, filepath.Join(dir, localForbiddenFile), `{"forbiddenWords": ["ダミー社"]}`)
+		if code, _, errOut := runCLI("recalc", "--data", dir); code != exitOK {
+			t.Fatalf("recalc の終了コード = %d, stderr = %s", code, errOut)
+		}
+		if code, _, errOut := runCLI("verify", "--data", dir); code != exitOK {
+			t.Errorf("verify の終了コード = %d, stderr = %s", code, errOut)
+		}
+	})
+
+	t.Run("forbidden-words.local.json が崩れていたら止まる", func(t *testing.T) {
+		dir := newDataDir(t, map[string]string{"2026-08-01-tour.json": okJudgment})
+		writeFile(t, filepath.Join(dir, localForbiddenFile), `{"forbiddenWord": ["ダミー社"]}`)
+		code, _, errOut := runCLI("verify", "--data", dir)
+		if code != exitFailed || !strings.Contains(errOut, localForbiddenFile) {
+			t.Errorf("終了コード = %d, stderr = %s", code, errOut)
+		}
+	})
+}
+
 func TestRun_使い方の誤り(t *testing.T) {
 	tests := []struct {
 		name string
