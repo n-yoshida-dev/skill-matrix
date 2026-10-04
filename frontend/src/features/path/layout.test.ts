@@ -7,8 +7,8 @@ import { layoutTree, type Box, type Point, type TreeLayout } from './layout'
 // 「何を保証しているか」：
 // - 段は依存の深さ（前提なし = 0 段、前提の最大段 + 1）。前提が上、派生が下。同じ段は定義順で左から
 // - 線は縦と横だけの折れ線で、前提の四角の下辺から出て、項目の四角の上辺か合流点の横棒で終わる
-// - どの線も、四角（ゴーストノードを含む）の内側を通らない。四角どうしも重ならない
-// - 2 本の線が重なって 1 本に見えるところが無い（平行な線どうしは 8px 以上離れている）
+// - どの線も（合流点の横棒と、そこから下りる線を含めて）、四角（ゴーストノードを含む）の内側を通らない。四角どうしも重ならない
+// - 2 本の線が重なって 1 本に見えるところが無い（平行な線どうしは 8px 以上離れている。合流点の横棒と下りる線も含む）
 // - 前提が 2 つ以上ある項目には、すぐ上に合流点がある。前提からの線（他分野の前提を含む）はすべてその横棒に入り、
 //   合流点は項目の中心の真上にある。横棒と、そこから項目へ下りる線を、ほかの線が横切らない
 // - 他分野の前提はゴーストノードとして、最上段ではなく、それを必要とする項目のすぐ上の段のあいだに置く。
@@ -130,7 +130,22 @@ function problems(l: TreeLayout): string[] {
     ...l.ghosts.map((g) => ({ name: `ゴースト ${g.key}（${g.to} の前提）`, box: g as Box })),
   ]
 
-  for (const s of segs) {
+  // 合流点の横棒と、そこから項目へ下りる線（画面は Junction から描く）も、重なりと四角の検査に入れる
+  const junctionSegs: Seg[] = l.junctions.flatMap((j) => {
+    const t = nodeOf(l, j.to)
+    return [
+      { a: { x: j.x1, y: j.y }, b: { x: j.x2, y: j.y }, edge: `合流点 ${j.to} の横棒`, to: j.to },
+      {
+        a: { x: j.x, y: j.y },
+        b: { x: j.x, y: t.y },
+        edge: `合流点 ${j.to} から下りる線`,
+        to: j.to,
+      },
+    ]
+  })
+  const lines = [...segs, ...junctionSegs]
+
+  for (const s of lines) {
     if (s.a.x !== s.b.x && s.a.y !== s.b.y) out.push(`${s.edge} に斜めの線がある`)
     for (const b of boxes) if (cutsBox(s, b.box)) out.push(`${s.edge} が ${b.name} の内側を通る`)
   }
@@ -143,10 +158,10 @@ function problems(l: TreeLayout): string[] {
       }
     }
   }
-  for (let i = 0; i < segs.length; i++) {
-    for (let j = i + 1; j < segs.length; j++) {
-      const p = segs[i]
-      const q = segs[j]
+  for (let i = 0; i < lines.length; i++) {
+    for (let j = i + 1; j < lines.length; j++) {
+      const p = lines[i]
+      const q = lines[j]
       if (p.edge === q.edge) continue
       const bothV = p.a.x === p.b.x && q.a.x === q.b.x
       const bothH = p.a.y === p.b.y && q.a.y === q.b.y
