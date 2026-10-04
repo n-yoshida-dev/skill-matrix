@@ -213,7 +213,8 @@ data/
     2026-09-20-tour-basics.json      判定。学習ログ1件 = 1ファイル。作ったら以後触らない（§3.3）
     2026-09-22-http-server.json
   state.json                         理解度。導出値。CLI が毎回まるごと書き直す。手で編集しない（§3.4）
-  settings.json                      検証ルール・鮮度・重みの設定（§8.3）。省略可
+  settings.json                      検証ルール・鮮度・重み・禁止語の設定（§8.3）。省略可
+  forbidden-words.local.json         本人しか知らない禁止語。コミットしない。省略可（§6）
 sources.local.json                   根拠の出どころ（学習ログのパス等）。コミットしない（§3.5）
 sources.local.json.example           その雛形。こちらはコミットする
 ```
