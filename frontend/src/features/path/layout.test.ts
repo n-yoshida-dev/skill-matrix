@@ -517,8 +517,8 @@ describe('節の状態', () => {
   it('「実装の根拠あり・基礎は未確認」は、上の段に印があり下に印の無い段がある項目だけ', () => {
     expect(basicsUnverified(st(0, [3]))).toBe(true)
     expect(basicsUnverified(st(1, [1, 3]))).toBe(true)
-    // 上の段の印の下がすべて埋まっていれば出さない
-    expect(basicsUnverified(st(2, [1, 2, 3]))).toBe(false)
+    // 印が 1 から途切れずに付いていれば（＝印がレベル以下なら）出さない
+    expect(basicsUnverified(st(3, [1, 2, 3]))).toBe(false)
     expect(basicsUnverified(st(2, [1, 2]))).toBe(false)
     expect(basicsUnverified(st(0, []))).toBe(false)
   })
