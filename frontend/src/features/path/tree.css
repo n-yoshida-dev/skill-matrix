@@ -1,4 +1,6 @@
-/* スキルツリー表示（SPEC.md §7.2）。色は index.css の名前だけを使い、塗り・枠線・角の三角はマトリクス（§7.1）と同じ符号化 */
+/* スキルツリー表示（SPEC.md §7.2）。色は index.css の名前だけを使う。
+   節の状態は 3 つ（前提待ち・挑戦できる・確認済み）だけで描き分け、要再確認の枠・上位の根拠の三角・レベルによる色の濃淡・点線は使わない
+   （2026-10-03 本人了承の 1・5。それらはマトリクスと項目詳細で見せる） */
 
 /* 図が画面より広いときは、図だけを横に送る（ページ全体は横にはみ出さない） */
 .tree-scroll {
@@ -29,11 +31,6 @@
   stroke-width: 2.5;
 }
 
-/* ゴーストノードからの線は点線 */
-.tree-lines .edge.ghost {
-  stroke-dasharray: 4 3;
-}
-
 /* 合流点：前提からの線が集まる横棒と、項目へ下りる 1 本。合流点そのものは小さな点。
    前提がすべて確認済み（x = n）になったら、横棒と下りる線にも色を付ける */
 .tree-lines .junction path {
@@ -61,7 +58,7 @@
   fill: var(--l3);
 }
 
-/* 節 1 つ。塗りは verifiedLevel（公開ビュー・マトリクスと同じ 6 階調） */
+/* 節 1 つ */
 .tnode {
   position: absolute;
   display: flex;
@@ -94,7 +91,7 @@
   overflow: hidden;
 }
 
-/* レベルと札の行。札が多いと 2 行に折り返す（節の幅から切れて読めなくならないように） */
+/* 状態と札の行。札が多いと 2 行に折り返す（節の幅から切れて読めなくならないように） */
 .tnode .ts {
   display: flex;
   flex-wrap: wrap;
@@ -110,19 +107,12 @@
   border-radius: 3px;
 }
 
-/* 到達状態が未記入の札。字の色は節の字の色のまま（塗った節の上でも読めるように。学習パスの .unset の灰色は使わない） */
-.tnode .tb.blank {
-  border-style: dashed;
-  font-style: italic;
+/* 「実装の根拠あり・基礎は未確認」（上位の根拠ありのバッジの代わりに文字で出す。2026-10-03 本人了承の 5） */
+.tnode .note {
+  white-space: normal;
 }
 
-.tnode .tb.now {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--paper);
-}
-
-/* 未解放：灰色・鍵マーク */
+/* 前提待ち：灰色・鍵マーク */
 .tnode.locked {
   color: var(--dim);
   opacity: 0.8;
@@ -144,97 +134,47 @@
   overflow: hidden;
 }
 
-/* 解放済み・未着手：枠を強調 */
+/* 挑戦できる：太い枠と「挑戦できる」の文字 */
 .tnode.open {
   background: var(--panel);
   box-shadow: inset 0 0 0 2px var(--ink);
 }
 
-/* 今ここ：朱の枠（公開ビューの選択中と同じ「目を向ける 1 か所」の色） */
-.tnode.open.current {
-  box-shadow: inset 0 0 0 2px var(--accent);
+.tnode .challenge {
+  font-weight: 700;
 }
 
-/* 習得済み：塗り = verifiedLevel。L1 は明るい地に濃い字、L2 以上は濃い地に白い字 */
-.tnode.l1 {
-  background: var(--l1);
-  color: var(--on-light);
-}
-.tnode.l2 {
-  background: var(--l2);
-  color: var(--on-dark);
-}
-.tnode.l3 {
+/* 確認済み：塗りは 1 色（色の付いた線と同じ系統）。レベルは色の濃さではなく●の数と「Lv n」で見せる */
+.tnode.done {
   background: var(--l3);
   color: var(--on-dark);
 }
-.tnode.l4 {
-  background: var(--l4);
-  color: var(--on-dark);
-}
-.tnode.l5 {
-  background: var(--l5);
-  color: var(--on-dark);
-}
 
-.tnode.l1 .tk,
-.tnode.l2 .tk,
-.tnode.l3 .tk,
-.tnode.l4 .tk,
-.tnode.l5 .tk {
+.tnode.done .tk {
   color: inherit;
   opacity: 0.85;
 }
 
-/* 要再確認 = 枠線（マトリクスと同じ橙。内側に地の色の隙間を挟む） */
-.tnode.attn {
-  box-shadow:
-    inset 0 0 0 2px var(--attention),
-    inset 0 0 0 3px var(--paper);
+.tnode .lv {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
 }
 
-/* 上の段にも根拠あり = 右上の三角（マトリクスと同じ） */
-.tnode.up::before,
-.tnode.up::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  clip-path: polygon(0 0, 100% 0, 100% 100%);
+.tnode .dots {
+  letter-spacing: 1px;
 }
 
-.tnode.up::before {
-  width: 17px;
-  height: 17px;
-  background: var(--paper);
-}
-
-.tnode.up::after {
-  width: 14px;
-  height: 14px;
-  background: var(--corner);
-}
-
-.tnode.up-l2 {
-  --corner: var(--l2);
-}
-.tnode.up-l3 {
-  --corner: var(--l3);
-}
-.tnode.up-l4 {
-  --corner: var(--l4);
-}
-.tnode.up-l5 {
-  --corner: var(--l5);
-}
-
-/* 他分野の前提（ゴーストノード）：灰色の点線で、節より小さい。押すとその分野へ移る */
+/* 他分野の前提（ゴーストノード）：節より小さい。押すとその分野へ移る。状態の見せ方は分野の項目と同じ */
 .tnode.ghost {
   padding: 4px 8px;
-  background: transparent;
-  color: var(--dim);
-  border: 1.5px dashed var(--rule-strong);
   font-size: 11px;
+}
+
+.tnode.ghost.locked {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--rule-strong);
 }
 
 /* 項目名は 1 行（全体は分野のツリーへ移ると読める） */
