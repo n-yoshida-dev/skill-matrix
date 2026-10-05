@@ -107,3 +107,17 @@ export function buildPath(domain: RoadmapDomain, states: Map<string, ItemState>)
     totalCount: domain.items.length,
   }
 }
+
+/** 学習パスの上部の進捗ゲージ（SPEC.md §7.2「両表示に共通の制約」。2026-10-03 本人了承の 7） */
+export interface ProgressGauge {
+  /** 1 コマ＝分野の 1 項目。true が塗ったコマ（レベル 1 以上）で、左に詰める */
+  cells: boolean[]
+  /** 例「基礎確認 2/9 項目」。% は出さない */
+  label: string
+}
+
+/** 分野の項目数だけコマを作り、レベル 1 以上の項目の数だけ左から塗る。他分野の前提は数えない */
+export function progressGauge(path: Pick<Path, 'doneCount' | 'totalCount'>): ProgressGauge {
+  const cells = Array.from({ length: path.totalCount }, (_, i) => i < path.doneCount)
+  return { cells, label: `基礎確認 ${path.doneCount}/${path.totalCount} 項目` }
+}

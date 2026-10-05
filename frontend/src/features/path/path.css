@@ -36,14 +36,39 @@
   margin: 0;
 }
 
-.path-head .goal,
-.path-head .progress {
+.path-head .goal {
   margin: 2px 0 0;
   font-size: 14px;
 }
 
+/* 進捗ゲージ：1 コマ＝1 項目。レベル 1 以上のコマを塗る（色はツリーの確認済みと同じ）。項目が多ければ折り返す */
 .path-head .progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 6px 0 0;
+  font-size: 14px;
   color: var(--dim);
+}
+
+.path-head .gauge {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.path-head .gauge i {
+  width: 16px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--empty);
+  box-shadow: inset 0 0 0 1px var(--rule-strong);
+}
+
+.path-head .gauge i.on {
+  background: var(--l3);
+  box-shadow: none;
 }
 
 /* 一列／ツリーの切り替え。押されている側を濃くする */
