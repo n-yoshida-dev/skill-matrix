@@ -1,4 +1,6 @@
 import type { ItemState, RoadmapDomain } from '../../data/types'
+import { missingLevels } from '../plan/matrix'
+import { pendingLevels } from '../plan/next'
 
 // スキルツリー表示（SPEC.md §7.2）の配置計算。純粋関数で、DOM を import しない。
 // 段 = 依存の深さ（前提なし = 0 段、前提の最大段 + 1）。同じ段は定義順で横に並べる。
@@ -752,18 +754,35 @@ function lexLess(a: number[], b: number[]): boolean {
   return false
 }
 
-/** 節の状態（SPEC.md §7.2 の表）。深掘り候補は習得済みの上に札を足すだけなので、ここには入れない */
+/** 節の状態（SPEC.md §7.2 の表。2026-10-03 本人了承の 1 で 3 つにまとめた） */
 export type NodeKind = 'locked' | 'open' | 'done'
 
-/** 節の状態の日本語 */
+/** 節の状態の日本語。レベル 1 は「習得済み」と呼ばない（同じ了承の 1） */
 export const KIND_LABELS: Record<NodeKind, string> = {
-  locked: '未解放',
-  open: '解放済み・未着手',
-  done: '習得済み',
+  locked: '前提待ち',
+  open: '挑戦できる',
+  done: '確認済み',
 }
 
-/** 未解放＝前提にレベル 0 がある、解放済み・未着手＝着手できてレベル 0、習得済み＝レベル 1 以上 */
+/** 前提待ち＝前提にレベル 0 がある、挑戦できる＝着手できてレベル 0、確認済み＝レベル 1 以上（前提が未達でも鍵に戻さない） */
 export function nodeKind(st: ItemState, ready: boolean): NodeKind {
   if (st.verifiedLevel >= 1) return 'done'
   return ready ? 'open' : 'locked'
+}
+
+/** ●の総数（レベルの最大値。SPEC.md §7.2「5 つ中 verifiedLevel 個」） */
+const MAX_DOTS = 5
+
+/** ●を level 個、残りを○で 5 つ並べる（例：レベル 2 → ●●○○○） */
+export function levelDots(level: number): string {
+  const n = Math.min(Math.max(level, 0), MAX_DOTS)
+  return '●'.repeat(n) + '○'.repeat(MAX_DOTS - n)
+}
+
+/**
+ * 「実装の根拠あり・基礎は未確認」を出すか。印が表示レベルより上にあり、その下に印の無い段がある項目
+ * （項目詳細の「既存の実装について L1 / L2 を確認する」と同じ判定。SPEC.md §7.4）
+ */
+export function basicsUnverified(st: ItemState): boolean {
+  return pendingLevels(st).length > 0 && missingLevels(st).length > 0
 }

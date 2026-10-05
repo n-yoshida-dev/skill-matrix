@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { loadData } from '../../data/load'
-import type { RoadmapDomain } from '../../data/types'
-import { layoutTree, type Box, type Point, type TreeLayout } from './layout'
+import type { ItemState, RoadmapDomain } from '../../data/types'
+import {
+  basicsUnverified,
+  KIND_LABELS,
+  layoutTree,
+  levelDots,
+  nodeKind,
+  type Box,
+  type Point,
+  type TreeLayout,
+} from './layout'
 
 // スキルツリーの配置計算（layout.ts。SPEC.md §7.2）を確かめる。
 // 「何を保証しているか」：
@@ -468,5 +477,49 @@ describe('layoutTree（スキルツリーの配置）', () => {
     it.each(domains.map((d) => [d.key, d] as const))('%s', (_, d) => {
       expect(problems(layoutTree(d, domains))).toEqual([])
     })
+  })
+})
+
+// 節の状態（SPEC.md §7.2 の状態の表。2026-10-03 本人了承の 1・5）。
+// 「何を保証しているか」：
+// - 状態は 3 つで、名前は前提待ち／挑戦できる／確認済み。レベル 1 を「習得済み」と呼ばない
+// - 確認済みはレベル 1 以上。前提が未達でも確認済みのまま（鍵に戻さない）
+// - ●は 5 つ中 verifiedLevel 個
+// - 「実装の根拠あり・基礎は未確認」は、表示レベルより上に印があり、その下に印の無い段がある項目だけ
+describe('節の状態', () => {
+  const st = (verifiedLevel: number, evidencedLevels: number[]): ItemState =>
+    ({
+      itemKey: 'x',
+      verifiedLevel,
+      evidencedLevels,
+      preState: 'none',
+      needsReview: false,
+      lastEvidenceAt: null,
+      events: [],
+    }) as ItemState
+
+  it('状態は 3 つで、どれも「習得済み」と呼ばない', () => {
+    expect(Object.values(KIND_LABELS)).toEqual(['前提待ち', '挑戦できる', '確認済み'])
+    expect(nodeKind(st(0, []), false)).toBe('locked')
+    expect(nodeKind(st(0, []), true)).toBe('open')
+    expect(nodeKind(st(1, [1]), true)).toBe('done')
+    // 前提が未達でも、確認済みの項目は前提待ちに戻さない
+    expect(nodeKind(st(1, [1]), false)).toBe('done')
+  })
+
+  it('●は 5 つ中 verifiedLevel 個', () => {
+    expect(levelDots(0)).toBe('○○○○○')
+    expect(levelDots(1)).toBe('●○○○○')
+    expect(levelDots(3)).toBe('●●●○○')
+    expect(levelDots(5)).toBe('●●●●●')
+  })
+
+  it('「実装の根拠あり・基礎は未確認」は、上の段に印があり下に印の無い段がある項目だけ', () => {
+    expect(basicsUnverified(st(0, [3]))).toBe(true)
+    expect(basicsUnverified(st(1, [1, 3]))).toBe(true)
+    // 上の段の印の下がすべて埋まっていれば出さない
+    expect(basicsUnverified(st(2, [1, 2, 3]))).toBe(false)
+    expect(basicsUnverified(st(2, [1, 2]))).toBe(false)
+    expect(basicsUnverified(st(0, []))).toBe(false)
   })
 })
