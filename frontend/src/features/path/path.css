@@ -36,7 +36,11 @@
   margin: 0;
 }
 
-.path-head .goal,
+.path-head .goal {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+
 /* 進捗ゲージ：1 コマ＝1 項目。レベル 1 以上のコマを塗る（色はツリーの確認済みと同じ）。項目が多ければ折り返す */
 .path-head .progress {
   display: flex;
