@@ -67,7 +67,7 @@
 }
 
 .path-head .gauge i.on {
-  background: var(--l3);
+  background: var(--done);
   box-shadow: none;
 }
 

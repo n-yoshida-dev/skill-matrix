@@ -17,11 +17,21 @@
   --l5: #104281;
   --on-light: #16213a;
   --on-dark: #ffffff;
+  /* スキルツリーと進捗ゲージの「確認済み」（節の塗り・色の付いた線・ゲージの塗り）と、その上の字、色の付いていない線。
+     既定はマトリクスの L3 と同じ。見た目の案（looks.css）で、段階色と別の色にできる */
+  --done: var(--l3);
+  --on-done: var(--on-dark);
+  --line: var(--rule-strong);
   /* 要再確認の枠線（作業ビューだけ。SPEC.md §7.1）。地の色とのコントラスト比 4.4 */
   --attention: #a86400;
 
+  /* 書体（見た目の案で差し替える。look.ts） */
+  --font-body: 'IBM Plex Sans JP', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+  --font-head: var(--font-body);
+  --font-num: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+
   color-scheme: light dark;
-  font-family: 'IBM Plex Sans JP', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.7;
   color: var(--ink);
@@ -65,7 +75,7 @@ button {
 }
 
 .num {
-  font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  font-family: var(--font-num);
   font-variant-numeric: tabular-nums;
 }
 
@@ -106,6 +116,12 @@ button {
 .top a:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-head);
 }
 
 h1 {

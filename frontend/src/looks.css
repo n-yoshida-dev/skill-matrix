@@ -1,0 +1,248 @@
+/* 作業ビューの見た目の案（フェーズ2b の 5 本目「見た目」。どの案を当てるかは look.ts）。
+   <html data-look="…"> が付いているときだけ、index.css の色・書体の名前を上書きし、節・升目・ツリーの枠の形を変える。
+   案は 3 つ。Fable と GPT-6 Astra に各 2 往復の壁打ちをして Claude がまとめた（KNOWLEDGE.md 2026-10-06）。
+   - book（冒険の書）：生成りの紙に墨と藍。見出しは明朝。節は罫で囲んだ紙の札
+   - window（コマンド窓）：白黒だけ。見出しはドット文字。角は 0、ツリーは二重の枠の窓。dark は黒い窓に白い枠
+   - board（ギルドの習得盤）：緑のフェルトの盤に木の縁。節は角の丸い札
+   どの案でも、ツリーの 3 状態・線・合流点・マトリクスの橙の枠と三角の意味は変えない。飾りに意味を持たせない（2026-10-03 本人了承の 1・5）。
+   dark ではレベルが高いほど明るくする（暗い地で高いレベルが沈まないように） */
+
+/* ---------- book：冒険の書 ---------- */
+:root[data-look='book'] {
+  --paper: #f4ecd8;
+  --rule: #dccfb0;
+  --rule-strong: #b29f78;
+  --ink: #33261a;
+  --dim: #6a5642;
+  --empty: #eae0c7;
+  --panel: #fbf6ea;
+  --accent: #a8402a;
+  --l1: #b9c8e0;
+  --l2: #7f9bc6;
+  --l3: #4a6aa0;
+  --l4: #2f4a78;
+  --l5: #1d2f50;
+  --on-light: #33261a;
+  --on-dark: #fbf6ea;
+  --done: #3d5c91;
+  --on-done: #fbf6ea;
+  --line: #b29f78;
+  --attention: #9a5a00;
+  --font-head: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  --font-body: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+}
+
+/* 紙の繊維。地にだけ、ごく薄い横の筋 */
+:root[data-look='book'] body {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgb(90 60 20 / 2.5%) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+:root[data-look='book'] .tnode {
+  border-radius: 2px;
+  border: 1px solid var(--rule-strong);
+}
+
+:root[data-look='book'] .tnode.locked {
+  border-color: var(--rule);
+}
+
+:root[data-look='book'] .tnode.done {
+  border-color: var(--done);
+}
+
+/* ---------- window：コマンド窓 ---------- */
+:root[data-look='window'] {
+  --paper: #f0efeb;
+  --rule: #d3d1ca;
+  --rule-strong: #8f8c84;
+  --ink: #141414;
+  --dim: #55534e;
+  --empty: #e2e0da;
+  --panel: #ffffff;
+  --accent: #b3362a;
+  --l1: #c4c1b9;
+  --l2: #96938b;
+  --l3: #67645e;
+  --l4: #3d3b37;
+  --l5: #141414;
+  --on-light: #141414;
+  --on-dark: #ffffff;
+  --done: #141414;
+  --on-done: #ffffff;
+  --line: #b5b2aa;
+  --attention: #a65300;
+  --font-head: 'DotGothic16', 'BIZ UDPGothic', sans-serif;
+  --font-body: 'BIZ UDPGothic', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+}
+
+/* ドット文字は 16px の倍数でだけ使う（それ以外ではドットがにじむ） */
+:root[data-look='window'] h1 {
+  font-size: 32px;
+}
+
+:root[data-look='window'] h2 {
+  font-size: 16px;
+}
+
+/* 枠の分だけ、ツリーの欄をページの左右の余白へ広げる（図の幅を削らず、右端の節が切れないように） */
+:root[data-look='window'] .tree-scroll,
+:root[data-look='board'] .tree-scroll {
+  margin-inline: -28px;
+}
+
+/* ツリー全体を 1 つの窓にする（二重の枠）。節は絶対配置で padding が効かないので、枠は図の外に影を重ねて描き、その分だけ外に余白を取る */
+:root[data-look='window'] .tree {
+  margin: 28px;
+  background: var(--panel);
+  box-shadow:
+    0 0 0 16px var(--panel),
+    0 0 0 19px var(--ink),
+    0 0 0 21px var(--panel),
+    0 0 0 24px var(--ink);
+}
+
+:root[data-look='window'] .tnode,
+:root[data-look='window'] .mx-cell,
+:root[data-look='window'] .path-head .gauge i {
+  border-radius: 0;
+}
+
+/* ---------- board：ギルドの習得盤 ---------- */
+:root[data-look='board'] {
+  --paper: #e6eadc;
+  --rule: #c6cdb9;
+  --rule-strong: #8a957f;
+  --ink: #26332a;
+  --dim: #4f5d4d;
+  --empty: #d8dccf;
+  --panel: #f5f4e8;
+  --accent: #8a5528;
+  --l1: #b9c9ac;
+  --l2: #86a077;
+  --l3: #557049;
+  --l4: #385331;
+  --l5: #233a20;
+  --on-light: #26332a;
+  --on-dark: #ffffff;
+  --done: #4f6a44;
+  --on-done: #ffffff;
+  --line: #95a08a;
+  --attention: #a65300;
+  --font-head: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+  --font-body: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+}
+
+/* フェルトの目。地にだけ、ごく薄い斜めの交差 */
+:root[data-look='board'] body {
+  background-image:
+    repeating-linear-gradient(45deg, rgb(30 60 30 / 2%) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-45deg, rgb(30 60 30 / 2%) 0 1px, transparent 1px 4px);
+}
+
+/* ツリーは木の縁の盤に置く（描き方は window の窓と同じ） */
+:root[data-look='board'] .tree {
+  margin: 26px;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 16px var(--paper),
+    0 0 0 21px var(--accent);
+}
+
+:root[data-look='board'] .tnode {
+  border-radius: 6px;
+}
+
+:root[data-look='board'] .mx-cell,
+:root[data-look='board'] .path-head .gauge i {
+  border-radius: 3px;
+}
+
+/* ---------- dark ---------- */
+@media (prefers-color-scheme: dark) {
+  /* 夜の革表紙 */
+  :root[data-look='book'] {
+    --paper: #1e1813;
+    --rule: #3a2f26;
+    --rule-strong: #6b5a49;
+    --ink: #efe5cf;
+    --dim: #bba98d;
+    --empty: #2a221b;
+    --panel: #261f18;
+    --accent: #e3866a;
+    --l1: #2d3d5e;
+    --l2: #43608f;
+    --l3: #6f8fc0;
+    --l4: #a3bbe0;
+    --l5: #d4e0f2;
+    --on-light: #1e1813;
+    --on-dark: #efe5cf;
+    --done: #8aa5d2;
+    --on-done: #1e1813;
+    --line: #6b5a49;
+    --attention: #f0b040;
+  }
+
+  :root[data-look='book'] body {
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgb(255 230 190 / 2%) 0 1px,
+      transparent 1px 3px
+    );
+  }
+
+  /* 黒い窓に白い枠。確認済みは白く反転する */
+  :root[data-look='window'] {
+    --paper: #0a0a0b;
+    --rule: #333336;
+    --rule-strong: #77777b;
+    --ink: #f4f4f4;
+    --dim: #b0b0b4;
+    --empty: #1b1b1e;
+    --panel: #000000;
+    --accent: #ef8a73;
+    --l1: #3a3a3e;
+    --l2: #67676c;
+    --l3: #9d9da2;
+    --l4: #cfcfd2;
+    --l5: #ffffff;
+    --on-light: #0a0a0b;
+    --on-dark: #f4f4f4;
+    --done: #f4f4f4;
+    --on-done: #0a0a0b;
+    --line: #4d4d52;
+    --attention: #f0b040;
+  }
+
+  /* 夜の盤 */
+  :root[data-look='board'] {
+    --paper: #172017;
+    --rule: #374434;
+    --rule-strong: #6f8063;
+    --ink: #e7edde;
+    --dim: #b0bea4;
+    --empty: #263024;
+    --panel: #1f2a1d;
+    --accent: #a77a4c;
+    --l1: #34482e;
+    --l2: #557049;
+    --l3: #87a276;
+    --l4: #b4c99f;
+    --l5: #dde9c9;
+    --on-light: #172017;
+    --on-dark: #e7edde;
+    --done: #93ad80;
+    --on-done: #172017;
+    --line: #4f5f48;
+    --attention: #edac55;
+  }
+
+  :root[data-look='board'] body {
+    background-image:
+      repeating-linear-gradient(45deg, rgb(200 230 190 / 2%) 0 1px, transparent 1px 4px),
+      repeating-linear-gradient(-45deg, rgb(200 230 190 / 2%) 0 1px, transparent 1px 4px);
+  }
+}
