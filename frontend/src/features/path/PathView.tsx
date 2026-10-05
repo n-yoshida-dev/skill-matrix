@@ -4,7 +4,7 @@ import type { AppData, ItemState, Level } from '../../data/types'
 import { stateByKey, topEvidenced } from '../public/summary'
 import { stalenessConfig } from '../plan/matrix'
 import { nextActions, nextLimitFrom, stateOf, weightsFrom } from '../plan/next'
-import { buildPath, type PathNode } from './path'
+import { buildPath, progressGauge, type PathNode, type ProgressGauge } from './path'
 import { TreeView } from './TreeView'
 import { readViewMode, writeViewMode, type PathViewMode } from './viewMode'
 import './path.css'
@@ -13,6 +13,7 @@ import './path.css'
 // 一列表示は依存順に縦一列（次に何をやるか）、ツリー表示は前提が上・派生が下の階層図（どの前提を取ると何が解放されるか）。
 // マトリクスが「今の状態」を見せるのに対し、こちらは「道筋」を見せる。
 // 常に上部に分野の目標と進捗を出し、「あと何個でどうなるか」が視界から消えないようにする。
+// 進捗は 1 コマ＝1 項目のゲージで、レベル 1 以上のコマを塗り「基礎確認 x/n 項目」と添える（% は出さない。2026-10-03 本人了承の 7）。
 // 表示の選択はブラウザに記憶する（初回は一列表示）。
 
 interface Props {
@@ -74,10 +75,7 @@ export function PathView({ data, today }: Props) {
         <p className="goal">
           目標：{path.goal ? path.goal : <span className="unset">未記入</span>}
         </p>
-        <p className="progress">
-          進捗：<span className="num">{path.totalCount}</span> 項目中{' '}
-          <span className="num">{path.doneCount}</span> 項目（レベル 1 以上）
-        </p>
+        <ProgressBar gauge={progressGauge(path)} />
         <div className="path-mode" role="group" aria-label="表示の切り替え">
           <button type="button" aria-pressed={mode === 'list'} onClick={() => choose('list')}>
             一列
@@ -185,4 +183,18 @@ function PathRow({ n, deepen, externals }: RowProps) {
 /** マトリクスと同じ 6 階調の小さな見本 */
 function LevelSwatch({ level }: { level: Level }) {
   return <i className={`sw${level >= 1 ? ` l${level}` : ''}`} aria-hidden="true" />
+}
+
+/** 上部の進捗ゲージ。コマは飾りとして読み上げず、数は文で読ませる */
+function ProgressBar({ gauge }: { gauge: ProgressGauge }) {
+  return (
+    <div className="progress">
+      <span className="gauge" aria-hidden="true">
+        {gauge.cells.map((on, i) => (
+          <i key={i} className={on ? 'on' : undefined} />
+        ))}
+      </span>
+      <span>{gauge.label}</span>
+    </div>
+  )
 }
