@@ -224,7 +224,8 @@ skill-map.md からの移行（1 回きり）には使わない。そちらは `
 既存の判定ファイルは触らず、`source: "manual"` の訂正ファイルを新しく 1 つ書き、`retractions` に取り消す判定を指す
 （形と例は `SPEC.md` §3.3・§4.7）。実際にあった出来事の判定があれば、同じファイルの `judgments` に足し直す。
 
-- `file` と `index` は、`data/state.json` の `events` の `file`・`index` で確かめる（`index` は `judgments` 配列での位置。0 から数える）
+- `file` と `index` は、`data/state.json` の `events` の `file`・`index` で確かめる（`index` は `judgments` 配列での位置。0 から数える）。
+  保留になった判定は `deferred`、棄却された判定は `rejected` のほうに同じ形で載っている
 - `reason` は公開される。「禁止事項」と同じく技術的な事実だけを書く（何が実際と違ったか）
 - そのあとは手順 6（`recalc`）からと同じ。`recalc` の出力の「取り消し」に、狙った判定だけが出ていることを確かめる
 

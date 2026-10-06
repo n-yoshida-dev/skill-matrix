@@ -14,7 +14,7 @@ import (
 //   - map を使わない（Go の map は反復順が毎回変わる）。項目はロードマップの定義順、履歴は適用順
 //   - 空の配列は null ではなく [] で書く（画面の型が配列を前提にしている）
 
-// stateSchemaVersion は state.json の形の版（SPEC.md §3.4）。
+// stateSchemaVersion は state.json の形の版（SPEC.md §3.4）。画面が読めなくなる変え方をしたら上げる（2026-10-06 の retracted のように欄を足すだけなら上げない）。
 const stateSchemaVersion = 2
 
 // stateDoc は state.json 全体。
