@@ -338,7 +338,7 @@ function readProjectData() {
   if (fs.existsSync(path.join(ROOT, 'backend/go.mod')) && fs.existsSync(path.join(ROOT, 'sources.local.json'))) {
     const r = run('go', ['-C', 'backend', 'run', './cmd/skillmatrix', 'pending', '--count'], { timeout: 120_000 })
     const n = Number.parseInt(r.stdout.trim(), 10)
-    // 数えられても stderr に警告（読めない根拠があり、本数が多めに出ている可能性）があれば残す
+    // 数えられても stderr に警告（読めない根拠・logsGlob の無いリポジトリ。本数がずれている可能性）があれば残す
     const warning = r.stderr.split('\n').find((l) => l.startsWith('警告:')) ?? null
     pendingLogs =
       r.ok && Number.isFinite(n)
@@ -402,7 +402,7 @@ function buildAlerts({ git, github, handoff, data, todo, beads }) {
   if (data.pendingLogs?.error) {
     alerts.push({ level: 'warn', text: `未判定の学習ログを数えられず（${data.pendingLogs.error}）` })
   } else if (data.pendingLogs?.warning) {
-    alerts.push({ level: 'warn', text: `未判定の学習ログの本数が多めに出ている可能性（${data.pendingLogs.warning.replace(/^警告:\s*/, '')}）` })
+    alerts.push({ level: 'warn', text: `未判定の学習ログの本数がずれている可能性（${data.pendingLogs.warning.replace(/^警告:\s*/, '')}）` })
   }
   if (handoff?.commitsSince != null && handoff.commitsSince >= 3) {
     alerts.push({ level: 'warn', text: `HANDOFF.md が ${handoff.commitsSince} コミット前の状態（引き継ぎが遅れている）` })

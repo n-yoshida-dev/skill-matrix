@@ -22,12 +22,13 @@ cannot_count() {
 
 command -v go > /dev/null 2>&1 || cannot_count "このフックの環境に go が見つからない"
 
-# pending が出す警告（読めない根拠があると、判定済みのログが未判定に数えられる）を拾うため、stderr は一時ファイルに受ける
+# pending が出す警告（読めない根拠があると多めに、logsGlob の無いリポジトリがあると少なめに数えられる）を拾うため、stderr は一時ファイルに受ける
 ERR_FILE=$(mktemp) || cannot_count "一時ファイルを作れない"
 # 起動を待たせすぎないよう 60 秒で打ち切る（初回は go のビルドで数秒かかる）
 COUNT=$(cd "$PROJECT_DIR" && timeout 60 go -C backend run ./cmd/skillmatrix pending --count 2> "$ERR_FILE")
 STATUS=$?
 WARNINGS=$(grep -c '^警告:' "$ERR_FILE")
+FIRST_WARN=$(grep '^警告:' "$ERR_FILE" | head -1)
 FIRST_ERR=$(grep -v '^警告:' "$ERR_FILE" | head -1)
 rm -f "$ERR_FILE"
 
@@ -44,6 +45,6 @@ else
   echo "最初の返答で、進捗表のすぐ後に「未判定の学習ログは 0 本です」と 1 行で伝えること。"
 fi
 if [ "$WARNINGS" -gt 0 ]; then
-  echo "ただし pending が警告を ${WARNINGS} 件出した（判定ファイルに読めない根拠があり、本数が多めに出ている可能性がある）。そのことも 1 行で伝え、\`pending\` で確かめる。"
+  echo "ただし pending が警告を ${WARNINGS} 件出した（本数がずれている可能性がある。1 件目：${FIRST_WARN}）。そのことも 1 行で伝え、\`pending\` で確かめる。"
 fi
 exit 0
