@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/n-yoshida-dev/skill-matrix/internal/domain"
@@ -14,11 +15,15 @@ import (
 
 // このファイルは判定ファイル `data/judgments/YYYY-MM-DD-<短い名前>.json`（SPEC.md §3.3）の外枠を読む。
 //
-// 外枠（schemaVersion / loggedAt / source / judge / judgments / unmatched）の崩れはファイル全体のエラーにして
+// 外枠（schemaVersion / loggedAt / source / judge / judgments / retractions / unmatched）の崩れはファイル全体のエラーにして
 // CLI を止める。判定1件の中の崩れは Parse と同じく、その1件だけを Rejected に入れて続ける。
 // 外枠が崩れていると source も loggedAt も信用できず、どの判定をどう扱うかが決まらないため。
+// 取り消しの記録（retractions）の崩れも外枠の崩れとして扱う。取り消しは別のファイルの判定に効くので、
+// 1 件だけ弾いて続けると「取り消したつもりの印が残る」が黙って起きる。
 
-// FileSchemaVersion は判定ファイルの形の版。形を変えたら上げる。
+// FileSchemaVersion は判定ファイルの形の版。既存の判定ファイルが読めなくなる変え方をしたら上げる。
+// 省略できる欄を足すだけ（2026-10-06 の retractions）なら上げない。上げると既存の判定ファイルを全部書き換えることになり、
+// 「追記のみ」に反する（古い CLI は未知のキーで止まるので、黙って読み違えることも無い）。
 const FileSchemaVersion = 2
 
 // fileNamePattern は判定ファイルの名前（SPEC.md §3.3）。先頭の日付が loggedAt と一致する。
@@ -36,6 +41,21 @@ type File struct {
 	Judge string
 	// Output は judgments と unmatched。形の崩れた判定は Output.Rejected に入る。
 	Output Output
+	// Retractions は取り消しの記録。書かれた順を保つ。source が manual のファイルだけが持てる（SPEC.md §3.3）。
+	Retractions []Retraction
+}
+
+// Retraction は取り消しの記録1件。誤ってコミットした判定を、元のファイルを触らずに適用から外す（SPEC.md §4.7）。
+//
+// ここで確かめるのは1ファイルの中で分かることだけ。指し先のファイルと判定が実在するか、
+// 同じ判定を2回取り消していないかは、全ファイルを見られる呼び出し側（CLI）が確かめる。
+type Retraction struct {
+	// File は取り消す判定のあるファイル名（ディレクトリを含まない）。
+	File string
+	// Index は取り消す判定の、そのファイルの judgments 配列での位置（0 始まり）。
+	Index int
+	// Reason は取り消す理由。公開される文なので、技術的な事実だけを書く。
+	Reason string
 }
 
 // FileError は判定ファイルの外枠が読めないことを表す。どの判定も適用できないので、呼び出し側は止まる。
@@ -58,7 +78,16 @@ type wireFile struct {
 	Source        *string            `json:"source"`
 	Judge         *string            `json:"judge"`
 	Judgments     *[]json.RawMessage `json:"judgments"`
+	Retractions   []wireRetraction   `json:"retractions"`
 	Unmatched     []string           `json:"unmatched"`
+}
+
+// wireRetraction は取り消しの記録1件。欄の欠落とゼロ値（index の 0）を区別するためにポインタで受ける。
+// 外枠の decoder に DisallowUnknownFields を掛けているので、ここの未知のキーもエラーになる。
+type wireRetraction struct {
+	File   *string `json:"file"`
+	Index  *int    `json:"index"`
+	Reason *string `json:"reason"`
 }
 
 // validSources は判定を書く主体として認める値（SPEC.md §3.3）。
@@ -70,7 +99,7 @@ var validSources = map[domain.JudgmentSource]bool{
 
 // ParseFile は判定ファイル1本を読む。name はファイル名（ディレクトリを含まない）、raw は中身。
 //
-// 外枠の崩れ（ファイル名・JSON・未知のキー・schemaVersion・loggedAt・source・judgments）は *FileError を返す。
+// 外枠の崩れ（ファイル名・JSON・未知のキー・schemaVersion・loggedAt・source・judgments・retractions）は *FileError を返す。
 // 判定1件の中の崩れはエラーにせず Output.Rejected に入れる（SPEC.md §4.5）。
 func ParseFile(name string, raw []byte) (File, error) {
 	fail := func(format string, args ...any) (File, error) {
@@ -125,15 +154,65 @@ func ParseFile(name string, raw []byte) (File, error) {
 		return fail("judgments がありません")
 	}
 
+	retractions, reason := parseRetractions(name, source, w.Retractions)
+	if reason != "" {
+		return fail("%s", reason)
+	}
+
 	f := File{
-		Name:     name,
-		LoggedAt: loggedAt,
-		Source:   source,
-		Output:   parseJudgments(*w.Judgments, source),
+		Name:        name,
+		LoggedAt:    loggedAt,
+		Source:      source,
+		Output:      parseJudgments(*w.Judgments, source),
+		Retractions: retractions,
 	}
 	f.Output.Unmatched = w.Unmatched
 	if w.Judge != nil {
 		f.Judge = *w.Judge
 	}
 	return f, nil
+}
+
+// parseRetractions は取り消しの記録を読む。崩れていれば理由を返す（理由が空なら成功）。
+//
+// 取り消しは人の訂正なので、書けるのは source が manual のファイルだけ。AI の判定ファイルに混ぜると、
+// 判定した AI が過去の判定を自分の一存で外せてしまう。
+// 指し先は自分より前に処理されるファイル（ファイル名の昇順で前）に限る。処理順はファイル名だけで決まる（SPEC.md §3.2）ので、
+// 「後から足した訂正が、前の判定を外す」の向きをファイル名で守る。
+func parseRetractions(name string, source domain.JudgmentSource, ws []wireRetraction) ([]Retraction, string) {
+	if len(ws) == 0 {
+		return nil, ""
+	}
+	if source != domain.SourceManual {
+		return nil, fmt.Sprintf("retractions を書けるのは source が manual のファイルだけです（%q が書かれています）", source)
+	}
+
+	out := make([]Retraction, 0, len(ws))
+	seen := make(map[Retraction]bool, len(ws))
+	for i, w := range ws {
+		switch {
+		case w.File == nil:
+			return nil, fmt.Sprintf("retractions[%d] に file がありません", i)
+		case w.Index == nil:
+			return nil, fmt.Sprintf("retractions[%d] に index がありません", i)
+		case w.Reason == nil || strings.TrimSpace(*w.Reason) == "":
+			return nil, fmt.Sprintf("retractions[%d] に reason がありません（取り消す理由を技術的な事実で書いてください）", i)
+		}
+		if !fileNamePattern.MatchString(*w.File) {
+			return nil, fmt.Sprintf("retractions[%d].file は判定ファイルの名前（YYYY-MM-DD-<短い名前>.json）にしてください: %q", i, *w.File)
+		}
+		if *w.File >= name {
+			return nil, fmt.Sprintf("retractions[%d].file（%s）は、このファイルより前に処理されるファイル（ファイル名の昇順で前）にしてください", i, *w.File)
+		}
+		if *w.Index < 0 {
+			return nil, fmt.Sprintf("retractions[%d].index は 0 以上にしてください: %d", i, *w.Index)
+		}
+		key := Retraction{File: *w.File, Index: *w.Index}
+		if seen[key] {
+			return nil, fmt.Sprintf("retractions[%d] は同じ判定（%s の %d 件目）を2回取り消しています", i, *w.File, *w.Index)
+		}
+		seen[key] = true
+		out = append(out, Retraction{File: *w.File, Index: *w.Index, Reason: *w.Reason})
+	}
+	return out, ""
 }

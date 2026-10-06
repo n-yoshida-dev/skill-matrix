@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -169,6 +170,48 @@ func TestRun_判定ファイルの外枠が崩れていたら止まる(t *testin
 				if !strings.Contains(errOut, want) {
 					t.Errorf("%s が挙がっていない: %s", want, errOut)
 				}
+			}
+			if _, err := os.Stat(filepath.Join(dir, stateFile)); err == nil {
+				t.Error("止まったのに state.json が書かれている")
+			}
+		})
+	}
+}
+
+func TestRun_取り消し(t *testing.T) {
+	fix := func(file string, index int) string {
+		return `{"schemaVersion": 2, "loggedAt": "2026-08-05", "source": "manual", "judgments": [], "retractions": [
+			{"file": "` + file + `", "index": ` + strconv.Itoa(index) + `, "reason": "別の日の出来事だった"}], "unmatched": []}`
+	}
+
+	t.Run("取り消すと印が消え、recalc してから verify すると通る", func(t *testing.T) {
+		dir := newDataDir(t, map[string]string{"2026-08-01-tour.json": okJudgment, "2026-08-05-fix.json": fix("2026-08-01-tour.json", 0)})
+		if code, _, errOut := runCLI("recalc", "--data", dir); code != exitOK {
+			t.Fatalf("recalc の終了コード = %d, stderr = %s", code, errOut)
+		}
+		raw, err := os.ReadFile(filepath.Join(dir, stateFile))
+		if err != nil {
+			t.Fatal(err)
+		}
+		doc, err := decodeState(raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if it := itemOf(t, doc, "go-01"); len(it.EvidencedLevels) != 0 || len(doc.Retracted) != 1 {
+			t.Errorf("go-01 = %+v, retracted = %+v", it, doc.Retracted)
+		}
+		if code, _, errOut := runCLI("verify", "--data", dir); code != exitOK {
+			t.Errorf("verify の終了コード = %d, stderr = %s", code, errOut)
+		}
+	})
+
+	// 指し先の無い取り消しを黙って捨てると、取り消したつもりの印が残る
+	for _, mode := range []string{"recalc", "verify"} {
+		t.Run(mode+" は指し先の無い取り消しで止まり、state.json を書かない", func(t *testing.T) {
+			dir := newDataDir(t, map[string]string{"2026-08-01-tour.json": okJudgment, "2026-08-05-fix.json": fix("2026-08-01-tour.json", 1)})
+			code, _, errOut := runCLI(mode, "--data", dir)
+			if code != exitFailed || !strings.Contains(errOut, "judgments/2026-08-05-fix.json: retractions[0]: 2026-08-01-tour.json の判定は 1 件") {
+				t.Errorf("終了コード = %d, stderr = %s", code, errOut)
 			}
 			if _, err := os.Stat(filepath.Join(dir, stateFile)); err == nil {
 				t.Error("止まったのに state.json が書かれている")

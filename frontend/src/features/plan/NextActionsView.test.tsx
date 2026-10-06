@@ -93,6 +93,7 @@ function makeData(limit?: number): AppData {
       ],
       deferred: [],
       rejected: [],
+      retracted: [],
     },
     settings: limit === undefined ? {} : { nextActions: { limit } },
   }

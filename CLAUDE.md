@@ -47,8 +47,9 @@
 - **習熟度の正本はこのリポジトリ。** `~/workspace/study/learner-profile/skill-map.md` は 2026-09-27 に凍結した（更新しない。移行判定は `data/judgments/*-migration-*.json`）。
   レベルは「印」（`evidencedLevels`）から導出した `verifiedLevel` で、**実装の根拠（3）は基礎理解（1・2）を含意しない**。
   `[3]` だけの項目を「基礎からやり直し」とは扱わず、既存の実装について L1/L2 を確認する行動を出す（`docs/skill-map-migration.md`、`logs/decisions.md` 2026-09-25）
-- **`data/judgments/` は追記のみ、`data/state.json` は手で編集しない。** コミット後の訂正は既存ファイルを触らず `source: "manual"` の判定ファイルを足す
-  （コミット前は `recalc` の結果を見て直してよい。`SPEC.md` §4.7）。
+- **`data/judgments/` は追記のみ、`data/state.json` は手で編集しない。** コミット後の訂正は既存ファイルを触らず `source: "manual"` の判定ファイルを足す。
+  誤って付いた印を外すときは、そのファイルの `retractions` に元の判定ファイル名・何件目か・技術的な理由を書く
+  （コミット前は `recalc` の結果を見て直してよい。`SPEC.md` §4.7、`logs/decisions.md` 2026-10-06「取り消しの記録」）。
   `state.json` は CLI の `recalc` が書き、CI の `verify` が再計算結果との一致を見る（`SPEC.md` §3.2・§6）
 - **ロードマップ定義（分野・詳細項目の一覧）をコードに直書きしない。**
   マスタデータ（`data/roadmap.json`）に分離し、`source`（出典 URL 等）と `checkedAt` を記録する

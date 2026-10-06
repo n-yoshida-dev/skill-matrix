@@ -14,7 +14,7 @@ import (
 //   - map を使わない（Go の map は反復順が毎回変わる）。項目はロードマップの定義順、履歴は適用順
 //   - 空の配列は null ではなく [] で書く（画面の型が配列を前提にしている）
 
-// stateSchemaVersion は state.json の形の版（SPEC.md §3.4）。
+// stateSchemaVersion は state.json の形の版（SPEC.md §3.4）。画面が読めなくなる変え方をしたら上げる（2026-10-06 の retracted のように欄を足すだけなら上げない）。
 const stateSchemaVersion = 2
 
 // stateDoc は state.json 全体。
@@ -23,6 +23,8 @@ type stateDoc struct {
 	Items         []itemDoc    `json:"items"`
 	Deferred      []pendingDoc `json:"deferred"`
 	Rejected      []pendingDoc `json:"rejected"`
+	// Retracted は取り消された判定。適用していない。取り消した事実を黙って消さないために残す（SPEC.md §3.4）。
+	Retracted []retractedDoc `json:"retracted"`
 }
 
 // itemDoc は項目1つの理解度。
@@ -66,6 +68,18 @@ type pendingDoc struct {
 	ItemKey string `json:"itemKey"`
 	Code    string `json:"code"`
 	Detail  string `json:"detail"`
+}
+
+// retractedDoc は取り消しの記録で適用から外した判定1件。
+type retractedDoc struct {
+	// File と Index は取り消された判定の場所。
+	File  string `json:"file"`
+	Index int    `json:"index"`
+	// ItemKey は取り消された判定の項目。形の崩れた判定で読めなければ ""。
+	ItemKey string `json:"itemKey"`
+	// RetractedBy は取り消しを書いたファイル名。
+	RetractedBy string `json:"retractedBy"`
+	Reason      string `json:"reason"`
 }
 
 // encodeState は state.json のバイト列を作る。

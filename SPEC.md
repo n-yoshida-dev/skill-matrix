@@ -227,7 +227,7 @@ sources.local.json.example           その雛形。こちらはコミットす�
 - **`judgments/` が一次データ、`state.json` は導出値。** 検証ルールや集計を変えても `recalc` で再計算できる。
   「なぜこの升目が濃いのか」を根拠つきで説明できる
 - **判定は追記のみ。** AI がやるのは新しいファイルを1個作るだけで、既存の判定を壊しようがない。
-  `git diff` も「新規1ファイル」で読める。訂正したいときも既存ファイルは触らず、新しい判定ファイルを足す（§4.7）
+  `git diff` も「新規1ファイル」で読める。訂正したいときも既存ファイルは触らず、新しい判定ファイルを足す。誤った判定を外すときは、その新しいファイルに取り消しの記録を書く（§4.7）
 - **処理順は決定的。** ファイル名の昇順（＝日付順）、ファイル内は配列の順で適用する。順序が変わると `lastEvidenceAt` の更新（§3.4）や `preState` の
   クランプ結果が変わるため、順序はファイル名だけで決まるようにする
 - **`state.json` は同じ入力から常に同じバイト列になる。** 生成日時のような「今」に依存する値を入れない。
@@ -259,6 +259,7 @@ sources.local.json.example           その雛形。こちらはコミットす�
     }
   ],
   "unmatched": ["判定にならなかった記述の要約（どの項目にも対応づけられなかった学習など）"]   // 無ければ []
+  // "retractions": [...]               // 任意。取り消しの記録。source が manual のファイルだけが持てる（下の制約と §4.7 の例）
 }
 ```
 
@@ -292,7 +293,12 @@ sources.local.json.example           その雛形。こちらはコミットす�
   | `migration` | skill-map.md からの写し（1 回きり。`docs/skill-map-migration.md` §8） | **書かない** | 適用しない |
 
   `manual` / `migration` も V1〜V3・V5・V6・V8 は通す。人の申告でも根拠の種類で付けられる印は変わらない
-- 定義にないフィールドはエラー（§2 と同じ理由）。**外枠**（`schemaVersion` / `loggedAt` / `source` / `judge` / `judgments` / `unmatched` 以外のキー）にあればファイル全体をエラーにして CLI が止まり、
+- **`retractions`（取り消しの記録）** は省略できる。中身を書けるのは `source: "manual"` のファイルだけ（取り消しは人の訂正。AI が自分の一存で過去の判定を外せないようにする。空の配列 `[]` は `source` を問わず書いてよい）。
+  各要素は `file`（取り消す判定のあるファイル名）・`index`（その `judgments` 配列での位置。0 始まり）・`reason`（取り消す理由。技術的な事実だけで、公開される）の 3 つで、どれも必須。`file` は判定ファイルの名前の形で、**このファイルより名前の昇順で前**（処理順はファイル名で決まるため）。
+  `index` は 0 以上、`reason` は空でない。同じ判定を 2 回取り消せない（同じファイルの中でも、別のファイルからでも）。
+  崩れていれば判定 1 件の崩れとは違い**ファイル全体のエラー**にする（取り消しは別のファイルに効くので、1 件だけ弾いて続けると、取り消したつもりの印が黙って残る）。
+  指し先のファイルと判定が実在するかは CLI が全ファイルを読んでから確かめ、無ければ終了コード 1（§6）。指し先は形の検査で弾いた判定でもよい
+- 定義にないフィールドはエラー（§2 と同じ理由）。**外枠**（`schemaVersion` / `loggedAt` / `source` / `judge` / `judgments` / `unmatched` / `retractions` 以外のキー。`retractions[i]` の中の `file` / `index` / `reason` 以外のキーも同じ）にあればファイル全体をエラーにして CLI が止まり、
   **`judgments[i]` の中**にあればその1件だけを棄却して `rejected` に記録する（§4.5 の形の検査。他の判定は生かす）
 
 ### 3.4 理解度 `data/state.json`
@@ -332,9 +338,16 @@ sources.local.json.example           その雛形。こちらはコミットす�
   ],
   "rejected": [                         // 棄却（形の検査・V1・V2・V3・V8）。適用していない
     { "file": "2026-09-22-http-server.json", "index": 2, "itemKey": "go-99", "code": "V1_unknown_item", "detail": "ロードマップに無い" }
+  ],
+  "retracted": [                        // 取り消しの記録で外した判定（§4.7）。適用していない
+    { "file": "2026-09-22-http-server.json", "index": 0, "itemKey": "go-04", "retractedBy": "2026-10-07-fix-http-server.json", "reason": "..." }
   ]
 }
 ```
+
+取り消された判定は「最初から無かったもの」として扱う。`events` にも `deferred` / `rejected` にも入らず、V8 の件数にも数えない。
+理解度は毎回すべての判定から計算し直すので、その判定が付けた印は消え、同じ項目の別の有効な判定が付けた印は残る。
+`retracted` に残すのは、取り消した事実を黙って消さないため。`itemKey` は形の検査で弾いた判定で読めなければ `""`。
 
 `appliedLevel` は持たない（`marked` と `verifiedLevel` で足りる）。`lastEvidenceAt` を更新するのは、
 **その判定が付けた最上段の印 ≥ 適用前の `verifiedLevel`** のときだけ（`verifiedLevel` 3 の項目にドリル（印 1）が付いても「3 を保持している」証明にならない。`[3]` で `verifiedLevel` 0 の項目なら印 1 ≥ 0 なので更新される）。更新したときは `needsReview` を消す。
@@ -349,7 +362,7 @@ sources.local.json.example           その雛形。こちらはコミットす�
 - 空の配列は `null` ではなく `[]`。`lastEvidenceAt` は根拠が無ければ `null`、`confidence` は `source` が `ai` 以外なら `null`
 - 日付は `YYYY-MM-DD`。`preState` のゼロ値（内部の `""`）は `"none"` にする
 - `index` は判定ファイルの `judgments` 配列での位置（0 始まり）。形の検査で弾いた要素があっても元の位置を書く
-- `deferred` / `rejected` はファイル名の昇順、ファイル内は `index` の昇順
+- `deferred` / `rejected` / `retracted` はファイル名の昇順、ファイル内は `index` の昇順（`retracted` は取り消された判定の場所の順。取り消しを書いた順ではない）
 - 保留（V7）の `detail` は V7 の文面だけ。保留した判定に V5 の切り詰めが掛かっていても記録しない（適用していないので切り詰めも起きていない。
   採用するときに足す `manual` の判定で改めて V5 を通る）
 - 形の検査で弾いた判定の `code` は `shape_rejected`（V1〜V8 とは別の層なので分ける。棚上げ中の `store.ShapeRejectedCode` と同じ値）。
@@ -527,6 +540,27 @@ AI は `recalc` を回したあと、公開される文の原文（`rationale`�
 コミット後に訂正したいときは、**既存の判定ファイルを触らず、`source: "manual"` の判定ファイルを新しく足す**（§3.3）。
 以前の「手動上書き API」と「反映モード（auto / confirm）」はこれで置き換える（§10.5）。
 
+**誤って付いた印を外すときは、その訂正ファイルに取り消しの記録（`retractions`）を書く**（2026-10-06。`logs/decisions.md` 同日）。
+判定を足すだけでは印は消えない（印は立てるだけで、外す判定は無い）。取り消しは元の判定ファイル名・何件目か・技術的な理由で、誤った判定 1 件を指す。
+誤った判定を取り消し、実際にあった出来事の判定を同じファイルの `judgments` に足し直せば、訂正 1 回が 1 ファイルで済む。
+
+```jsonc
+// data/judgments/2026-10-07-fix-http-server.json（訂正用のファイル）
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-07",
+  "source": "manual",
+  "judgments": [],          // 正しい判定があれば、ここに一緒に足す
+  "retractions": [
+    { "file": "2026-09-22-http-server.json", "index": 0, "reason": "HTTP サーバは資料を見ながら書いたもので、ガイドなしの実装ではなかった" }
+  ],
+  "unmatched": []
+}
+```
+
+元のファイルを直接直さないのは、公開した判定がいつの間にか消えるより「いつ・なぜ取り消したか」が残るほうがよいのと、
+「過去の判定ファイルは変わっていない」を受け入れレビューで確かめ続けるため（AI が過去の判定を書き換えても、正しい訂正と見分けがつかなくなる）。
+
 V7 で保留になった判定は `state.json` の `deferred` に残り、項目詳細画面に「レビュー待ち」として出る。
 採用したいときは同じ内容を `source: "manual"`（`confidence` 無し）で書いた判定ファイルを足す。採用しないなら放置してよい（適用されない）。
 
@@ -624,7 +658,7 @@ go -C backend run ./cmd/skillmatrix verify --data ../data   # 検証だけ。sta
 
 | モード | やること | 終了コード 1 になる条件 |
 |---|---|---|
-| `recalc` | `roadmap.json` の検査（§2）→ `judgments/` を順に読み、形の検査と V1〜V8 → `state.json` を書き出す → 要約（分野ごとの進捗、変わった項目、違反、次にやること Top 5）を端末に出す → 禁止語の検査 | `roadmap.json` にエラー / 判定ファイルが読めない（外枠が壊れている・ファイル名と `loggedAt` の不一致・**外枠の**未知のフィールド。判定1件の中の問題は `rejected` に記録して続行。§3.3） / **禁止語がある**（`state.json` は書いたうえで 1 を返す） |
+| `recalc` | `roadmap.json` の検査（§2）→ `judgments/` を読み、取り消しの指し先を確かめる → 取り消された判定を外して順に形の検査と V1〜V8 → `state.json` を書き出す → 要約（分野ごとの進捗、変わった項目、違反と取り消し、次にやること Top 5）を端末に出す → 禁止語の検査 | `roadmap.json` にエラー / 判定ファイルが読めない（外枠が壊れている・ファイル名と `loggedAt` の不一致・**外枠の**未知のフィールド・取り消しの記録の崩れ。判定1件の中の問題は `rejected` に記録して続行。§3.3） / **取り消しの指し先が無い**（ファイルが無い・その位置に判定が無い・同じ判定を別のファイルからも取り消している。`state.json` は書かない） / **禁止語がある**（`state.json` は書いたうえで 1 を返す） |
 | `verify` | `recalc` と同じ検証を走らせ、**書き出す代わりに、コミットされた `state.json` と再計算結果をバイト単位で比べる** | `recalc` の条件に加えて：`rejected` が空でない / `state.json` が一致しない / `state.json` が無い |
 
 - 違反は「どのファイルの何件目の、どの項目の、どのルールか」を一覧で出す。V5〜V7 は記録されるが `verify` を失敗にはしない
@@ -632,7 +666,7 @@ go -C backend run ./cmd/skillmatrix verify --data ../data   # 検証だけ。sta
 - `rejected` で失敗にするのは、ロードマップに無い項目や範囲外のレベルが**コミットされた判定ファイルに残っている**のは
   直すべき不備だから。コミット前に `recalc` で気づいて直す。CI はその取りこぼしを止める
 - `state.json` の一致まで見るのは「AI が判定ファイルを書いたのに `recalc` を走らせ忘れた」「`state.json` を手でいじった」を止めるため
-- **禁止語の検査**：判定ファイルの公開される文（各判定の `rationale`・`evidenceRefs` と `unmatched`）に、`data/settings.json` の `forbiddenWords` と
+- **禁止語の検査**：判定ファイルの公開される文（各判定の `rationale`・`evidenceRefs` と `unmatched`、取り消しの `reason`）に、`data/settings.json` の `forbiddenWords` と
   `data/forbidden-words.local.json` の `forbiddenWords` の語が含まれていないかを調べる（英字の大文字・小文字は区別しない）。見つかったら「どのファイルのどの欄にどの語か」を全部出す。
   `forbidden-words.local.json` は本人しか知らない語（勤め先の名前など）を書く手元のファイルで、コミットしない（`*.local.json`）。無ければ飛ばす（CI には無い）。
   GitHub のユーザー名は `evidenceRefs` に必ず出るので、その一部を語にしない。形の検査で弾いた判定は見ない（棄却があればそれだけで `verify` は失敗する）

@@ -93,11 +93,22 @@ export interface PendingJudgment {
   detail: string
 }
 
+/** 取り消しの記録で適用から外した判定 1 件（state.json の retracted[]。SPEC.md §3.4） */
+export interface RetractedJudgment {
+  file: string
+  index: number
+  itemKey: string
+  /** 取り消しを書いた判定ファイル */
+  retractedBy: string
+  reason: string
+}
+
 export interface State {
   schemaVersion: 2
   items: ItemState[]
   deferred: PendingJudgment[]
   rejected: PendingJudgment[]
+  retracted: RetractedJudgment[]
 }
 
 export interface Settings {

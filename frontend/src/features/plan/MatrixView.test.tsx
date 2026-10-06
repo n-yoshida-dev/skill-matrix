@@ -91,6 +91,7 @@ const data: AppData = {
     ],
     deferred: [],
     rejected: [],
+    retracted: [],
   },
   settings: {},
 }
