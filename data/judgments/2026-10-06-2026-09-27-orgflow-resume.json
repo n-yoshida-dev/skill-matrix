@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-06",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "java-app-logging",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-27",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@56446af/orgflow-learning/logs/2026-09-27.md#L7",
+        "repo:n-yoshida-dev/study@56446af/orgflow-learning/logs/2026-09-27.md#L15-L17"
+      ],
+      "rationale": "想起の問いに、監査ログとロガーの違いを置き場所と読み手で、スタックトレースで分かるのは発生の流れと場所までで理由は分からないことを、自分の言葉で説明した。cause は省くと Caused by の行が出ないと役割は言えたが名前は出なかった。verifyBy の点（SLF4J と Logback の役割分担・INFO と WARN の振り分け）には当たらない",
+      "confidence": 0.4
+    },
+    {
+      "itemKey": "react-state-props-dataflow",
+      "evidenceType": "drill",
+      "proposedLevel": 0,
+      "occurredAt": "2026-09-27",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@56446af/orgflow-learning/logs/2026-09-27.md#L8",
+        "repo:n-yoshida-dev/study@56446af/orgflow-learning/logs/2026-09-27.md#L23"
+      ],
+      "rationale": "ログアウトで学習記録が画面から消える理由を問う確認質問に、isActive フラグで関数を終えるからと答え、親の App が子の部品を返さなくなり中の state ごと消える、に至らないままセッションが終わった",
+      "confidence": 0.6
+    }
+  ],
+  "unmatched": [
+    "Supabase を使った既存アプリの 3 ファイルの役割を問う確認で、session を state で持ち getSession と onAuthStateChange で更新するファイルを、接続を担うファイルと読み違えた"
+  ]
+}
