@@ -21,13 +21,13 @@
 
 .tree-lines .edge {
   fill: none;
-  stroke: var(--line);
+  stroke: var(--rule-strong);
   stroke-width: 1.5;
 }
 
 /* 前提が確認済みの線に色を付ける（2026-10-03 本人了承の 2）。色は確認済みの節の塗りと同じ系統 */
 .tree-lines .edge.lit {
-  stroke: var(--done);
+  stroke: var(--l3);
   stroke-width: 2.5;
 }
 
@@ -35,12 +35,12 @@
    前提がすべて確認済み（x = n）になったら、横棒と下りる線にも色を付ける */
 .tree-lines .junction path {
   fill: none;
-  stroke: var(--line);
+  stroke: var(--rule-strong);
   stroke-width: 1.5;
 }
 
 .tree-lines .junction circle {
-  fill: var(--line);
+  fill: var(--rule-strong);
 }
 
 .tree-lines .junction text {
@@ -49,13 +49,13 @@
 }
 
 .tree-lines .junction.open path {
-  stroke: var(--done);
+  stroke: var(--l3);
   stroke-width: 2.5;
 }
 
 .tree-lines .junction.open circle,
 .tree-lines .junction.open text {
-  fill: var(--done);
+  fill: var(--l3);
 }
 
 /* 節 1 つ */
@@ -112,9 +112,10 @@
   white-space: normal;
 }
 
-/* 前提待ち：灰色・鍵マーク（透過は使わず色の名前で出す。コントラストを計算できるように） */
+/* 前提待ち：灰色・鍵マーク */
 .tnode.locked {
   color: var(--dim);
+  opacity: 0.8;
 }
 
 .tnode .lock {
@@ -145,12 +146,13 @@
 
 /* 確認済み：塗りは 1 色（色の付いた線と同じ系統）。レベルは色の濃さではなく●の数と「Lv n」で見せる */
 .tnode.done {
-  background: var(--done);
-  color: var(--on-done);
+  background: var(--l3);
+  color: var(--on-dark);
 }
 
 .tnode.done .tk {
   color: inherit;
+  opacity: 0.85;
 }
 
 .tnode .lv {
