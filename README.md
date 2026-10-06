@@ -145,6 +145,7 @@ go -C backend run ./cmd/skillmatrix recalc --data ../data
 # 判定の検査・再計算の CLI と単体テスト
 go -C backend test ./internal/... ./cmd/skillmatrix
 go -C backend run ./cmd/skillmatrix verify --data ../data   # CI と同じ（書き出さない）
+go -C backend run ./cmd/skillmatrix refs <判定ファイル名>     # 根拠の指す学習ログの行を出す（手元だけ。sources.local.json が要る）
 ```
 
 `backend/` のサーバ・DB・非同期判定のコードは、他人にも使わせる版（v2）のために棚上げしてある（`SPEC.md` §10）。v1 では使わない。
