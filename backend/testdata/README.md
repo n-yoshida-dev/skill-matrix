@@ -11,7 +11,8 @@
 | `state-sample.json` | `judgments/` を `recalc` した結果の期待値。CLI のテスト（`cmd/skillmatrix`）が突き合わせる |
 
 `judgments/` は、根拠の種類ごとの印・梯子の範囲への切り詰め（V5）・不合格の報告（V6）・確信度の低い保留（V7）・
-`manual` の判定・`occurredAt` の指定・「適用前のレベルより低い印では最終根拠日を動かさない」を一通り含む。
+`manual` の判定・`occurredAt` の指定・「適用前のレベルより低い印では最終根拠日を動かさない」・
+取り消しの記録（`2026-09-25-retract-http-server.json` が go-04 の印 4 を外し、別の判定の印 3 は残る）を一通り含む。
 棄却（V1〜V3・V8・形の崩れ）は含めない（`verify` が通る状態を保つため。棄却はテストの中で作る）。
 `state-sample.json` を作り直すときは `go -C backend test ./cmd/skillmatrix -run TestRecalc_testdata -update` を走らせ、`git diff` で中身を読む。
 

@@ -144,31 +144,12 @@
       "itemKey": "go-04",
       "verifiedLevel": 0,
       "evidencedLevels": [
-        3,
-        4
+        3
       ],
       "preState": "none",
       "needsReview": false,
       "lastEvidenceAt": "2026-09-20",
       "events": [
-        {
-          "file": "2026-08-08-http-server.json",
-          "index": 0,
-          "occurredAt": "2026-08-08",
-          "source": "ai",
-          "evidenceType": "unaided_implementation",
-          "proposedLevel": 4,
-          "marked": [
-            3,
-            4
-          ],
-          "evidenceRefs": [
-            "repo:example/study@0000000/go/logs/2026-08-08-http-server.md"
-          ],
-          "rationale": "標準ライブラリだけで HTTP サーバとミドルウェアを組み、テストまで人に聞かずに書いた",
-          "confidence": 0.7,
-          "violations": []
-        },
         {
           "file": "2026-09-20-middleware-chain.json",
           "index": 0,
@@ -364,5 +345,14 @@
       "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
     }
   ],
-  "rejected": []
+  "rejected": [],
+  "retracted": [
+    {
+      "file": "2026-08-08-http-server.json",
+      "index": 0,
+      "itemKey": "go-04",
+      "retractedBy": "2026-09-25-retract-http-server.json",
+      "reason": "HTTP サーバは資料を見ながら書いたもので、ガイドなしの実装ではなかった"
+    }
+  ]
 }

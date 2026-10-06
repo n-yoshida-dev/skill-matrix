@@ -119,6 +119,7 @@ const data: AppData = {
       { file: 'f.json', index: 0, itemKey: 'go-test', code: 'V7_low_confidence', detail: '0.4' },
     ],
     rejected: [],
+    retracted: [],
   },
   settings: { site: { repoUrl: 'https://example.invalid/repo' } },
 }

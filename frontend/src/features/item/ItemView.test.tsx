@@ -133,6 +133,7 @@ const data: AppData = {
       },
     ],
     rejected: [],
+    retracted: [],
   },
   settings: {},
 }

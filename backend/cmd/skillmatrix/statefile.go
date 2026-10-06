@@ -23,6 +23,8 @@ type stateDoc struct {
 	Items         []itemDoc    `json:"items"`
 	Deferred      []pendingDoc `json:"deferred"`
 	Rejected      []pendingDoc `json:"rejected"`
+	// Retracted は取り消された判定。適用していない。取り消した事実を黙って消さないために残す（SPEC.md §3.4）。
+	Retracted []retractedDoc `json:"retracted"`
 }
 
 // itemDoc は項目1つの理解度。
@@ -66,6 +68,18 @@ type pendingDoc struct {
 	ItemKey string `json:"itemKey"`
 	Code    string `json:"code"`
 	Detail  string `json:"detail"`
+}
+
+// retractedDoc は取り消しの記録で適用から外した判定1件。
+type retractedDoc struct {
+	// File と Index は取り消された判定の場所。
+	File  string `json:"file"`
+	Index int    `json:"index"`
+	// ItemKey は取り消された判定の項目。形の崩れた判定で読めなければ ""。
+	ItemKey string `json:"itemKey"`
+	// RetractedBy は取り消しを書いたファイル名。
+	RetractedBy string `json:"retractedBy"`
+	Reason      string `json:"reason"`
 }
 
 // encodeState は state.json のバイト列を作る。

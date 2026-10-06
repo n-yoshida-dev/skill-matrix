@@ -77,6 +77,10 @@ func run(args []string, stdout, stderr io.Writer, now time.Time) int {
 	if err != nil {
 		return reportError(stderr, err)
 	}
+	// 指し先の無い取り消しは、取り消したつもりの印が残るので止める。state.json は書かない
+	if problems := checkRetractions(in.files); len(problems) > 0 {
+		return reportError(stderr, &dataError{problems: problems})
+	}
 
 	res := recalculate(in.roadmap, in.files, in.settings.rules)
 	encoded, err := encodeState(res.doc)

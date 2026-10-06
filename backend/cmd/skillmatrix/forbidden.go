@@ -25,7 +25,7 @@ func (h forbiddenHit) String() string {
 	return fmt.Sprintf("%s/%s: %s に「%s」があります", judgmentsDir, h.File, h.Field, h.Word)
 }
 
-// findForbidden は判定ファイルの公開される文（各判定の rationale・evidenceRefs と unmatched）に禁止語があるかを調べ、見つかった場所を全部返す。
+// findForbidden は判定ファイルの公開される文（各判定の rationale・evidenceRefs と unmatched、取り消しの reason）に禁止語があるかを調べ、見つかった場所を全部返す。
 //
 // 大文字と小文字は区別しない（社名などの英字の書き方の揺れを拾うため）。
 // 形の検査で弾いた判定（Output.Rejected）は見ない。棄却があれば verify はそれだけで失敗し、直したあとの判定がここで調べられる。
@@ -57,6 +57,10 @@ func findForbidden(files []judgment.File, words []string) []forbiddenHit {
 		}
 		for k, u := range f.Output.Unmatched {
 			check(f.Name, fmt.Sprintf("unmatched[%d]", k), u)
+		}
+		// 取り消しの理由も state.json に写って公開される
+		for k, r := range f.Retractions {
+			check(f.Name, fmt.Sprintf("retractions[%d].reason", k), r.Reason)
 		}
 	}
 	return hits

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-25",
+  "source": "manual",
+  "judgments": [],
+  "retractions": [
+    {
+      "file": "2026-08-08-http-server.json",
+      "index": 0,
+      "reason": "HTTP サーバは資料を見ながら書いたもので、ガイドなしの実装ではなかった"
+    }
+  ],
+  "unmatched": []
+}

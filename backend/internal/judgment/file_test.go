@@ -70,6 +70,56 @@ func TestParseFile(t *testing.T) {
 	})
 }
 
+// retractionFile は取り消しの記録だけを持つ 2026-10-02 の判定ファイルを作る。
+func retractionFile(source string, elems ...string) string {
+	return `{"schemaVersion": 2, "loggedAt": "2026-10-02", "source": "` + source + `", "judgments": [], "retractions": [` +
+		strings.Join(elems, ", ") + `]}`
+}
+
+func TestParseFile_取り消しの記録(t *testing.T) {
+	t.Run("取り消しを書いた順に読める", func(t *testing.T) {
+		raw := retractionFile("manual",
+			`{"file": "2026-10-01-tour.json", "index": 2, "reason": "翌日の出来事だった"}`,
+			`{"file": "2026-09-30-intro.json", "index": 0, "reason": "別の項目の話だった"}`)
+		f, err := ParseFile("2026-10-02-fix.json", []byte(raw))
+		if err != nil {
+			t.Fatalf("エラーになった: %v", err)
+		}
+		want := []Retraction{
+			{File: "2026-10-01-tour.json", Index: 2, Reason: "翌日の出来事だった"},
+			{File: "2026-09-30-intro.json", Index: 0, Reason: "別の項目の話だった"},
+		}
+		if len(f.Retractions) != len(want) {
+			t.Fatalf("Retractions = %+v", f.Retractions)
+		}
+		for i := range want {
+			if f.Retractions[i] != want[i] {
+				t.Errorf("Retractions[%d] = %+v, want %+v", i, f.Retractions[i], want[i])
+			}
+		}
+	})
+
+	t.Run("retractions は省略でき、空の配列なら AI のファイルにも書ける", func(t *testing.T) {
+		for _, raw := range []string{validFile, strings.Replace(validFile, `"unmatched"`, `"retractions": [], "unmatched"`, 1)} {
+			f, err := ParseFile("2026-10-01-tour.json", []byte(raw))
+			if err != nil {
+				t.Fatalf("エラーになった: %v", err)
+			}
+			if len(f.Retractions) != 0 {
+				t.Errorf("Retractions = %+v", f.Retractions)
+			}
+		}
+	})
+
+	t.Run("同じファイルの別の判定なら並べて取り消せる", func(t *testing.T) {
+		raw := retractionFile("manual",
+			`{"file": "2026-10-01-tour.json", "index": 0, "reason": "x"}`, `{"file": "2026-10-01-tour.json", "index": 1, "reason": "y"}`)
+		if _, err := ParseFile("2026-10-02-fix.json", []byte(raw)); err != nil {
+			t.Fatalf("エラーになった: %v", err)
+		}
+	})
+}
+
 func TestParseFile_外枠の崩れはファイル全体のエラー(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -94,6 +144,19 @@ func TestParseFile_外枠の崩れはファイル全体のエラー(t *testing.T
 		{"judgments が無い", "2026-10-01-tour.json", `{"schemaVersion": 2, "loggedAt": "2026-10-01", "source": "ai"}`, "judgments がありません"},
 		{"judgments が配列でない", "2026-10-01-tour.json", `{"schemaVersion": 2, "loggedAt": "2026-10-01", "source": "ai", "judgments": {}}`, "外枠を読めません"},
 		{"unmatched が文字列の配列でない", "2026-10-01-tour.json", strings.Replace(validFile, `["どの項目にも対応しない記述"]`, `[1]`, 1), "外枠を読めません"},
+		{"AI の判定ファイルに取り消しがある", "2026-10-02-fix.json", retractionFile("ai", `{"file": "2026-10-01-tour.json", "index": 0, "reason": "x"}`), "manual のファイルだけ"},
+		{"取り消しに file が無い", "2026-10-02-fix.json", retractionFile("manual", `{"index": 0, "reason": "x"}`), "file がありません"},
+		{"取り消しに index が無い", "2026-10-02-fix.json", retractionFile("manual", `{"file": "2026-10-01-tour.json", "reason": "x"}`), "index がありません"},
+		{"取り消しに reason が無い", "2026-10-02-fix.json", retractionFile("manual", `{"file": "2026-10-01-tour.json", "index": 0}`), "reason がありません"},
+		{"取り消しの reason が空白だけ", "2026-10-02-fix.json", retractionFile("manual", `{"file": "2026-10-01-tour.json", "index": 0, "reason": "  "}`), "reason がありません"},
+		{"取り消しの file が判定ファイルの名前でない", "2026-10-02-fix.json", retractionFile("manual", `{"file": "tour.json", "index": 0, "reason": "x"}`), "判定ファイルの名前"},
+		{"取り消しの file が自分自身", "2026-10-02-fix.json", retractionFile("manual", `{"file": "2026-10-02-fix.json", "index": 0, "reason": "x"}`), "前に処理される"},
+		{"取り消しの file が自分より後", "2026-10-02-fix.json", retractionFile("manual", `{"file": "2026-10-03-tour.json", "index": 0, "reason": "x"}`), "前に処理される"},
+		{"取り消しの index が負", "2026-10-02-fix.json", retractionFile("manual", `{"file": "2026-10-01-tour.json", "index": -1, "reason": "x"}`), "0 以上"},
+		{"取り消しの index が整数でない", "2026-10-02-fix.json", retractionFile("manual", `{"file": "2026-10-01-tour.json", "index": 1.5, "reason": "x"}`), "外枠を読めません"},
+		{"取り消しに未知のキーがある", "2026-10-02-fix.json", retractionFile("manual", `{"file": "2026-10-01-tour.json", "index": 0, "reason": "x", "by": "me"}`), "外枠を読めません"},
+		{"同じ判定を2回取り消す", "2026-10-02-fix.json", retractionFile("manual",
+			`{"file": "2026-10-01-tour.json", "index": 0, "reason": "x"}`, `{"file": "2026-10-01-tour.json", "index": 0, "reason": "y"}`), "2回取り消して"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -24,6 +24,14 @@ func printViolations(w io.Writer, doc stateDoc) {
 	for _, p := range doc.Deferred {
 		fmt.Fprintf(w, "  %s\n", pendingLine(p))
 	}
+	fmt.Fprintf(w, "取り消し（適用していない。retractions で外した）: %d 件\n", len(doc.Retracted))
+	for _, r := range doc.Retracted {
+		key := r.ItemKey
+		if key == "" {
+			key = "(itemKey 不明)"
+		}
+		fmt.Fprintf(w, "  %s judgments[%d] %s: %s で取り消し（%s）\n", r.File, r.Index, key, r.RetractedBy, r.Reason)
+	}
 
 	// V5（梯子の範囲への切り詰め）と V6（不合格の報告）は適用済みの記録。モデルの想定どおりの動きなので失敗にはしない
 	type recorded struct {

@@ -1555,5 +1555,6 @@
       "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
     }
   ],
-  "rejected": []
+  "rejected": [],
+  "retracted": []
 }

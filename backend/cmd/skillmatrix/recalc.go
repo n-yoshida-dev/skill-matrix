@@ -31,16 +31,22 @@ type recalcResult struct {
 //
 // 入力の並び順には依存しない（ここで並べ直す）。順序が変わると lastEvidenceAt の更新や
 // preState の結果が変わるため、順序はファイル名だけで決まるようにする。
+//
+// 取り消された判定（retractions。SPEC.md §4.7）は、最初から無かったものとして外してから適用する。
+// 指し先の実在は checkRetractions が先に確かめている前提で、指し先の無い取り消しはここでは何もしない。
 func recalculate(rm domain.Roadmap, files []judgment.File, rules domain.Rules) recalcResult {
-	sorted := append([]judgment.File(nil), files...)
-	sort.SliceStable(sorted, func(a, b int) bool { return sorted[a].Name < sorted[b].Name })
+	sorted := sortedByName(files)
+	retractions := retractedJudgments(sorted)
 
 	states := make(map[domain.ItemKey]domain.ItemState)
 	events := make(map[domain.ItemKey][]eventDoc)
 	deferred := []pendingDoc{}
 	rejected := []pendingDoc{}
+	retracted := []retractedDoc{}
 
 	for _, f := range sorted {
+		f, fileRetracted := withoutRetracted(f, retractions)
+		retracted = append(retracted, fileRetracted...)
 		fileRejected := shapeRejections(f)
 
 		js := f.Output.DomainJudgments(f.Source, f.LoggedAt)
@@ -96,6 +102,7 @@ func recalculate(rm domain.Roadmap, files []judgment.File, rules domain.Rules) r
 			Items:         items,
 			Deferred:      deferred,
 			Rejected:      rejected,
+			Retracted:     retracted,
 		},
 		states: states,
 	}
