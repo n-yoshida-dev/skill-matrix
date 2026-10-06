@@ -274,7 +274,7 @@
       ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-10-04",
+      "lastEvidenceAt": "2026-10-06",
       "events": [
         {
           "file": "2026-09-27-migration-react.json",
@@ -406,6 +406,24 @@
           "rationale": "orgflow の画面で、token を localStorage の値で初期化した state に持ち、state で画面を切り替え、draft 画面への切り替えを isDraft の state として自分で設計した。setToken の直後に古い token を保存する誤り（W-010 の再発）は説明を受けて直した（ガイド付き）",
           "confidence": 0.6,
           "violations": []
+        },
+        {
+          "file": "2026-10-07-2026-10-06-orgflow-u0-draft-form.json",
+          "index": 0,
+          "occurredAt": "2026-10-06",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L9",
+            "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L25"
+          ],
+          "rationale": "setToken の次の行の token を問う想起に、取得し直した値が出ると誤答したが、console.log で比べた実物を見て更新はまだ反映されないと自分の言葉で言い直し、tenant を選んだ後に押す送信ボタンの関数が読む token は選んだ後の新しい token だと理由を付けて答えた",
+          "confidence": 0.6,
+          "violations": []
         }
       ]
     },
@@ -496,7 +514,7 @@
       ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-10-03",
+      "lastEvidenceAt": "2026-10-06",
       "events": [
         {
           "file": "2026-10-06-2026-09-28-orgflow-u0-cors.json",
@@ -531,6 +549,24 @@
           "rationale": "orgflow の画面で、Authorization: Bearer を付けた fetch で tenant の一覧を取って表示し、選んだ tenant で token を取り直す処理を書いた。一覧の表示を fetch の関数の中で return していた点などは指摘を受けて直した（ガイド付き）",
           "confidence": 0.6,
           "violations": []
+        },
+        {
+          "file": "2026-10-07-2026-10-06-orgflow-u0-draft-form.json",
+          "index": 5,
+          "occurredAt": "2026-10-06",
+          "source": "ai",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L12-L17",
+            "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L26"
+          ],
+          "rationale": "送信ボタンから draft を作る関数を書き、URL・金額の数値への変換・useState の型を直して、201 と id が返るまで動かした。2 回目の送信の 401 は、返事に token が無いのに setToken していたためと自分で突き止めて 2 行を消した（ガイド付き）",
+          "confidence": 0.6,
+          "violations": []
         }
       ]
     },
@@ -542,7 +578,7 @@
       ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-10-02",
+      "lastEvidenceAt": "2026-10-06",
       "events": [
         {
           "file": "2026-10-06-2026-10-02-orgflow-u0-login.json",
@@ -560,6 +596,23 @@
           "rationale": "orgflow の login 画面で、useState 3 つと value・onChange の入力欄 2 つを持つ制御されたフォームを書き、ボタンで state の値を送信して返ってきた token を表示した。応答の中身の取り出し（await res.json()）は自分の過去のコードを指されて書いた（ガイド付き）",
           "confidence": 0.6,
           "violations": []
+        },
+        {
+          "file": "2026-10-07-2026-10-06-orgflow-u0-draft-form.json",
+          "index": 4,
+          "occurredAt": "2026-10-06",
+          "source": "ai",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L11"
+          ],
+          "rationale": "orgflow の draft 作成フォームで、入力欄 4 つを state と value・onChange でつなぎ、種類の入力をプルダウン（select と option）にした。プルダウンは自分の案で、書き方は説明を受けて書いた（ガイド付き）",
+          "confidence": 0.6,
+          "violations": []
         }
       ]
     },
@@ -571,7 +624,7 @@
       ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-10-02",
+      "lastEvidenceAt": "2026-10-06",
       "events": [
         {
           "file": "2026-10-06-2026-10-02-orgflow-u0-login.json",
@@ -588,6 +641,23 @@
             "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L23"
           ],
           "rationale": "Property 'accessToken' does not exist on type 'void' の型エラーを、右辺のいちばん外側の関数が何を返すかという問いだけで自分で直し、console.log の戻り値が入っていたと原因を 1 行で説明した",
+          "confidence": 0.6,
+          "violations": []
+        },
+        {
+          "file": "2026-10-07-2026-10-06-orgflow-u0-draft-form.json",
+          "index": 2,
+          "occurredAt": "2026-10-06",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L11"
+          ],
+          "rationale": "useState の型を 3 つの文字列に絞って出た型エラー 2 つについて、エラー文の読み方（渡したもの・受け取る側の決まり）の説明を受けたあと、初期値の空文字が選択肢に無いこと、onChange で入る文字列が選択肢の外になりうることを自分の言葉で言い当て、1 つ目は自分で直した",
           "confidence": 0.6,
           "violations": []
         }
@@ -730,7 +800,7 @@
         3
       ],
       "preState": "none",
-      "needsReview": false,
+      "needsReview": true,
       "lastEvidenceAt": "2026-08-23",
       "events": [
         {
@@ -785,6 +855,26 @@
           "rationale": "ヘッダーなしの /me/tenants を 403 と予想して外れ、curl の 401 と WWW-Authenticate を見て戻ったあと、tenant 未選択の token で POST /requests は 403 という確認に、Bearer で送られているので 401 にはならないと理由付きで正答した",
           "confidence": 0.7,
           "violations": []
+        },
+        {
+          "file": "2026-10-07-2026-10-06-orgflow-u0-draft-form.json",
+          "index": 6,
+          "occurredAt": "2026-10-06",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L31"
+          ],
+          "rationale": "振り返りの問いに自分の言葉で答えた文で、token が undefined になると権限不足で 401 が出るとし、権限不足は 403・401 は誰か分からないときという違いを取り違えたまま、レビューで指摘されて終わった",
+          "confidence": 0.7,
+          "violations": [
+            {
+              "code": "V6_failed_check",
+              "detail": "不合格の報告（根拠 \"self_explanation\"）。印は付けず、レベル 3 を維持して要再確認とした"
+            }
+          ]
         }
       ]
     },
@@ -1551,6 +1641,20 @@
       "file": "2026-10-06-2026-10-03-orgflow-u0-tenant.json",
       "index": 2,
       "itemKey": "react-ts-integration",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-10-07-2026-10-06-orgflow-u0-draft-form.json",
+      "index": 1,
+      "itemKey": "react-data-fetching",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-10-07-2026-10-06-orgflow-u0-draft-form.json",
+      "index": 3,
+      "itemKey": "react-routing-forms",
       "code": "V7_low_confidence",
       "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
     }
