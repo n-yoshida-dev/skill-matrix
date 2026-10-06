@@ -302,7 +302,12 @@ function render(d) {
     const text = `保留中の判定 ${x.state.deferred} 件の採否を決める`
     human.push({ kind: '判断', text, full: `${text}（data/state.json の deferred。採用するなら manual の判定を足す）`, src: 'state.json', blocked: false, pri: 2 })
   }
-  // 優先度の高い順に並べる（ハブと同じ）：Beads は priority（0 が最優先）、保留中の判定は P2 相当、TODO の確認待ちは最後。
+  // 未判定の学習ログは、本人が /judge-log を呼ぶと判定が始まる（logs/decisions.md 2026-10-03）ので、あなた待ちに入れる
+  if (x.pendingLogs?.count) {
+    const text = `未判定の学習ログ ${x.pendingLogs.count} 本を判定する`
+    human.push({ kind: '作業', text, full: `${text}（skill-matrix の Claude Code で /judge-log。どのログかは skillmatrix pending）`, src: 'pending', blocked: false, pri: 2 })
+  }
+  // 優先度の高い順に並べる（ハブと同じ）：Beads は priority（0 が最優先）、保留中の判定と未判定のログは P2 相当、TODO の確認待ちは最後。
   // sort は安定なので、同じ優先度の中では元の並びが保たれる
   human.sort((a, b) => a.pri - b.pri)
 
@@ -385,6 +390,7 @@ function render(d) {
         <div><b>${withEvidence}</b><span>根拠あり</span></div>
         <div><b>${s?.needsReview ?? '-'}</b><span>要再確認</span></div>
         <div><b>${x.judgments.count}</b><span>判定ファイル</span></div>
+        <div title="${esc(x.pendingLogs?.error ?? 'skillmatrix pending --count')}"><b>${x.pendingLogs ? (x.pendingLogs.count ?? '?') : '-'}</b><span>未判定ログ</span></div>
       </div>
       ${s ? `<div class="levels" title="verifiedLevel の分布">${s.byLevel.map((n, l) => (n ? `<i data-l="${l}" style="flex:${n}" title="L${l}: ${n} 件"></i>` : '')).join('')}</div>
       <div class="legend">${s.byLevel.map((n, l) => `L${l} ${n}`).join(' · ')}</div>` : ''}

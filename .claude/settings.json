@@ -3,6 +3,20 @@
   "env": {
     "ENABLE_STOP_REVIEW": "0"
   },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pending-count.sh\"",
+            "timeout": 90
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(npm ci)",

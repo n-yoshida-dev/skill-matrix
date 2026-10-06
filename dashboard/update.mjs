@@ -332,6 +332,19 @@ function readProjectData() {
     const top = Math.max(0, ...(it.evidencedLevels ?? []))
     if (top > v) pendingBase++ // 上位の根拠はあるが基礎の確認が未了（[3] だけ等）
   }
+  // 未判定の学習ログの本数（logs/decisions.md 2026-10-03「判定を始めるきっかけ」）。数え方の規則は CLI の pending が持つ。
+  // sources.local.json（学習ログの置き場。コミットしない）が無い環境では数えない
+  let pendingLogs = null
+  if (fs.existsSync(path.join(ROOT, 'backend/go.mod')) && fs.existsSync(path.join(ROOT, 'sources.local.json'))) {
+    const r = run('go', ['-C', 'backend', 'run', './cmd/skillmatrix', 'pending', '--count'], { timeout: 120_000 })
+    const n = Number.parseInt(r.stdout.trim(), 10)
+    // 数えられても stderr に警告（読めない根拠・logsGlob の無いリポジトリ。本数がずれている可能性）があれば残す
+    const warning = r.stderr.split('\n').find((l) => l.startsWith('警告:')) ?? null
+    pendingLogs =
+      r.ok && Number.isFinite(n)
+        ? { count: n, error: null, warning }
+        : { count: null, error: (r.stderr || r.stdout).trim().split('\n')[0] || 'pending が失敗', warning: null }
+  }
   let verify = null
   if (fs.existsSync(path.join(ROOT, 'backend/go.mod'))) {
     const r = run('go', ['-C', 'backend', 'run', './cmd/skillmatrix', 'verify', '--data', '../data'], { timeout: 120_000 })
@@ -352,6 +365,7 @@ function readProjectData() {
         }
       : null,
     judgments: { count: judgments.length, latest: judgments.at(-1) ?? null },
+    pendingLogs,
     state: state
       ? {
           items: state.items?.length ?? 0,
@@ -384,6 +398,11 @@ function buildAlerts({ git, github, handoff, data, todo, beads }) {
   if (data.verify && !data.verify.ok) {
     const reason = data.verify.output.filter((l) => !/^exit status/.test(l)).at(-1) ?? '詳細は下'
     alerts.push({ level: 'warn', text: `data/ の verify が失敗（${reason}）` })
+  }
+  if (data.pendingLogs?.error) {
+    alerts.push({ level: 'warn', text: `未判定の学習ログを数えられず（${data.pendingLogs.error}）` })
+  } else if (data.pendingLogs?.warning) {
+    alerts.push({ level: 'warn', text: `未判定の学習ログの本数がずれている可能性（${data.pendingLogs.warning.replace(/^警告:\s*/, '')}）` })
   }
   if (handoff?.commitsSince != null && handoff.commitsSince >= 3) {
     alerts.push({ level: 'warn', text: `HANDOFF.md が ${handoff.commitsSince} コミット前の状態（引き継ぎが遅れている）` })

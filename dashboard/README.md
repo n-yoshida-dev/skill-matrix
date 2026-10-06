@@ -28,13 +28,13 @@ git / gh / bd を実行し、「更新」ボタン（`POST /update`）を受け�
 
 | 表示 | 取得元（正本） |
 |---|---|
-| 異常の帯（CI 失敗・verify 失敗・HANDOFF の遅れ・取得失敗）。異常が無ければ出ない | 下の各正本から機械的に導く |
+| 異常の帯（CI 失敗・verify 失敗・未判定の学習ログを数えられない／警告あり・HANDOFF の遅れ・取得失敗）。異常が無ければ出ない | 下の各正本から機械的に導く |
 | タイル：進捗・あなた待ち・CI（main）・データ検証・作業ツリー | 下の各正本 |
-| あなた待ち（判断・確認・作業の札つき） | Beads `bd list --json`（このプロジェクトの epic 配下でラベル `human`）、`TODO.md`「確認待ち」節の未完、`data/state.json` の `deferred`（保留中の判定。1 件以上のときだけ） |
+| あなた待ち（判断・確認・作業の札つき） | Beads `bd list --json`（このプロジェクトの epic 配下でラベル `human`）、`TODO.md`「確認待ち」節の未完、`data/state.json` の `deferred`（保留中の判定。1 件以上のときだけ）、`skillmatrix pending --count`（未判定の学習ログ。1 本以上のときだけ） |
 | 今のタスクとこの後 4 件 | `TODO.md` の未完タスク（上から順） |
 | CI（開いている PR とその CI の結果、main の最近の実行） | `gh pr list` / `gh run list --workflow ci.yml`（GitHub Pages の公開の実行は含めない） / `gh run view --json jobs` |
 | 最近のコミット | `git log` |
-| データ（このプロジェクト固有） | `data/roadmap.json` `data/state.json` `data/judgments/` の件数と分布、`skillmatrix verify` の結果 |
+| データ（このプロジェクト固有） | `data/roadmap.json` `data/state.json` `data/judgments/` の件数と分布、`skillmatrix verify` の結果、`skillmatrix pending --count` の未判定ログの本数（`sources.local.json` が無ければ「-」） |
 | 折りたたみ：引き継ぎメモ全文・最近の合意・verify の出力・未コミットのファイル・Claude 側の付箋・よく変わったファイル | `HANDOFF.md`・`logs/decisions.md`・`git status`・Beads・`git log` |
 
 進捗の数え方は apps-workflow の `progress.sh` と同じ（`##` 見出し = フェーズ、「確認待ち」「保留」の節は合計から外す）。
