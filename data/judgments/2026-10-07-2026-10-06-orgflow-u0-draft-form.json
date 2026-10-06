@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-07",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "react-state-props-dataflow",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-06",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L9",
+        "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L25"
+      ],
+      "rationale": "setToken の次の行の token を問う想起に、取得し直した値が出ると誤答したが、console.log で比べた実物を見て更新はまだ反映されないと自分の言葉で言い直し、tenant を選んだ後に押す送信ボタンの関数が読む token は選んだ後の新しい token だと理由を付けて答えた",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "react-data-fetching",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-06",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L23"
+      ],
+      "rationale": "await fetch は返事の表紙が来た段階で終わるので、本文の JSON は res.json() を await して取り出す必要があると自分の言葉で説明した。verifyBy の点（fetch と TanStack Query の通信回数）には当たらない",
+      "confidence": 0.4
+    },
+    {
+      "itemKey": "react-ts-integration",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-06",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L11"
+      ],
+      "rationale": "useState の型を 3 つの文字列に絞って出た型エラー 2 つについて、エラー文の読み方（渡したもの・受け取る側の決まり）の説明を受けたあと、初期値の空文字が選択肢に無いこと、onChange で入る文字列が選択肢の外になりうることを自分の言葉で言い当て、1 つ目は自分で直した",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "react-routing-forms",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-06",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L11"
+      ],
+      "rationale": "select と option の説明のあと、「提出済み」を選んだら何が入るかを問う確認に submitted と正答した。選択肢の表示と値の対応を問うたもので、verifyBy の点（Link と a の違い、制御されたフォームの値の流れ）には当たらない",
+      "confidence": 0.4
+    },
+    {
+      "itemKey": "react-routing-forms",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-10-06",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L11"
+      ],
+      "rationale": "orgflow の draft 作成フォームで、入力欄 4 つを state と value・onChange でつなぎ、種類の入力をプルダウン（select と option）にした。プルダウンは自分の案で、書き方は説明を受けて書いた（ガイド付き）",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "react-data-fetching",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-10-06",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L12-L17",
+        "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L26"
+      ],
+      "rationale": "送信ボタンから draft を作る関数を書き、URL・金額の数値への変換・useState の型を直して、201 と id が返るまで動かした。2 回目の送信の 401 は、返事に token が無いのに setToken していたためと自分で突き止めて 2 行を消した（ガイド付き）",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-06",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L31"
+      ],
+      "rationale": "振り返りの問いに自分の言葉で答えた文で、token が undefined になると権限不足で 401 が出るとし、権限不足は 403・401 は誰か分からないときという違いを取り違えたまま、レビューで指摘されて終わった",
+      "confidence": 0.7
+    }
+  ],
+  "unmatched": [
+    "同一オリジンかを問う想起に正答し、オリジンはプロトコル・ホスト・ポートの組で決まりパスは考慮しないと自分の言葉で説明した（ロードマップに該当する項目が無い）",
+    "psql で組織の ID を SELECT で何も見ずに書き、2 行出たので SELECT * で名前を見て特定した。列の指定・WHERE で絞る書き方と、アプリの SQL で * を避ける理由は説明を受けた（ロードマップに SQL の基礎の項目が無い）",
+    "201（作った成功）と 200 の違い、401 の返事は本文が空で res.json() が失敗すること、JavaScript は無い項目を読むと undefined を返して先へ進むことの説明を受けた",
+    "e.target.value は数字を入れても文字列で入るのかと、API の金額が整数であることとの食い違いに自分から気づいた",
+    "1 回目の 401 は token の期限（1 時間）切れと自分で気づき、403 は tenant を選ばずに送っていたと自分で言い当てた（デバッグの手順を自分で回した）",
+    "useState の型に Java の Integer を書いた（10-03 と同じ、Java の書き方が混ざる形）"
+  ]
+}
