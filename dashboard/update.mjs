@@ -332,6 +332,17 @@ function readProjectData() {
     const top = Math.max(0, ...(it.evidencedLevels ?? []))
     if (top > v) pendingBase++ // 上位の根拠はあるが基礎の確認が未了（[3] だけ等）
   }
+  // 未判定の学習ログの本数（logs/decisions.md 2026-10-03「判定を始めるきっかけ」）。数え方の規則は CLI の pending が持つ。
+  // sources.local.json（学習ログの置き場。コミットしない）が無い環境では数えない
+  let pendingLogs = null
+  if (fs.existsSync(path.join(ROOT, 'backend/go.mod')) && fs.existsSync(path.join(ROOT, 'sources.local.json'))) {
+    const r = run('go', ['-C', 'backend', 'run', './cmd/skillmatrix', 'pending', '--count'], { timeout: 120_000 })
+    const n = Number.parseInt(r.stdout.trim(), 10)
+    pendingLogs =
+      r.ok && Number.isFinite(n)
+        ? { count: n, error: null }
+        : { count: null, error: (r.stderr || r.stdout).trim().split('\n')[0] || 'pending が失敗' }
+  }
   let verify = null
   if (fs.existsSync(path.join(ROOT, 'backend/go.mod'))) {
     const r = run('go', ['-C', 'backend', 'run', './cmd/skillmatrix', 'verify', '--data', '../data'], { timeout: 120_000 })
@@ -352,6 +363,7 @@ function readProjectData() {
         }
       : null,
     judgments: { count: judgments.length, latest: judgments.at(-1) ?? null },
+    pendingLogs,
     state: state
       ? {
           items: state.items?.length ?? 0,

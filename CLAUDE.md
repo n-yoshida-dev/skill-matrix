@@ -85,6 +85,7 @@
 | `guard-secrets.sh` | 秘密情報・ローカル専用ファイルのコミットを阻止（PreToolUse） | プラグイン |
 | `check-edited.sh` | frontend の typecheck / lint、backend の go vet（PostToolUse） | プラグイン |
 | `session-briefing.sh` | TODO.md の未完タスクを起動時に提示（SessionStart） | プラグイン |
+| `pending-count.sh` | 未判定の学習ログの本数を起動時に提示（SessionStart。`skillmatrix pending --count`。`sources.local.json` が無ければ何も出さない） | このリポジトリ（`.claude/hooks/`） |
 | `/judge-log` | 学習ログを判定して `data/judgments/` に 1 ファイル書く。`prompts/judge.md` を読ませる入口だけで、基準は書かない | このリポジトリ（`.claude/skills/judge-log/`） |
 
 このアプリ固有のフック・スキルは `.claude/` に置く。固有のルールが増えたら `.claude/rules/` に切り出し、CLAUDE.md からはリンクだけにする。

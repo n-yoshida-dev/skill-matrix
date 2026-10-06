@@ -410,6 +410,8 @@ AI が学習ログを自分で読みに行くための設定。ローカルの�
 ```
 学習ログを書く（~/workspace/study。skill-matrix の外）
   ↓
+skill-matrix を開くと「未判定の学習ログ n 本」と出る（起動時フック `.claude/hooks/pending-count.sh` と開発ダッシュボード。`pending --count`）
+  ↓
 Claude Code で /judge-log を呼ぶ（ChatGPT なら prompts/judge.md を貼る）
   → AI が pending（§6）で未判定の学習ログを古い順に探す（sources.local.json の置き場から。規則は §3.5）
   → prompts/judge.md の指示で判定し、ログ 1 本につき data/judgments/YYYY-MM-DD-<短い名前>.json を1つ書く
