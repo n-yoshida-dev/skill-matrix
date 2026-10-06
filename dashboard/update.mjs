@@ -338,10 +338,12 @@ function readProjectData() {
   if (fs.existsSync(path.join(ROOT, 'backend/go.mod')) && fs.existsSync(path.join(ROOT, 'sources.local.json'))) {
     const r = run('go', ['-C', 'backend', 'run', './cmd/skillmatrix', 'pending', '--count'], { timeout: 120_000 })
     const n = Number.parseInt(r.stdout.trim(), 10)
+    // 数えられても stderr に警告（読めない根拠があり、本数が多めに出ている可能性）があれば残す
+    const warning = r.stderr.split('\n').find((l) => l.startsWith('警告:')) ?? null
     pendingLogs =
       r.ok && Number.isFinite(n)
-        ? { count: n, error: null }
-        : { count: null, error: (r.stderr || r.stdout).trim().split('\n')[0] || 'pending が失敗' }
+        ? { count: n, error: null, warning }
+        : { count: null, error: (r.stderr || r.stdout).trim().split('\n')[0] || 'pending が失敗', warning: null }
   }
   let verify = null
   if (fs.existsSync(path.join(ROOT, 'backend/go.mod'))) {
@@ -396,6 +398,11 @@ function buildAlerts({ git, github, handoff, data, todo, beads }) {
   if (data.verify && !data.verify.ok) {
     const reason = data.verify.output.filter((l) => !/^exit status/.test(l)).at(-1) ?? '詳細は下'
     alerts.push({ level: 'warn', text: `data/ の verify が失敗（${reason}）` })
+  }
+  if (data.pendingLogs?.error) {
+    alerts.push({ level: 'warn', text: `未判定の学習ログを数えられず（${data.pendingLogs.error}）` })
+  } else if (data.pendingLogs?.warning) {
+    alerts.push({ level: 'warn', text: `未判定の学習ログの本数が多めに出ている可能性（${data.pendingLogs.warning.replace(/^警告:\s*/, '')}）` })
   }
   if (handoff?.commitsSince != null && handoff.commitsSince >= 3) {
     alerts.push({ level: 'warn', text: `HANDOFF.md が ${handoff.commitsSince} コミット前の状態（引き継ぎが遅れている）` })
