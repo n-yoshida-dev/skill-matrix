@@ -11,7 +11,7 @@ import (
 	"github.com/n-yoshida-dev/skill-matrix/internal/judgment"
 )
 
-// このテストは未判定のログを探す規則（prompts/judge.md 手順 2。SPEC.md §3.5）を具体例で固定する。
+// このテストは未判定のログを探す規則（SPEC.md §3.5。prompts/judge.md 手順 1）を具体例で固定する。
 // git に触らない findPending と findFreeze を、材料を手で組み立てて確かめる。git を呼ぶ部分は TestRun_pending が一時リポジトリで確かめる。
 
 // pendingPaths は未判定のログを「パス（差分の基準・書き起こし）」の並びにする。比べやすくするため。
@@ -50,7 +50,6 @@ func migrationFile(t *testing.T, name string, ledgerRefs ...string) judgment.Fil
 func TestFindPending(t *testing.T) {
 	study := repoSnapshot{
 		Repo: "o/study",
-		Head: "fff0000",
 		Files: []string{
 			"go/logs/2026-09-20.md",      // 凍結前からあり、凍結後に変わっていない → ② で外す
 			"go/logs/2026-09-25.md",      // 凍結前からあり、凍結後に追記された → 凍結からの差分
@@ -60,16 +59,21 @@ func TestFindPending(t *testing.T) {
 			"go/logs/2026-10-03.md",      // コミットされていない変更がある → ③ で外して理由を出す
 			"go/logs/notes.md",           // 日付の無いログ → 最後に並ぶ
 			"orgflow/logs/2026-09-30.md", // 凍結後の新しいログ。日付順で go の 10-02 より前
+			"go/logs/2026-10-05.md",      // git add だけしてコミットしていない（凍結後の変更に出てこない）→ ③ で外して理由を出す
+			"go/logs/2026-09-20-old.md",  // 凍結前からあり変わっていないが、手元で書き換え中 → ③（② より先に当てる）
 		},
-		Uncommitted: []string{"go/logs/2026-10-03.md", "go/logs/2026-10-04.md"},
+		Uncommitted: []string{"go/logs/2026-10-03.md", "go/logs/2026-10-04.md", "go/logs/2026-10-05.md", "go/logs/2026-09-20-old.md"},
 		Freeze: &freezeSnapshot{
 			Commit:  "abc1234",
 			Date:    "2026-09-27",
 			Changed: []string{"go/logs/2026-09-25.md", "go/logs/2026-09-24.md", "go/logs/2026-10-02.md", "go/logs/2026-10-01.md", "go/logs/2026-10-03.md", "go/logs/notes.md", "orgflow/logs/2026-09-30.md"},
-			Existed: []string{"go/logs/2026-09-20.md", "go/logs/2026-09-25.md"},
+			Existed: []string{"go/logs/2026-09-20.md", "go/logs/2026-09-20-old.md", "go/logs/2026-09-25.md"},
 		},
 	}
-	judged := judgedLogs([]judgment.File{judgedFile(t, "2026-10-02-ai.json", "repo:o/study@0001111/go/logs/2026-10-01.md#L3")})
+	judged, warnings := judgedLogs([]judgment.File{judgedFile(t, "2026-10-02-ai.json", "repo:o/study@0001111/go/logs/2026-10-01.md#L3")})
+	if len(warnings) != 0 {
+		t.Fatalf("warnings = %v", warnings)
+	}
 
 	pending, skipped := findPending([]repoSnapshot{study}, nil, judged)
 
@@ -84,14 +88,16 @@ func TestFindPending(t *testing.T) {
 		t.Errorf("pending =\n%v\nwant\n%v", got, want)
 	}
 	for _, p := range pending {
-		if p.Head != "fff0000" {
-			t.Errorf("%s の Head = %q（evidenceRefs に書く今のコミット）", p.Path, p.Head)
+		if p.Commit != "" {
+			t.Errorf("%s の Commit = %q（findPending は埋めない。git で呼び出し側が埋める）", p.Path, p.Commit)
 		}
 	}
 
 	wantSkipped := []skippedLog{
+		{Repo: "o/study", Path: "go/logs/2026-09-20-old.md", Reason: "コミットされていない変更がある"},
 		{Repo: "o/study", Path: "go/logs/2026-10-03.md", Reason: "コミットされていない変更がある"},
 		{Repo: "o/study", Path: "go/logs/2026-10-04.md", Reason: "まだコミットされていない"},
+		{Repo: "o/study", Path: "go/logs/2026-10-05.md", Reason: "コミットされていない変更がある"},
 	}
 	if !slices.Equal(skipped, wantSkipped) {
 		t.Errorf("skipped = %+v, want %+v", skipped, wantSkipped)
@@ -99,7 +105,7 @@ func TestFindPending(t *testing.T) {
 }
 
 func TestFindPending_凍結の無いリポジトリは全文(t *testing.T) {
-	other := repoSnapshot{Repo: "o/other", Head: "aaa", Files: []string{"logs/2026-09-01.md"}}
+	other := repoSnapshot{Repo: "o/other", Files: []string{"logs/2026-09-01.md"}}
 	pending, _ := findPending([]repoSnapshot{other}, nil, map[string]bool{})
 	if got := pendingPaths(pending); !slices.Equal(got, []string{"o/other:logs/2026-09-01.md"}) {
 		t.Errorf("pending = %v", got)
@@ -107,10 +113,20 @@ func TestFindPending_凍結の無いリポジトリは全文(t *testing.T) {
 }
 
 func TestFindPending_コミットしない置き場のログ(t *testing.T) {
-	judged := judgedLogs([]judgment.File{judgedFile(t, "2026-10-02-ai.json", "log:learning-logs/2026-10-01.md")})
+	judged, _ := judgedLogs([]judgment.File{judgedFile(t, "2026-10-02-ai.json", "log:learning-logs/2026-10-01.md")})
 	pending, _ := findPending(nil, []string{"learning-logs/2026-10-01.md", "learning-logs/2026-10-02.md"}, judged)
 	if got := pendingPaths(pending); !slices.Equal(got, []string{":learning-logs/2026-10-02.md"}) {
 		t.Errorf("pending = %v", got)
+	}
+}
+
+func TestJudgedLogs_読めない根拠は警告に出す(t *testing.T) {
+	judged, warnings := judgedLogs([]judgment.File{judgedFile(t, "2026-10-02-ai.json", "repo:o/study@XYZ/go/logs/a.md", "repo:o/study@abc1234/go/logs/b.md")})
+	if !judged["o/study:go/logs/b.md"] || len(judged) != 1 {
+		t.Errorf("judged = %v", judged)
+	}
+	if len(warnings) != 1 || !strings.Contains(warnings[0], "evidenceRefs[0]") {
+		t.Errorf("warnings = %v", warnings)
 	}
 }
 
@@ -173,7 +189,13 @@ func TestRun_pending(t *testing.T) {
 	writeFile(t, filepath.Join(repo, "go", "logs", "2026-10-02-新しい.md"), "新しい\n")
 	git("add", ".")
 	git("commit", "-q", "-m", "続き")
+	logsCommit := git("rev-parse", "--short", "HEAD")
+	// ログに触れないコミットを足す。evidenceRefs に書くのは HEAD ではなく、ログを最後に変更したコミット
+	writeFile(t, filepath.Join(repo, "ledger.md"), "台帳\n追記\n")
+	git("commit", "-q", "-am", "台帳だけ")
 	writeFile(t, filepath.Join(repo, "go", "logs", "2026-10-03.md"), "書きかけ\n")
+	writeFile(t, filepath.Join(repo, "go", "logs", "2026-10-04.md"), "add だけ\n")
+	git("add", "go/logs/2026-10-04.md")
 	head := git("rev-parse", "--short", "HEAD")
 
 	dir := newDataDir(t, map[string]string{
@@ -191,9 +213,10 @@ func TestRun_pending(t *testing.T) {
 	}
 	wants := []string{
 		"未判定のログ 2 本",
-		"1. repo:o/study@" + head + "/go/logs/2026-09-25.md（凍結コミット " + freeze + " からの差分だけ）",
-		"2. repo:o/study@" + head + "/go/logs/2026-10-02-新しい.md（全文）",
+		"1. repo:o/study@" + logsCommit + "/go/logs/2026-09-25.md（凍結コミット " + freeze + " からの差分だけ）",
+		"2. repo:o/study@" + logsCommit + "/go/logs/2026-10-02-新しい.md（全文）",
 		"go/logs/2026-10-03.md：まだコミットされていない",
+		"go/logs/2026-10-04.md：コミットされていない変更がある",
 	}
 	for _, want := range wants {
 		if !strings.Contains(out, want) {

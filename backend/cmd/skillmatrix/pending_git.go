@@ -25,12 +25,7 @@ func snapshotRepo(repo, repoPath, logsGlob, freeze string) (repoSnapshot, error)
 	s := repoSnapshot{Repo: repo}
 	pathspec := ":(glob)" + logsGlob
 
-	head, err := gitOutput(repoPath, "rev-parse", "--short", "HEAD")
-	if err != nil {
-		return s, err
-	}
-	s.Head = strings.TrimSpace(string(head))
-
+	var err error
 	if s.Files, err = gitLines(repoPath, "ls-files", "-z", "--", pathspec); err != nil {
 		return s, err
 	}
@@ -189,10 +184,26 @@ func runPending(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 
-	pending, skipped := findPending(snaps, local, judgedLogs(files))
+	judged, warnings := judgedLogs(files)
+	for _, w := range warnings {
+		fmt.Fprintf(stderr, "警告: %s\n", w)
+	}
+	pending, skipped := findPending(snaps, local, judged)
 	if *countOnly {
 		fmt.Fprintln(stdout, len(pending))
 		return exitOK
+	}
+	// evidenceRefs に書くコミットは、そのログを最後に変更したコミット（prompts/judge.md「出力の形」）。リポジトリの HEAD ではない
+	for i, p := range pending {
+		if p.Repo == "" {
+			continue
+		}
+		out, err := gitOutput(sources.Repos[p.Repo].Path, "log", "-1", "--format=%h", "--", p.Path)
+		if err != nil {
+			fmt.Fprintf(stderr, "エラー: %s の %s を最後に変更したコミットを調べられません: %v\n", p.Repo, p.Path, err)
+			return exitUsage
+		}
+		pending[i].Commit = strings.TrimSpace(string(out))
 	}
 	printPending(stdout, pending, skipped)
 	return exitOK
@@ -217,7 +228,7 @@ func readSources(sourcesPath string, stderr io.Writer) (sourcesDoc, int) {
 	return sources, exitOK
 }
 
-// printPending は未判定のログと、外したログを出す。判定する AI がこのまま使える形にする（prompts/judge.md 手順 2・3）。
+// printPending は未判定のログと、外したログを出す。判定する AI がこのまま使える形にする（prompts/judge.md 手順 1・3）。
 func printPending(w io.Writer, pending []pendingLog, skipped []skippedLog) {
 	fmt.Fprintf(w, "未判定のログ %d 本（古い順。この順に判定する）\n", len(pending))
 	for i, p := range pending {
@@ -238,7 +249,7 @@ func pendingLogLine(p pendingLog) string {
 		fmt.Fprintf(&b, "log:%s（全文）", p.Path)
 		return b.String()
 	}
-	fmt.Fprintf(&b, "repo:%s@%s/%s", p.Repo, p.Head, p.Path)
+	fmt.Fprintf(&b, "repo:%s@%s/%s", p.Repo, p.Commit, p.Path)
 	switch {
 	case p.DiffBase != "":
 		fmt.Fprintf(&b, "（凍結コミット %s からの差分だけ）", p.DiffBase)
