@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-06",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "react-state-props-dataflow",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-03",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L7"],
+      "rationale": "部品が親の戻り値から消えたら中の state はどうなるかの想起に、React の手から離れて中身も消えると正答した",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "react-data-fetching",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-03",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L7-L8",
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L23"
+      ],
+      "rationale": "res.accessToken で取れない理由の想起で詰まったが、ステータスと本文の違いを戻ったあとの確認（403 かを調べる・一覧を取り出す・大きな応答で await fetch 直後に手元にあるもの）に正答し、res.json() にも await が要る理由を自分の言葉で説明した。verifyBy の点（fetch と TanStack Query の通信回数）には当たらない",
+      "confidence": 0.4
+    },
+    {
+      "itemKey": "react-ts-integration",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-03",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L13",
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L36"
+      ],
+      "rationale": "useState の型の位置と配列の型の [] で詰まって穴埋めで直したあと、{ id: string; title: string } の配列の型を問う確認に正答した。verifyBy の点（型エラーの文からどこが何と合わないか）には当たらない",
+      "confidence": 0.4
+    },
+    {
+      "itemKey": "react-jsx-ts-basics",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-03",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L11",
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L14",
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L37"
+      ],
+      "rationale": "token === \"\" || null が (token === \"\") || (null) と読まれること、アロー関数の引数は => の手前に書くこと、JSX の外では {} で囲まないことは、指摘と説明を受けて直したのみで、単独の確認はしていない",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "react-state-props-dataflow",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-10-04",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L10-L11",
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L15"
+      ],
+      "rationale": "orgflow の画面で、token を localStorage の値で初期化した state に持ち、state で画面を切り替え、draft 画面への切り替えを isDraft の state として自分で設計した。setToken の直後に古い token を保存する誤り（W-010 の再発）は説明を受けて直した（ガイド付き）",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "java-spring-security-jwt",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-03",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L9",
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L13"
+      ],
+      "rationale": "token の期限は保存場所ではなく token 自身に設定されていること（application.yaml の 1h）と、Authorization: Bearer ヘッダーで token を送ることの説明を受けた。JWT の検証の流れ（署名・issuer・有効期限）は確認していない",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-03",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L13",
+        "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L26"
+      ],
+      "rationale": "ヘッダーなしの /me/tenants を 403 と予想して外れ、curl の 401 と WWW-Authenticate を見て戻ったあと、tenant 未選択の token で POST /requests は 403 という確認に、Bearer で送られているので 401 にはならないと理由付きで正答した",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "react-data-fetching",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-10-03",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L13-L14"],
+      "rationale": "orgflow の画面で、Authorization: Bearer を付けた fetch で tenant の一覧を取って表示し、選んだ tenant で token を取り直す処理を書いた。一覧の表示を fetch の関数の中で return していた点などは指摘を受けて直した（ガイド付き）",
+      "confidence": 0.6
+    }
+  ],
+  "unmatched": [
+    "localStorage が再読み込み後も残ることを Console で確かめ（予想は null で外れた）、キャッシュ・Cookie との違いとリフレッシュトークンの目的の説明を受け、token を state と localStorage に置く案を、受け入れるリスク（期限内は同じページの JS から読める）を添えて選んだ",
+    "想起の問いに、https と http はプロトコルが異なるので別オリジンと正答し、オリジンの構成のうちホストを URL と答えた",
+    "画面が変わらない原因を、Console の ERR_CONNECTION_REFUSED から API の起動失敗（起動するディレクトリの誤り）までたどって自分で直した"
+  ]
+}

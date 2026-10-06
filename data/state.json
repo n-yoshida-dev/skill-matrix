@@ -201,6 +201,23 @@
           "rationale": "JSX / TSX と TypeScript の型定義は説明を受けたのみで、理解の確認は未実施",
           "confidence": null,
           "violations": []
+        },
+        {
+          "file": "2026-10-06-2026-10-03-orgflow-u0-tenant.json",
+          "index": 3,
+          "occurredAt": "2026-10-03",
+          "source": "ai",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L11",
+            "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L14",
+            "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L37"
+          ],
+          "rationale": "token === \"\" || null が (token === \"\") || (null) と読まれること、アロー関数の引数は => の手前に書くこと、JSX の外では {} で囲まないことは、指摘と説明を受けて直したのみで、単独の確認はしていない",
+          "confidence": 0.6,
+          "violations": []
         }
       ]
     },
@@ -252,11 +269,12 @@
       "itemKey": "react-state-props-dataflow",
       "verifiedLevel": 1,
       "evidencedLevels": [
-        1
+        1,
+        3
       ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-09-26",
+      "lastEvidenceAt": "2026-10-04",
       "events": [
         {
           "file": "2026-09-27-migration-react.json",
@@ -291,6 +309,102 @@
           ],
           "rationale": "検索欄の文字と絞り込み後の一覧のどちらを state にするかを問う確認質問に、検索欄の文字だけを state にし一覧は計算で出す、と正答した。state を置く部品を選んだ理由の説明（L2）はこのログに無い",
           "confidence": 0.7,
+          "violations": []
+        },
+        {
+          "file": "2026-10-06-2026-09-27-orgflow-resume.json",
+          "index": 1,
+          "occurredAt": "2026-09-27",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@56446af/orgflow-learning/logs/2026-09-27.md#L8",
+            "repo:n-yoshida-dev/study@56446af/orgflow-learning/logs/2026-09-27.md#L23"
+          ],
+          "rationale": "ログアウトで学習記録が画面から消える理由を問う確認質問に、isActive フラグで関数を終えるからと答え、親の App が子の部品を返さなくなり中の state ごと消える、に至らないままセッションが終わった",
+          "confidence": 0.6,
+          "violations": [
+            {
+              "code": "V6_failed_check",
+              "detail": "不合格の報告（根拠 \"drill\"）。印は付けず、レベル 1 を維持して要再確認とした"
+            }
+          ]
+        },
+        {
+          "file": "2026-10-06-2026-09-28-orgflow-u0-cors.json",
+          "index": 1,
+          "occurredAt": "2026-09-28",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@3130e70/orgflow-learning/logs/2026-09-28.md#L7",
+            "repo:n-yoshida-dev/study@3130e70/orgflow-learning/logs/2026-09-28.md#L37"
+          ],
+          "rationale": "ログアウトで学習記録が消える理由の想起で、一覧の部品が消えるからとは答えたが、部品を返さなくなるのは 1 段上の App であることと、消えるのは中の records の state であることの 2 点に届かず、再説明は次の Step に回した",
+          "confidence": 0.6,
+          "violations": [
+            {
+              "code": "V6_failed_check",
+              "detail": "不合格の報告（根拠 \"drill\"）。印は付けず、レベル 1 を維持して要再確認とした"
+            }
+          ]
+        },
+        {
+          "file": "2026-10-06-2026-10-02-orgflow-u0-login.json",
+          "index": 2,
+          "occurredAt": "2026-10-02",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L8",
+            "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L12-L13",
+            "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L27"
+          ],
+          "rationale": "state にする値を理由付きで選び（token は指さしで追加）、再読み込みの実験から F5 では React ごと作り直されて state が初期値に戻ると説明した。部品が消えたときの state の行き先は想起と確認で決め切れなかったが、振り返りで部品が消えると中の state も手放されるので App に置く、と自分の言葉で説明した",
+          "confidence": 0.6,
+          "violations": []
+        },
+        {
+          "file": "2026-10-06-2026-10-03-orgflow-u0-tenant.json",
+          "index": 0,
+          "occurredAt": "2026-10-03",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L7"
+          ],
+          "rationale": "部品が親の戻り値から消えたら中の state はどうなるかの想起に、React の手から離れて中身も消えると正答した",
+          "confidence": 0.7,
+          "violations": []
+        },
+        {
+          "file": "2026-10-06-2026-10-03-orgflow-u0-tenant.json",
+          "index": 4,
+          "occurredAt": "2026-10-04",
+          "source": "ai",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L10-L11",
+            "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L15"
+          ],
+          "rationale": "orgflow の画面で、token を localStorage の値で初期化した state に持ち、state で画面を切り替え、draft 画面への切り替えを isDraft の state として自分で設計した。setToken の直後に古い token を保存する誤り（W-010 の再発）は説明を受けて直した（ガイド付き）",
+          "confidence": 0.6,
           "violations": []
         }
       ]
@@ -377,29 +491,107 @@
     {
       "itemKey": "react-data-fetching",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-10-03",
+      "events": [
+        {
+          "file": "2026-10-06-2026-09-28-orgflow-u0-cors.json",
+          "index": 2,
+          "occurredAt": "2026-09-28",
+          "source": "ai",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@3130e70/orgflow-learning/logs/2026-09-28.md#L9-L12"
+          ],
+          "rationale": "orgflow の Vite の画面で、ボタンから fetch で POST /login を呼ぶ App.tsx を書いた。body にオブジェクトをそのまま渡していた点はレビュー 1 回で JSON.stringify に直した（ガイド付き）",
+          "confidence": 0.6,
+          "violations": []
+        },
+        {
+          "file": "2026-10-06-2026-10-03-orgflow-u0-tenant.json",
+          "index": 7,
+          "occurredAt": "2026-10-03",
+          "source": "ai",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L13-L14"
+          ],
+          "rationale": "orgflow の画面で、Authorization: Bearer を付けた fetch で tenant の一覧を取って表示し、選んだ tenant で token を取り直す処理を書いた。一覧の表示を fetch の関数の中で return していた点などは指摘を受けて直した（ガイド付き）",
+          "confidence": 0.6,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "react-routing-forms",
       "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "evidencedLevels": [
+        3
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-10-02",
+      "events": [
+        {
+          "file": "2026-10-06-2026-10-02-orgflow-u0-login.json",
+          "index": 0,
+          "occurredAt": "2026-10-02",
+          "source": "ai",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L9-L11"
+          ],
+          "rationale": "orgflow の login 画面で、useState 3 つと value・onChange の入力欄 2 つを持つ制御されたフォームを書き、ボタンで state の値を送信して返ってきた token を表示した。応答の中身の取り出し（await res.json()）は自分の過去のコードを指されて書いた（ガイド付き）",
+          "confidence": 0.6,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "react-ts-integration",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1
+      ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
-      "events": []
+      "lastEvidenceAt": "2026-10-02",
+      "events": [
+        {
+          "file": "2026-10-06-2026-10-02-orgflow-u0-login.json",
+          "index": 1,
+          "occurredAt": "2026-10-02",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L11",
+            "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L23"
+          ],
+          "rationale": "Property 'accessToken' does not exist on type 'void' の型エラーを、右辺のいちばん外側の関数が何を返すかという問いだけで自分で直し、console.log の戻り値が入っていたと原因を 1 行で説明した",
+          "confidence": 0.6,
+          "violations": []
+        }
+      ]
     },
     {
       "itemKey": "java-rest-openapi",
@@ -451,6 +643,22 @@
           ],
           "rationale": "Spring Security の OAuth2 Resource Server で、HS256 の JWT の検証（署名・issuer・exp）を実装した。ガイド付き",
           "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-10-06-2026-10-03-orgflow-u0-tenant.json",
+          "index": 5,
+          "occurredAt": "2026-10-03",
+          "source": "ai",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L9",
+            "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L13"
+          ],
+          "rationale": "token の期限は保存場所ではなく token 自身に設定されていること（application.yaml の 1h）と、Authorization: Bearer ヘッダーで token を送ることの説明を受けた。JWT の検証の流れ（署名・issuer・有効期限）は確認していない",
+          "confidence": 0.6,
           "violations": []
         }
       ]
@@ -558,6 +766,24 @@
           ],
           "rationale": "検証の順序（403 を先に返すと利用者が解決しない依頼をしに行く）、404 と 403 の使い分け（存在を明かさない）、500 になる条件を、設計文書を閉じて自分の言葉で説明した（W-006 closed）",
           "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-10-06-2026-10-03-orgflow-u0-tenant.json",
+          "index": 6,
+          "occurredAt": "2026-10-03",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L13",
+            "repo:n-yoshida-dev/study@75d110e/orgflow-learning/logs/2026-10-03.md#L26"
+          ],
+          "rationale": "ヘッダーなしの /me/tenants を 403 と予想して外れ、curl の 401 と WWW-Authenticate を見て戻ったあと、tenant 未選択の token で POST /requests は 403 という確認に、Bearer で送られているので 401 にはならないと理由付きで正答した",
+          "confidence": 0.7,
           "violations": []
         }
       ]
@@ -1297,6 +1523,34 @@
       "file": "2026-09-28-2026-09-27-react-02-step3.json",
       "index": 2,
       "itemKey": "react-data-fetching",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-10-06-2026-09-27-orgflow-resume.json",
+      "index": 0,
+      "itemKey": "java-app-logging",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-10-06-2026-09-28-orgflow-u0-cors.json",
+      "index": 0,
+      "itemKey": "java-app-logging",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-10-06-2026-10-03-orgflow-u0-tenant.json",
+      "index": 1,
+      "itemKey": "react-data-fetching",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-10-06-2026-10-03-orgflow-u0-tenant.json",
+      "index": 2,
+      "itemKey": "react-ts-integration",
       "code": "V7_low_confidence",
       "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
     }

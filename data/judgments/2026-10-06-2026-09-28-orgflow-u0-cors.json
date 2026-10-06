@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-06",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "java-app-logging",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-28",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@3130e70/orgflow-learning/logs/2026-09-28.md#L7"],
+      "rationale": "想起の問いに、例外の cause を「原因例外」と呼び、元になった例外のオブジェクトがそのまま入ると自分の言葉で説明した。verifyBy の点（SLF4J と Logback の役割分担・INFO と WARN の振り分け・例外を最後の引数に渡す理由）には当たらない",
+      "confidence": 0.4
+    },
+    {
+      "itemKey": "react-state-props-dataflow",
+      "evidenceType": "drill",
+      "proposedLevel": 0,
+      "occurredAt": "2026-09-28",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@3130e70/orgflow-learning/logs/2026-09-28.md#L7",
+        "repo:n-yoshida-dev/study@3130e70/orgflow-learning/logs/2026-09-28.md#L37"
+      ],
+      "rationale": "ログアウトで学習記録が消える理由の想起で、一覧の部品が消えるからとは答えたが、部品を返さなくなるのは 1 段上の App であることと、消えるのは中の records の state であることの 2 点に届かず、再説明は次の Step に回した",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "react-data-fetching",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-09-28",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@3130e70/orgflow-learning/logs/2026-09-28.md#L9-L12"],
+      "rationale": "orgflow の Vite の画面で、ボタンから fetch で POST /login を呼ぶ App.tsx を書いた。body にオブジェクトをそのまま渡していた点はレビュー 1 回で JSON.stringify に直した（ガイド付き）",
+      "confidence": 0.6
+    }
+  ],
+  "unmatched": [
+    "CORS を実験で確かめ（同じ呼び出しが curl では通りブラウザでは止まる）、同一オリジン・Allow-Origin: *・Vite の取り次ぎの確認問に自分の言葉で答え、Spring Security に CORS の許可設定を書いた。振り返りの言い直しで、止めるのはブラウザで許可の単位はオリジン、の 2 点を補足された（ロードマップに該当する項目が無い）",
+    "想起の問いに、CI の緑の中身として Tests run・Failures・Errors・Skipped の行を貼って答えた"
+  ]
+}

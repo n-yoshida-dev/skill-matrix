@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-06",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "react-routing-forms",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-10-02",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L9-L11"],
+      "rationale": "orgflow の login 画面で、useState 3 つと value・onChange の入力欄 2 つを持つ制御されたフォームを書き、ボタンで state の値を送信して返ってきた token を表示した。応答の中身の取り出し（await res.json()）は自分の過去のコードを指されて書いた（ガイド付き）",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "react-ts-integration",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-02",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L11",
+        "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L23"
+      ],
+      "rationale": "Property 'accessToken' does not exist on type 'void' の型エラーを、右辺のいちばん外側の関数が何を返すかという問いだけで自分で直し、console.log の戻り値が入っていたと原因を 1 行で説明した",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "react-state-props-dataflow",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-02",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L8",
+        "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L12-L13",
+        "repo:n-yoshida-dev/study@c6a2f86/orgflow-learning/logs/2026-10-02.md#L27"
+      ],
+      "rationale": "state にする値を理由付きで選び（token は指さしで追加）、再読み込みの実験から F5 では React ごと作り直されて state が初期値に戻ると説明した。部品が消えたときの state の行き先は想起と確認で決め切れなかったが、振り返りで部品が消えると中の state も手放されるので App に置く、と自分の言葉で説明した",
+      "confidence": 0.6
+    }
+  ],
+  "unmatched": [
+    "想起の問いに、CORS で止めるのはブラウザで許可の札を付けるのは API と答え、オリジンを URL とポートの組み合わせと答えた（構成はプロトコル・ホスト・ポートと補足を受けた）"
+  ]
+}
