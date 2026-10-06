@@ -3,11 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -296,19 +294,9 @@ func runRefs(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 
-	raw, err := os.ReadFile(*sourcesPath)
-	if errors.Is(err, fs.ErrNotExist) {
-		fmt.Fprintf(stderr, "エラー: %s がありません。学習ログのリポジトリの手元の場所を書いてください（雛形は sources.local.json.example）\n", *sourcesPath)
-		return exitUsage
-	}
-	if err != nil {
-		fmt.Fprintf(stderr, "エラー: %s を読めません: %v\n", *sourcesPath, err)
-		return exitUsage
-	}
-	sources, err := parseSources(raw)
-	if err != nil {
-		fmt.Fprintf(stderr, "エラー: %v\n", err)
-		return exitUsage
+	sources, code := readSources(*sourcesPath, stderr)
+	if code != exitOK {
+		return code
 	}
 	rr := refResolver{sources: sources, rootDir: filepath.Dir(filepath.Clean(*dataDir)), reader: gitReader{}}
 

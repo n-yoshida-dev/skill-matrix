@@ -3,6 +3,7 @@
 //	go -C backend run ./cmd/skillmatrix recalc --data ../data   # 検証して state.json を書き直す（手元で使う）
 //	go -C backend run ./cmd/skillmatrix verify --data ../data   # 検証だけ。state.json と再計算結果を比べる（CI で使う）
 //	go -C backend run ./cmd/skillmatrix refs <判定ファイル名>     # 根拠の指す学習ログの行を、rationale と並べて出す（手元専用）
+//	go -C backend run ./cmd/skillmatrix pending                  # 未判定の学習ログを古い順に出す（手元専用）
 //
 // DB・HTTP・LLM クライアントを import しない。読むのは internal/domain / internal/roadmap / internal/judgment だけ
 // （internal/llm は棚上げ中の Claude API クライアントと同居しているので import しない。KNOWLEDGE.md 2026-09-26）。
@@ -41,7 +42,7 @@ const (
 	settingsFile  = "settings.json"
 	stateFile     = "state.json"
 	judgmentsDir  = "judgments"
-	usageSynopsis = "使い方: skillmatrix <recalc|verify> [--data <data/ の場所>]\n       skillmatrix refs [--data <data/ の場所>] [--sources <sources.local.json の場所>] <判定ファイル名>..."
+	usageSynopsis = "使い方: skillmatrix <recalc|verify> [--data <data/ の場所>]\n       skillmatrix refs [--data <data/ の場所>] [--sources <sources.local.json の場所>] <判定ファイル名>...\n       skillmatrix pending [--data <data/ の場所>] [--sources <sources.local.json の場所>] [--count]"
 )
 
 func main() {
@@ -55,9 +56,12 @@ func run(args []string, stdout, stderr io.Writer, now time.Time) int {
 		return exitUsage
 	}
 	mode := args[0]
-	// refs はロードマップも state.json も使わない、手元専用の別の入口（refs.go）
-	if mode == "refs" {
+	// refs と pending はロードマップも state.json も使わない、手元専用の別の入口（refs.go・pending_git.go）
+	switch mode {
+	case "refs":
 		return runRefs(args[1:], stdout, stderr)
+	case "pending":
+		return runPending(args[1:], stdout, stderr)
 	}
 	if mode != "recalc" && mode != "verify" {
 		fmt.Fprintf(stderr, "知らないモードです: %q\n%s\n", mode, usageSynopsis)
