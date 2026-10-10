@@ -148,7 +148,10 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   完了条件：「次にやること Top N」の並びを本人が見て違和感が無い。変えた重みと理由が KNOWLEDGE.md にあり、単体テストが更新されている
 - [x] `~/workspace/study/learner-profile/skill-map.md` との関係を決める（2026-09-23 に判明 → **2026-09-25 に決定。skill-matrix を正本にし、移行する。** `logs/decisions.md` 2026-09-25 の 4 件。手順は 2-1 の段階 B〜G に分割済み）
   完了条件：どちらを正本にするかが `logs/decisions.md` にあり、畳む場合は study 側の変更内容（どのファイルをどう書き換えるか）がタスクとして起きている
-- [ ] 画面を GitHub Pages に公開する
+- [x] 画面を GitHub Pages に公開する
+  **2026-10-11：公開した。** https://n-yoshida-dev.github.io/skill-matrix/ 。本人が Settings → Pages → Source を「GitHub Actions」にし（本人「やった」）、Claude が `gh workflow run pages.yml` で公開した
+  （run 38065181714、「画面をビルド」「GitHub Pages に公開」とも success）。Playwright で URL を開き、公開ビュー（幅 1280・390）と作業ビューの見出しが出て、画面のエラーが 0 件だった。
+  置き場所は GitHub Pages のまま（本人が Vercel と迷い、決めた。`logs/decisions.md` 2026-10-11）。`main` への push で公開されることは、この記録の PR のマージで走る Pages の実行で確かめる
   完了条件：`main` への push で静的サイトがビルドされて Pages に上がり、URL を開くとマトリクスが見える。**Public にする直前に、`data/judgments/` 全件の `rationale` と `evidenceRefs` を目で読み、固有名詞（所属先・企業名・人名）が混ざっていないことを確かめる**（2026-09-23 決定の残リスク。`logs/decisions.md`）
   **【ユーザー作業】リポジトリを Public にする操作はユーザーが行う**（公開設定の変更は不可逆。URL は実施時に添える）
   **2026-09-27：Public 化と、`data/judgments/` 全 41 件の目視確認（全件そのままで可）は済んだ。** 残りは画面の完成を待って Pages に上げること
