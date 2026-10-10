@@ -19,7 +19,7 @@ export interface Weights {
   unlocks: number
 }
 
-/** 既定の重み。Go の DefaultWeights() と同じ（実データで調整する前の仮置き。TODO 2-6） */
+/** 既定の重み。Go の DefaultWeights() と同じ（2026-10-10 に実データの並びを本人が見て、仮置きの値のまま確定。TODO 2-6） */
 export const DEFAULT_WEIGHTS: Weights = { readiness: 1.0, gap: 0.8, staleness: 0.3, unlocks: 0.5 }
 
 /** 「次にやること」の既定の件数。Go の defaultNextActionsLimit と同じ */
