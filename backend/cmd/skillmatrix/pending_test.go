@@ -172,7 +172,7 @@ func TestRun_pending(t *testing.T) {
 		}
 		return strings.TrimSpace(string(out))
 	}
-	// 凍結前のログ 2 本と台帳 → 凍結 → 1 本に追記・新しいログ（日本語のパス）・判定済みのログ・未コミットのログ
+	// 凍結前のログ 2 本と台帳 → 凍結 → 1 本に追記・新しいログ（日本語のパス）・書き起こしのログ・判定済みのログ・未コミットのログ
 	git("init", "-q")
 	writeFile(t, filepath.Join(repo, "ledger.md"), "台帳\n")
 	if err := os.MkdirAll(filepath.Join(repo, "go", "logs"), 0o755); err != nil {
@@ -187,6 +187,7 @@ func TestRun_pending(t *testing.T) {
 	writeFile(t, filepath.Join(repo, "go", "logs", "2026-09-25.md"), "凍結前\n追記\n")
 	writeFile(t, filepath.Join(repo, "go", "logs", "2026-10-01-判定済み.md"), "済み\n")
 	writeFile(t, filepath.Join(repo, "go", "logs", "2026-10-02-新しい.md"), "新しい\n")
+	writeFile(t, filepath.Join(repo, "go", "logs", "2026-09-24.md"), "書き起こし\n")
 	git("add", ".")
 	git("commit", "-q", "-m", "続き")
 	logsCommit := git("rev-parse", "--short", "HEAD")
@@ -212,9 +213,11 @@ func TestRun_pending(t *testing.T) {
 		t.Fatalf("終了コード = %d, stderr = %s", code, errOut)
 	}
 	wants := []string{
-		"未判定のログ 2 本",
-		"1. repo:o/study@" + logsCommit + "/go/logs/2026-09-25.md（凍結コミット " + freeze + " からの差分だけ）",
-		"2. repo:o/study@" + logsCommit + "/go/logs/2026-10-02-新しい.md（全文）",
+		"未判定のログ 3 本",
+		// 凍結後に前の記録から書き起こしたログは、台帳に写っていない出来事だけを判定する（logs/decisions.md 2026-10-10）
+		"1. repo:o/study@" + logsCommit + "/go/logs/2026-09-24.md（凍結より前の日付のログ。台帳に写っていない出来事だけ）",
+		"2. repo:o/study@" + logsCommit + "/go/logs/2026-09-25.md（凍結コミット " + freeze + " からの差分だけ）",
+		"3. repo:o/study@" + logsCommit + "/go/logs/2026-10-02-新しい.md（全文）",
 		"go/logs/2026-10-03.md：まだコミットされていない",
 		"go/logs/2026-10-04.md：コミットされていない変更がある",
 	}
@@ -228,7 +231,7 @@ func TestRun_pending(t *testing.T) {
 	}
 
 	code, out, _ = runCLI("pending", "--data", dir, "--sources", sources, "--count")
-	if code != exitOK || out != "2\n" {
+	if code != exitOK || out != "3\n" {
 		t.Errorf("--count: 終了コード = %d, stdout = %q", code, out)
 	}
 }

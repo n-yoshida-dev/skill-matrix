@@ -254,7 +254,7 @@ func pendingLogLine(p pendingLog) string {
 	case p.DiffBase != "":
 		fmt.Fprintf(&b, "（凍結コミット %s からの差分だけ）", p.DiffBase)
 	case p.Backfilled:
-		b.WriteString("（全文。凍結より前の日付のログ）")
+		b.WriteString("（凍結より前の日付のログ。台帳に写っていない出来事だけ）")
 	default:
 		b.WriteString("（全文）")
 	}
