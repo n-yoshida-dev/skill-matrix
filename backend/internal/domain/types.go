@@ -463,7 +463,7 @@ type Weights struct {
 	Unlocks   float64 // これを終えると何項目が着手可能になるか
 }
 
-// DefaultWeights は既定の重み。実運用で調整する前提の初期値。
+// DefaultWeights は既定の重み。2026-10-10 に実データの並びを本人が見て、この値で確定した（logs/decisions.md 同日）。
 func DefaultWeights() Weights {
 	return Weights{
 		Readiness: 1.0,
