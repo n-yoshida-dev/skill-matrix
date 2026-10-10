@@ -55,7 +55,7 @@ type pendingLog struct {
 	// DiffBase は差分だけを判定するときの基準コミット（凍結コミット）。空なら全文を判定する。
 	DiffBase string
 	// Backfilled は、凍結コミットより前の日付なのに凍結のあとで作られたログ（前の記録から書き起こしたもの）。
-	// 全文を判定するが、凍結前の出来事を含むことを判定する AI に知らせる（prompts/judge.md 手順 1）。
+	// 全文を読むが、判定するのは台帳に写っていない出来事だけだと判定する AI に知らせる（prompts/judge.md 手順 1。logs/decisions.md 2026-10-10）。
 	Backfilled bool
 }
 
