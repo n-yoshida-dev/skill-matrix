@@ -256,12 +256,13 @@ skill-map.md からの移行（1 回きり）には使わない。そちらは `
 - `data/roadmap.json`（`levels` と `domains`）
 - `data/settings.json` の `rules`
 - `backend/internal/domain/types.go` の `evidenceLadder` と `evidencePreStates`、それが使う `Level` と `EvidenceType` の定数
-- `data/state.json` の `items`（`events` は `occurredAt`・`evidenceType`・`rationale` だけでよい）
+- `data/state.json` の `items`（`events` は `occurredAt`・`evidenceType`・`source`・`evidenceRefs`・`rationale` だけでよい）
 - 判定する学習ログの本文と、その出どころ（`repo:<owner>/<repo>@<commit>/<path>` か `log:<path>`）
+- 凍結より前の出来事を含むログ（`pending` が「凍結より前の日付のログ」と出したものなど）なら、`source` が `migration` の `events` の `evidenceRefs` が指す台帳の行（凍結コミット時点の内容）
 
 進め方の違い：
 
-- 手順 1〜3 は飛ばす（どのログを判定するかは人が決める）
+- 手順 1〜3 は飛ばす（どのログを判定するかは人が決める）。ただし凍結より前の出来事を含むログなら、手順 2 のとおり台帳に写っていない出来事だけを判定する（貼られた移行判定の `events` と台帳の行で見る）
 - 判定ファイルの中身を、ファイル名を添えて JSON のコードブロック 1 つで返す。行番号が分からなければ `#L…` を付けず path までにする
 - 手順 6〜8 は、返ってきた JSON を skill-matrix の Claude Code に渡して進めてもらう（Claude Code が突き合わせ役を起動し、確認の表を出す）。
   Claude Code を使わないなら人が行う（ファイルを保存して `recalc` を実行し、`refs` で根拠の行を出して `rationale` と見比べ、判定ファイルの `rationale`・`evidenceRefs`・`unmatched` の原文を読む）
