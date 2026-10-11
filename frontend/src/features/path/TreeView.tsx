@@ -8,8 +8,11 @@ import {
   layoutTree,
   levelDots,
   nodeKind,
+  readingOrder,
+  type GhostNode,
   type NodeKind,
   type Point,
+  type TreeNode,
 } from './layout'
 import type { Path } from './path'
 import { isJunctionOpen, isLit, junctionCount, junctionLabel, missingPrereqs } from './unlock'
@@ -48,6 +51,70 @@ export function TreeView({ data, path }: Props) {
     (a, b) => Number(isLit(a, states)) - Number(isLit(b, states)),
   )
 
+  /** 他分野の前提（ゴーストノード）の四角 */
+  const ghostLink = (g: GhostNode) => {
+    const st = stateOf(states, g.key)
+    // 他分野の項目が着手できるかは、その分野での前提で決まる（分野の項目と同じ判定）
+    const it = items.get(g.key)
+    const kind = nodeKind(st, it ? isReady(states, it) : true)
+    const domainName = domainNames.get(g.domainKey) ?? g.domainKey
+    return (
+      <Link
+        key={`${g.key}@${g.to}`}
+        to={`/plan/path/${g.domainKey}`}
+        className={`tnode ghost ${kind}`}
+        style={{ left: g.x, top: g.y, width: g.w, height: g.h }}
+        title={`${domainName} の学習パスへ移る`}
+        aria-label={`他分野：${domainName} ${it?.name ?? g.key}（${stateText(kind, st)}）`}
+      >
+        <span className="tk">他分野：{domainName}</span>
+        <span className="tn">{nameOf(g.key)}</span>
+        <span className="ts">
+          <StateMark kind={kind} st={st} />
+        </span>
+      </Link>
+    )
+  }
+
+  /** 分野の項目の節 */
+  const nodeLink = (n: TreeNode) => {
+    const style = { left: n.x, top: n.y, width: n.w, height: n.h }
+    const pn = pathNode.get(n.key)
+    const st = pn?.state ?? stateOf(states, n.key)
+    const kind = nodeKind(st, pn?.ready ?? true)
+    // 鍵の項目には、確認済みでない直接の前提の名前を出す（レベルは 0 と決まっているので出さない）
+    const need =
+      kind === 'locked' && pn
+        ? `必要：${missingPrereqs(pn.item, states).map(nameOf).join('、')}`
+        : ''
+    const basics = basicsUnverified(st)
+    return (
+      <Link
+        key={n.key}
+        to={`/plan/item/${n.key}`}
+        className={`tnode ${kind}`}
+        style={style}
+        aria-label={`${n.key} ${items.get(n.key)?.name ?? ''}（${stateText(kind, st)}）${need}${basics ? `。${BASICS_TEXT}` : ''}`}
+      >
+        <span className="tk">{n.key}</span>
+        <span className="tn">{nameOf(n.key)}</span>
+        <span className="ts">
+          {need ? (
+            <>
+              <LockIcon />
+              <span className="need">{need}</span>
+            </>
+          ) : (
+            <StateMark kind={kind} st={st} />
+          )}
+          {basics ? <span className="note">{BASICS_TEXT}</span> : null}
+          {/* 到達状態が空の項目は「未記入」と分かるように（SPEC.md §7.2「両表示に共通の制約」） */}
+          {pn?.item.outcome ? null : <span className="tb">到達状態 未記入</span>}
+        </span>
+      </Link>
+    )
+  }
+
   return (
     <div className="tree-scroll">
       <div className="tree" style={{ width: layout.width, height: layout.height }}>
@@ -76,66 +143,10 @@ export function TreeView({ data, path }: Props) {
             )
           })}
         </svg>
-        {layout.ghosts.map((g) => {
-          const st = stateOf(states, g.key)
-          // 他分野の項目が着手できるかは、その分野での前提で決まる（分野の項目と同じ判定）
-          const it = items.get(g.key)
-          const kind = nodeKind(st, it ? isReady(states, it) : true)
-          const domainName = domainNames.get(g.domainKey) ?? g.domainKey
-          return (
-            <Link
-              key={`${g.key}@${g.to}`}
-              to={`/plan/path/${g.domainKey}`}
-              className={`tnode ghost ${kind}`}
-              style={{ left: g.x, top: g.y, width: g.w, height: g.h }}
-              title={`${domainName} の学習パスへ移る`}
-              aria-label={`他分野：${domainName} ${it?.name ?? g.key}（${stateText(kind, st)}）`}
-            >
-              <span className="tk">他分野：{domainName}</span>
-              <span className="tn">{nameOf(g.key)}</span>
-              <span className="ts">
-                <StateMark kind={kind} st={st} />
-              </span>
-            </Link>
-          )
-        })}
-        {layout.nodes.map((n) => {
-          const style = { left: n.x, top: n.y, width: n.w, height: n.h }
-          const pn = pathNode.get(n.key)
-          const st = pn?.state ?? stateOf(states, n.key)
-          const kind = nodeKind(st, pn?.ready ?? true)
-          // 鍵の項目には、確認済みでない直接の前提の名前を出す（レベルは 0 と決まっているので出さない）
-          const need =
-            kind === 'locked' && pn
-              ? `必要：${missingPrereqs(pn.item, states).map(nameOf).join('、')}`
-              : ''
-          const basics = basicsUnverified(st)
-          return (
-            <Link
-              key={n.key}
-              to={`/plan/item/${n.key}`}
-              className={`tnode ${kind}`}
-              style={style}
-              aria-label={`${n.key} ${items.get(n.key)?.name ?? ''}（${stateText(kind, st)}）${need}${basics ? `。${BASICS_TEXT}` : ''}`}
-            >
-              <span className="tk">{n.key}</span>
-              <span className="tn">{nameOf(n.key)}</span>
-              <span className="ts">
-                {need ? (
-                  <>
-                    <LockIcon />
-                    <span className="need">{need}</span>
-                  </>
-                ) : (
-                  <StateMark kind={kind} st={st} />
-                )}
-                {basics ? <span className="note">{BASICS_TEXT}</span> : null}
-                {/* 到達状態が空の項目は「未記入」と分かるように（SPEC.md §7.2「両表示に共通の制約」） */}
-                {pn?.item.outcome ? null : <span className="tb">到達状態 未記入</span>}
-              </span>
-            </Link>
-          )
-        })}
+        {/* 節と他分野の四角は、見た目の順（上から・左から）に描く。Tab の順と読み上げの順をそろえるため（layout.ts の readingOrder） */}
+        {readingOrder(layout).map((p) =>
+          p.kind === 'node' ? nodeLink(p.node) : ghostLink(p.ghost),
+        )}
       </div>
     </div>
   )

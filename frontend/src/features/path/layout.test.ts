@@ -7,6 +7,7 @@ import {
   layoutTree,
   levelDots,
   nodeKind,
+  readingOrder,
   type Box,
   type Point,
   type TreeLayout,
@@ -27,6 +28,7 @@ import {
 // - 1 つの四角から出る線は、下辺の別々の位置から出る
 // - 循環参照があっても全項目を置いて落ちない（循環の辺は描かない）
 // - 上の線と四角の決まりが、実データ（data/roadmap.json）の全分野で成り立つ
+// - 節とゴーストノードを見た目の順（上から・左から）に並べられる（画面はこの順に描き、Tab の順を見た目に合わせる）
 
 // SPEC.md §7.2 の図の形：go-01 → go-02 → (go-03, go-04)、go-03 → go-05 → go-06。go-05 は react-03 にも依存
 const goDomain: RoadmapDomain = {
@@ -521,5 +523,27 @@ describe('節の状態', () => {
     expect(basicsUnverified(st(3, [1, 2, 3]))).toBe(false)
     expect(basicsUnverified(st(2, [1, 2]))).toBe(false)
     expect(basicsUnverified(st(0, []))).toBe(false)
+  })
+})
+
+describe('readingOrder（Tab と読み上げの順）', () => {
+  it('節とゴーストノードを、上から・同じ高さなら左からの順に並べる。最上段の節はゴーストより先', () => {
+    const l = layoutTree(javaReal, [javaReal, dbDomain])
+    const order = readingOrder(l)
+    const box = (p: (typeof order)[number]) => (p.kind === 'node' ? p.node : p.ghost)
+    // 全部の四角が 1 回ずつ入る
+    expect(order).toHaveLength(l.nodes.length + l.ghosts.length)
+    // 上から、同じ高さなら左から
+    for (let i = 1; i < order.length; i++) {
+      const a = box(order[i - 1])
+      const b = box(order[i])
+      expect(a.y < b.y || (a.y === b.y && a.x <= b.x)).toBe(true)
+    }
+    // 最上段の節（前提の無い rest・jwt・junit・adr）は、どのゴーストノードより先に来る
+    const firstGhost = order.findIndex((p) => p.kind === 'ghost')
+    const topKeys = order
+      .slice(0, firstGhost)
+      .map((p) => (p.kind === 'node' ? p.node.key : p.ghost.key))
+    expect(topKeys).toEqual(expect.arrayContaining(['rest', 'jwt', 'junit', 'adr']))
   })
 })

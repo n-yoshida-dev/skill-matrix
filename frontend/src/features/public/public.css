@@ -68,28 +68,32 @@
   text-align: left;
 }
 
-/* 上の行。項目キーと段を横に並べ、重ならないようにキーのほうを縮める（長いキーは「…」で省略） */
+/* 上の行。項目キーと段を横に並べ、重ならないようにキーのほうを縮める（長いキーは「…」で省略）。
+   段の表示が長い（「実装済み・基礎未確認」）ときは、キーが数字しか見えなくならないよう段の表示を次の行へ送る
+   （キーの基準の幅 7em と段の表示が 1 行に収まらないと折り返す。2026-10-11 の見た目の点検。DESIGN.md） */
 .cell .head {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 6px;
+  gap: 2px 6px;
   min-width: 0;
 }
 
 .cell .n {
-  flex: 1 1 auto;
+  flex: 1 1 7em;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 11px;
   line-height: 1.2;
-  opacity: 0.8;
 }
 
+/* 段の表示はいつも右に寄せる（次の行へ送ったときも、探す場所を 1 か所にする） */
 .cell .lv {
   flex: none;
+  margin-left: auto;
   font-size: 11px;
   line-height: 1.2;
 }
@@ -105,7 +109,13 @@
   overflow: hidden;
 }
 
-/* 塗り = verifiedLevel の 6 階調 */
+/* 段の見本の既定は L0 の色。下の .swatch.l1〜l5 が段の色で上書きする
+   （以前は .detail .swatch に既定の色を書いていて、同じ強さの後の指定が勝ち、根拠の枠の見本がいつも L0 の色だった） */
+.swatch {
+  background: var(--empty);
+}
+
+/* 塗り = verifiedLevel の 6 階調。字の色は濃さの差が 4.5 以上になる側（L1・L2 は濃い字、L3 以上は白い字） */
 .cell.l1,
 .swatch.l1,
 .step i.l1 {
@@ -116,7 +126,7 @@
 .swatch.l2,
 .step i.l2 {
   background: var(--l2);
-  color: var(--on-dark);
+  color: var(--on-light);
 }
 .cell.l3,
 .swatch.l3,
@@ -145,29 +155,19 @@
   font-weight: 500;
 }
 
-.cell:hover {
-  outline: 2px solid var(--rule-strong);
-  outline-offset: 2px;
+@media (hover: hover) {
+  .cell:hover {
+    outline: 2px solid var(--rule-strong);
+    outline-offset: 2px;
+  }
 }
 
+/* 開いているタイルは朱の輪郭だけで示す。以前は根拠の枠へ向く小さな矢も付けていたが、
+   根拠の枠は分野のタイルの全部の下に開くので、上の行のタイルでは矢が下の行のタイルとの隙間を指していた（2026-10-11 の見た目の点検） */
 .cell[aria-expanded='true'],
 .cell:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-
-/* 開いている根拠の枠へ向く小さな矢 */
-.cell[aria-expanded='true']::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -14px;
-  width: 10px;
-  height: 10px;
-  background: var(--panel);
-  border-left: 1px solid var(--rule-strong);
-  border-top: 1px solid var(--rule-strong);
-  transform: translateX(-50%) rotate(45deg);
 }
 
 .detail {
@@ -227,7 +227,6 @@
   width: 14px;
   height: 14px;
   border-radius: 3px;
-  background: var(--empty);
   flex: none;
 }
 
@@ -334,8 +333,10 @@
   font-weight: 500;
 }
 
+/* 段の名前は短いので行の長さをそろえる（「使／える」のように最後の行に 2 字だけ残らないように） */
 .step span {
   color: var(--dim);
+  text-wrap: balance;
 }
 
 .how {

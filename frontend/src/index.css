@@ -9,21 +9,27 @@
   --empty: #e9edf4;
   --panel: #ffffff;
   --accent: #b8432a;
-  /* 理解度の 5 段階（藍のランプ。dataviz の検証済みの値） */
+  /* 理解度の 5 段階（藍のランプ。dataviz の検証済みの値）。
+     L3 だけ、白い字との濃さの差を 4.5 以上にするため #2a78d6 から少し濃くした（2026-10-11 の見た目の点検。DESIGN.md） */
   --l1: #86b6ef;
   --l2: #5598e7;
-  --l3: #2a78d6;
+  --l3: #2874d0;
   --l4: #1c5cab;
   --l5: #104281;
   --on-light: #16213a;
   --on-dark: #ffffff;
   /* 要再確認の枠線（作業ビューだけ。SPEC.md §7.1）。地の色とのコントラスト比 4.4 */
   --attention: #a86400;
+  /* ツリーのまだ色の付かない線と合流点。図の一部なので、地との差を 3 以上にする（rule-strong は 1.7） */
+  --line: #848da1;
 
   color-scheme: light dark;
   font-family: 'IBM Plex Sans JP', 'Hiragino Sans', 'Yu Gothic', sans-serif;
   font-size: 15px;
   line-height: 1.7;
+  /* 日本語の折り返し：「ー」や小さい仮名を行頭に置かず、最後の行に 1〜2 字だけ残さない */
+  line-break: strict;
+  text-wrap: pretty;
   color: var(--ink);
   background: var(--paper);
   -webkit-font-smoothing: antialiased;
@@ -42,6 +48,7 @@
     --l1: #9ec5f4;
     --l5: #184f95;
     --attention: #f0b040;
+    --line: #5c6680;
   }
 }
 
@@ -64,8 +71,20 @@ button {
   color: inherit;
 }
 
-.num {
-  font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+/* キーボードのフォーカスは、どの部品も 2px の朱の輪郭（部品ごとの指定がない所の既定） */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 数字・日付・項目キーは等幅。日本語が混ざったときは、端末の等幅の書体ではなく本文の書体で描く
+   （日本語の字は IBM Plex Mono に無い。monospace より前に日本語の書体を置かないと、Windows では MS ゴシックになる） */
+.num,
+code {
+  font-family:
+    'IBM Plex Mono', ui-monospace, Menlo, 'IBM Plex Sans JP', 'Hiragino Sans', 'Yu Gothic',
+    monospace;
   font-variant-numeric: tabular-nums;
 }
 
@@ -97,15 +116,17 @@ button {
   border-bottom: 1px solid var(--rule-strong);
 }
 
-.top a:hover,
 .top a[aria-current='page'] {
   border-bottom-color: var(--ink);
   color: var(--ink);
 }
 
-.top a:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+/* hover はマウスのある端末だけ（スマホでは触ったあとに色が残り、今の画面が 2 つあるように見えるため） */
+@media (hover: hover) {
+  .top a:hover {
+    border-bottom-color: var(--ink);
+    color: var(--ink);
+  }
 }
 
 h1 {
