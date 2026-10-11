@@ -333,10 +333,8 @@
   font-weight: 500;
 }
 
-/* 段の名前は短いので行の長さをそろえる（「使／える」のように最後の行に 2 字だけ残らないように） */
 .step span {
   color: var(--dim);
-  text-wrap: balance;
 }
 
 .how {
