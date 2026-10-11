@@ -75,16 +75,14 @@
 
 ## Claude Code の設定
 
-共通のフック3種と `/apps-workflow:handoff` `/apps-workflow:pr-check` は [apps-workflow プラグイン](https://github.com/n-yoshida-dev/claude-plugins)から来る（`.claude/settings.json` の `enabledPlugins`）。
-**`enabledPlugins` だけでは install されない。アプリごとに project スコープで install が要る**（反映は次のセッションから。このアプリは 2026-08-30 に `enabledPlugins` の全プラグインを導入済み）。手順は `../CLAUDE.md`「新しいアプリを作るとき」を参照。
+共通のフック・スキル・エージェントは [apps-workflow プラグイン](https://github.com/n-yoshida-dev/claude-plugins)から来る（`.claude/settings.json` の `enabledPlugins`）。
+部品の一覧はプラグインの [README](https://github.com/n-yoshida-dev/claude-plugins/blob/main/plugins/apps-workflow/README.md) にあり、ここには写さない（写すと古くなる）。
+`enabledPlugins` に書くだけでは入らず、アプリごとに project スコープの install が要る（手順は `../app-template/SETUP.md` §2）。
+
+このリポジトリ固有の部品：
 
 | 種別 | 中身 | 出どころ |
 |---|---|---|
-| `/apps-workflow:handoff` | HANDOFF / TODO / KNOWLEDGE を更新して次のセッションへ渡す | プラグイン |
-| `/apps-workflow:pr-check` | CI と同じ検査をローカルでまとめて実行する（コミット・PR の前） | プラグイン |
-| `guard-secrets.sh` | 秘密情報・ローカル専用ファイルのコミットを阻止（PreToolUse） | プラグイン |
-| `check-edited.sh` | frontend の typecheck / lint、backend の go vet（PostToolUse） | プラグイン |
-| `session-briefing.sh` | TODO.md の未完タスクを起動時に提示（SessionStart） | プラグイン |
 | `pending-count.sh` | 未判定の学習ログの本数を起動時に提示（SessionStart。`skillmatrix pending --count`。`sources.local.json` が無ければ何も出さない） | このリポジトリ（`.claude/hooks/`） |
 | `/judge-log` | 学習ログを判定して `data/judgments/` に 1 ファイル書く。`prompts/judge.md` を読ませる入口だけで、基準は書かない | このリポジトリ（`.claude/skills/judge-log/`） |
 
