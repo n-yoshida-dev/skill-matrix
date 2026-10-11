@@ -152,6 +152,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   **2026-10-11：公開した。** https://n-yoshida-dev.github.io/skill-matrix/ 。本人が Settings → Pages → Source を「GitHub Actions」にし（本人「やった」）、Claude が `gh workflow run pages.yml` で公開した
   （run 38065181714、「画面をビルド」「GitHub Pages に公開」とも success）。Playwright で URL を開き、公開ビュー（幅 1280・390）と作業ビューの見出しが出て、画面のエラーが 0 件だった。
   置き場所は GitHub Pages のまま（本人が Vercel と迷い、決めた。`logs/decisions.md` 2026-10-11）。`main` への push で公開されることは、この記録の PR のマージで走る Pages の実行で確かめる
+  → **2026-10-11 に確かめた**：PR #101 のマージで走った run 38065740793（event=push）で、「画面をビルド」「GitHub Pages に公開」とも success
   完了条件：`main` への push で静的サイトがビルドされて Pages に上がり、URL を開くとマトリクスが見える。**Public にする直前に、`data/judgments/` 全件の `rationale` と `evidenceRefs` を目で読み、固有名詞（所属先・企業名・人名）が混ざっていないことを確かめる**（2026-09-23 決定の残リスク。`logs/decisions.md`）
   **【ユーザー作業】リポジトリを Public にする操作はユーザーが行う**（公開設定の変更は不可逆。URL は実施時に添える）
   **2026-09-27：Public 化と、`data/judgments/` 全 41 件の目視確認（全件そのままで可）は済んだ。** 残りは画面の完成を待って Pages に上げること

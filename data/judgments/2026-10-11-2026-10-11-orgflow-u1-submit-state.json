@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-11",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-10-11",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L8",
+        "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L10",
+        "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L12",
+        "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L18"
+      ],
+      "rationale": "returned の申請に submit を送ったらどうなるかを問う確認に、認証は通っていて ID も存在するが、行いたい動作に状態が合わないので 409 が返ると、401・404 と切り分けて自分の言葉で答えた。その前の連打の 2 回目の番号の予想は 422 で、409 は ADR-031 の表を見て選び、422 だと入力をどう直せば通るかの問いに、提出済みの申請なので未提出の ID に書き換えるしかないと答えた",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "java-request-domain",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-11",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L11",
+        "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L25"
+      ],
+      "rationale": "状態のルールを Service の分岐・Request のメソッド・enum の遷移表のどこに置くかで、良し悪しが分からないと答えた。Request に setter が無いことを実物で見て、Service の分岐には状態を上書きする setter が要ると言い直したうえで、推奨された Request のメソッドを選んだ。それでも Service に残る仕事は説明を受けたのみ",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "java-request-domain",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-11",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L9",
+        "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L12",
+        "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L19",
+        "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L24"
+      ],
+      "rationale": "2 回目の submit で DB から読む status を問う確認に、in_progress が入っているので Service で status が draft と in_progress の場合の条件分岐を出してエラーを返すと答え、returned の申請への submit は、submit が draft のときに送られるものなので 409 が返ると理由を付けて答えた。判断に使う状態をクライアントの値ではなく DB から読むことは、説明済み・理解未確認として残った",
+      "confidence": 0.6
+    }
+  ],
+  "unmatched": [
+    "DTO と entity の違い（DTO は届いたリクエストの中身、entity は DB の行）の説明を受けた（ロードマップに該当する項目が無い）"
+  ]
+}

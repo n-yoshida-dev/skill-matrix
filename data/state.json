@@ -274,7 +274,7 @@
       ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-10-06",
+      "lastEvidenceAt": "2026-10-07",
       "events": [
         {
           "file": "2026-09-27-migration-react.json",
@@ -422,6 +422,25 @@
             "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L25"
           ],
           "rationale": "setToken の次の行の token を問う想起に、取得し直した値が出ると誤答したが、console.log で比べた実物を見て更新はまだ反映されないと自分の言葉で言い直し、tenant を選んだ後に押す送信ボタンの関数が読む token は選んだ後の新しい token だと理由を付けて答えた",
+          "confidence": 0.6,
+          "violations": []
+        },
+        {
+          "file": "2026-10-11-2026-10-07-orgflow-u0-recall.json",
+          "index": 1,
+          "occurredAt": "2026-10-07",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L7",
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L15",
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L20"
+          ],
+          "rationale": "setCount(5) の次の行の count を問う想起（W-010）に、実行せずに、再描画されるまで count の値は変わらず、関数の処理が終わるまでは画面も変わらないと自分の言葉で答えた。Console に出る値（0）は書かず、この関数の中の count は後からも 5 にならないことは補足を受けた",
           "confidence": 0.6,
           "violations": []
         }
@@ -764,13 +783,14 @@
     },
     {
       "itemKey": "java-request-domain",
-      "verifiedLevel": 0,
+      "verifiedLevel": 1,
       "evidencedLevels": [
+        1,
         3
       ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-07-29",
+      "lastEvidenceAt": "2026-10-11",
       "events": [
         {
           "file": "2026-09-27-migration-java-spring.json",
@@ -787,6 +807,42 @@
           ],
           "rationale": "申請の状態遷移・版管理・承認ルート・監査ログのスキーマと、draft を作る API を実装した（状態遷移の本体は未実装）。レビューで誤り 3 点を修正した",
           "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-10-11-2026-10-11-orgflow-u1-submit-state.json",
+          "index": 1,
+          "occurredAt": "2026-10-11",
+          "source": "ai",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L11",
+            "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L25"
+          ],
+          "rationale": "状態のルールを Service の分岐・Request のメソッド・enum の遷移表のどこに置くかで、良し悪しが分からないと答えた。Request に setter が無いことを実物で見て、Service の分岐には状態を上書きする setter が要ると言い直したうえで、推奨された Request のメソッドを選んだ。それでも Service に残る仕事は説明を受けたのみ",
+          "confidence": 0.6,
+          "violations": []
+        },
+        {
+          "file": "2026-10-11-2026-10-11-orgflow-u1-submit-state.json",
+          "index": 2,
+          "occurredAt": "2026-10-11",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L9",
+            "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L12",
+            "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L19",
+            "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L24"
+          ],
+          "rationale": "2 回目の submit で DB から読む status を問う確認に、in_progress が入っているので Service で status が draft と in_progress の場合の条件分岐を出してエラーを返すと答え、returned の申請への submit は、submit が draft のときに送られるものなので 409 が返ると理由を付けて答えた。判断に使う状態をクライアントの値ではなく DB から読むことは、説明済み・理解未確認として残った",
+          "confidence": 0.6,
           "violations": []
         }
       ]
@@ -875,6 +931,103 @@
               "detail": "不合格の報告（根拠 \"self_explanation\"）。印は付けず、レベル 3 を維持して要再確認とした"
             }
           ]
+        },
+        {
+          "file": "2026-10-11-2026-10-07-orgflow-u0-recall.json",
+          "index": 0,
+          "occurredAt": "2026-10-07",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L7",
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L13",
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L19"
+          ],
+          "rationale": "401 と 403 の違いを問う想起に、401 は token の期限切れなどで認証に失敗した誰か分からない状態、403 は認証は通っているが権限不足で認可されない状態と自分の言葉で答え、10-06 の取り違えが直った。tenant を選ぶ前の申請が 403 になる割り当ては書かなかった",
+          "confidence": 0.7,
+          "violations": []
+        },
+        {
+          "file": "2026-10-11-2026-10-10-orgflow-u0-pr.json",
+          "index": 0,
+          "occurredAt": "2026-10-10",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L7",
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L26",
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L29"
+          ],
+          "rationale": "存在しない組織 ID で送ったときの 1 段目（HTTP の番号）の予想に、存在しなくて認証できないから 401 と答えた。401 は token で判断する誰かの話で組織 ID は関係しないという指摘は、説明済み・理解未確認のまま残った",
+          "confidence": 0.6,
+          "violations": [
+            {
+              "code": "V6_failed_check",
+              "detail": "不合格の報告（根拠 \"drill\"）。印は付けず、レベル 3 を維持して要再確認とした"
+            }
+          ]
+        },
+        {
+          "file": "2026-10-11-2026-10-10-orgflow-u0-pr.json",
+          "index": 1,
+          "occurredAt": "2026-10-10",
+          "source": "ai",
+          "evidenceType": "explained_to",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L8-L9",
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L28"
+          ],
+          "rationale": "組織 ID の欄に test と入れて返った 400 について、400 は本文を読めない（デシリアライズの失敗で Controller に届かない）、422 は読めたが受け付けられない、という言い分けの説明を受けた。出どころ（DefaultHandlerExceptionResolver）が違うことには自分で気づいたと答えた",
+          "confidence": 0.6,
+          "violations": []
+        },
+        {
+          "file": "2026-10-11-2026-10-10-orgflow-u0-pr.json",
+          "index": 2,
+          "occurredAt": "2026-10-10",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L11",
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L22",
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L30"
+          ],
+          "rationale": "なぜ 3 段目に 422 が出たかの問いのあと、1 段目の理由を例外ハンドラの HttpStatus.UNPROCESSABLE_ENTITY までさかのぼる説明を経て、121 行目（返事の中身の status 欄）と 123 行目（返事のステータス行）がそれぞれ何段目かを問う確認に、121 は 3 段目・123 は 1 段目と正答した。最初の仮説（処理が止まって残りも 422）と、成功と失敗で同じ名前の status 欄が別の意味になる点は説明を受けた",
+          "confidence": 0.6,
+          "violations": []
+        },
+        {
+          "file": "2026-10-11-2026-10-11-orgflow-u1-submit-state.json",
+          "index": 0,
+          "occurredAt": "2026-10-11",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 2,
+          "marked": [
+            1,
+            2
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L8",
+            "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L10",
+            "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L12",
+            "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L18"
+          ],
+          "rationale": "returned の申請に submit を送ったらどうなるかを問う確認に、認証は通っていて ID も存在するが、行いたい動作に状態が合わないので 409 が返ると、401・404 と切り分けて自分の言葉で答えた。その前の連打の 2 回目の番号の予想は 422 で、409 は ADR-031 の表を見て選び、422 だと入力をどう直せば通るかの問いに、提出済みの申請なので未提出の ID に書き換えるしかないと答えた",
+          "confidence": 0.6,
+          "violations": []
         }
       ]
     },
@@ -1144,7 +1297,7 @@
       ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-08-06",
+      "lastEvidenceAt": "2026-10-10",
       "events": [
         {
           "file": "2026-09-27-migration-devops.json",
@@ -1161,6 +1314,23 @@
           ],
           "rationale": "branch → PR → セルフレビュー → squash merge → main の同期を 1 周自分で操作した。ガイド付き",
           "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-10-11-2026-10-10-orgflow-u0-pr.json",
+          "index": 4,
+          "occurredAt": "2026-10-10",
+          "source": "ai",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L14"
+          ],
+          "rationale": "orgflow の U0 の変更を PR #34 として自分で作成し、squash マージした。件名の末尾に GitHub が入れた既定の題名が残った",
+          "confidence": 0.6,
           "violations": []
         }
       ]
@@ -1655,6 +1825,20 @@
       "file": "2026-10-07-2026-10-06-orgflow-u0-draft-form.json",
       "index": 3,
       "itemKey": "react-routing-forms",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-10-11-2026-10-07-orgflow-u0-recall.json",
+      "index": 2,
+      "itemKey": "react-data-fetching",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-10-11-2026-10-10-orgflow-u0-pr.json",
+      "index": 3,
+      "itemKey": "devops-ci-execution-model",
       "code": "V7_low_confidence",
       "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
     }

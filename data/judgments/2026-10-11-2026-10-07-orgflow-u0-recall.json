@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-11",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-07",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L7",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L13",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L19"
+      ],
+      "rationale": "401 と 403 の違いを問う想起に、401 は token の期限切れなどで認証に失敗した誰か分からない状態、403 は認証は通っているが権限不足で認可されない状態と自分の言葉で答え、10-06 の取り違えが直った。tenant を選ぶ前の申請が 403 になる割り当ては書かなかった",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "react-state-props-dataflow",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-07",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L7",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L15",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L20"
+      ],
+      "rationale": "setCount(5) の次の行の count を問う想起（W-010）に、実行せずに、再描画されるまで count の値は変わらず、関数の処理が終わるまでは画面も変わらないと自分の言葉で答えた。Console に出る値（0）は書かず、この関数の中の count は後からも 5 にならないことは補足を受けた",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "react-data-fetching",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-07",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L7",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L14",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-07.md#L21"
+      ],
+      "rationale": "401 の返事に await res.json() をすると何が起きるかを問う想起に、認証が通っていないので返事に JSON が無く、エラーになると自分の言葉で答えた。エラー文（Unexpected end of JSON input）は補足を受けた。verifyBy の点（fetch と TanStack Query の通信回数）には当たらない",
+      "confidence": 0.4
+    }
+  ],
+  "unmatched": []
+}
