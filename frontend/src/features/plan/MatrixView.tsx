@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import type { AppData, ItemState, Level, RoadmapItem } from '../../data/types'
 import { stateByKey, topEvidenced } from '../public/summary'
@@ -75,8 +75,6 @@ export function MatrixView({ data, today }: Props) {
     setTip({ key, left, top: c.bottom - g.top + 6, width, pinned: pin })
   }
 
-  const tipItem = tip ? findItem(data, tip.key) : undefined
-
   return (
     <>
       <section className="band-sec" aria-labelledby="band-title">
@@ -124,7 +122,15 @@ export function MatrixView({ data, today }: Props) {
           className="mx-grid"
           ref={gridRef}
           onKeyDown={(e) => {
-            if (e.key === 'Escape') setTip(null)
+            if (e.key !== 'Escape' || !tip) return
+            // 吹き出しの中（「項目詳細を開く」）にフォーカスがあるときは、押した升目へフォーカスを戻してから閉じる
+            // （吹き出しと一緒にフォーカスが消え、キーボードで今どこにいるか分からなくなるため）
+            const inTip = e.target instanceof Element && e.target.closest('.mx-tip') !== null
+            const cellEl = gridRef.current?.querySelector<HTMLButtonElement>(
+              `button[data-key="${tip.key}"]`,
+            )
+            setTip(null)
+            if (inTip) cellEl?.focus()
           }}
         >
           {data.roadmap.domains.map((d) => (
@@ -138,57 +144,56 @@ export function MatrixView({ data, today }: Props) {
                   const st = states.get(it.key) ?? emptyState(it.key)
                   const active = tip?.key === it.key
                   return (
-                    <button
-                      key={it.key}
-                      type="button"
-                      className={cellClass(st, today, cfg, active)}
-                      aria-label={`${it.key} ${it.name}`}
-                      aria-describedby={active ? 'mx-tip' : undefined}
-                      onPointerEnter={(e) => {
-                        if (!pinned) place(it.key, e.currentTarget, false)
-                      }}
-                      onPointerLeave={() => {
-                        if (!pinned) setTip(null)
-                      }}
-                      onFocus={(e) => {
-                        // キーボードで別の升目へ移ったら、固定していても吹き出しを付け替える
-                        if (!pinned || !active) place(it.key, e.currentTarget, false)
-                      }}
-                      onBlur={() => {
-                        if (!pinned) setTip(null)
-                      }}
-                      onClick={(e) => {
-                        if (pinned && active) setTip(null)
-                        else place(it.key, e.currentTarget, true)
-                      }}
-                    />
+                    <Fragment key={it.key}>
+                      <button
+                        type="button"
+                        data-key={it.key}
+                        className={cellClass(st, today, cfg, active)}
+                        aria-label={`${it.key} ${it.name}`}
+                        aria-describedby={active ? 'mx-tip' : undefined}
+                        onPointerEnter={(e) => {
+                          if (!pinned) place(it.key, e.currentTarget, false)
+                        }}
+                        onPointerLeave={() => {
+                          if (!pinned) setTip(null)
+                        }}
+                        onFocus={(e) => {
+                          // キーボードで別の升目へ移ったら、固定していても吹き出しを付け替える
+                          if (!pinned || !active) place(it.key, e.currentTarget, false)
+                        }}
+                        onBlur={() => {
+                          if (!pinned) setTip(null)
+                        }}
+                        onClick={(e) => {
+                          if (pinned && active) setTip(null)
+                          else place(it.key, e.currentTarget, true)
+                        }}
+                      />
+                      {/* 吹き出しは、その升目のすぐ後ろに置く。固定したとき、キーボードでも升目から Tab で中のリンクへ進めるようにするため
+                        （以前はすべての行の後ろに置いていて、Tab を押すと次の升目へ移って吹き出しが付け替わり、リンクに届かなかった）。
+                        位置は今までどおり .mx-grid を基準にした left・top で、行の並びには入らない（position: absolute） */}
+                      {active && tip ? (
+                        <div
+                          id="mx-tip"
+                          role="tooltip"
+                          className={tip.pinned ? 'mx-tip pinned' : 'mx-tip'}
+                          style={{ left: tip.left, top: tip.top, width: tip.width }}
+                        >
+                          <TipBody item={it} st={st} today={today} cfg={cfg} levelName={names} />
+                          {/* 押して固定したときだけ、吹き出しの中を押せるようにして項目詳細へのリンクを出す */}
+                          {tip.pinned ? (
+                            <Link className="more" to={`/plan/item/${it.key}`}>
+                              項目詳細を開く
+                            </Link>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </Fragment>
                   )
                 })}
               </div>
             </div>
           ))}
-          {tip && tipItem ? (
-            <div
-              id="mx-tip"
-              role="tooltip"
-              className={tip.pinned ? 'mx-tip pinned' : 'mx-tip'}
-              style={{ left: tip.left, top: tip.top, width: tip.width }}
-            >
-              <TipBody
-                item={tipItem}
-                st={states.get(tipItem.key) ?? emptyState(tipItem.key)}
-                today={today}
-                cfg={cfg}
-                levelName={names}
-              />
-              {/* 押して固定したときだけ、吹き出しの中を押せるようにして項目詳細へのリンクを出す */}
-              {tip.pinned ? (
-                <Link className="more" to={`/plan/item/${tipItem.key}`}>
-                  項目詳細を開く
-                </Link>
-              ) : null}
-            </div>
-          ) : null}
         </div>
 
         <div className="mx-legend" aria-label="凡例">
@@ -225,15 +230,6 @@ function cellClass(st: ItemState, today: Date, cfg: StalenessConfig, active: boo
   if (top > st.verifiedLevel) cls.push('up', `up-l${top}`)
   if (active) cls.push('on')
   return cls.join(' ')
-}
-
-/** 項目キーからロードマップの項目を探す */
-function findItem(data: AppData, key: string): RoadmapItem | undefined {
-  for (const d of data.roadmap.domains) {
-    const it = d.items.find((x) => x.key === key)
-    if (it) return it
-  }
-  return undefined
 }
 
 /** サマリー帯の 1 行。0 件の欄は薄くして、数のある欄を目立たせる */

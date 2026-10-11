@@ -754,6 +754,24 @@ function lexLess(a: number[], b: number[]): boolean {
   return false
 }
 
+/** 図の中の押せる四角 1 つ。分野の節か、他分野の前提（ゴーストノード）か */
+export type Placed = { kind: 'node'; node: TreeNode } | { kind: 'ghost'; ghost: GhostNode }
+
+/**
+ * 節とゴーストノードを、見た目の順（上から。同じ高さなら左から）に並べる。
+ * 画面はこの順に描き、Tab の順と読み上げの順を見た目に合わせる
+ * （以前はゴーストノードを先に全部描いていて、2 段目の横にある他分野の四角に、最上段の節より先にフォーカスが行った。2026-10-11 の見た目の点検）
+ */
+export function readingOrder(layout: TreeLayout): Placed[] {
+  const all: Placed[] = [
+    ...layout.nodes.map((node): Placed => ({ kind: 'node', node })),
+    ...layout.ghosts.map((ghost): Placed => ({ kind: 'ghost', ghost })),
+  ]
+  const box = (p: Placed): Box => (p.kind === 'node' ? p.node : p.ghost)
+  // Array.prototype.sort は安定なので、同じ位置なら節が先（上の並びの順）になる
+  return all.sort((a, b) => box(a).y - box(b).y || box(a).x - box(b).x)
+}
+
 /** 節の状態（SPEC.md §7.2 の表。2026-10-03 本人了承の 1 で 3 つにまとめた） */
 export type NodeKind = 'locked' | 'open' | 'done'
 

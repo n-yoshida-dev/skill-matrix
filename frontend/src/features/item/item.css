@@ -37,6 +37,12 @@
   font-weight: 700;
 }
 
+/* 項目詳細の文は短いので行の長さをそろえる（最後の行に仮名 2 字だけが残らないように） */
+.item-sec p,
+.item-facts li {
+  text-wrap: balance;
+}
+
 .item-sec p {
   margin: 4px 0;
 }
@@ -71,8 +77,19 @@
 
 .item-facts .warn {
   color: var(--ink);
-  padding-left: 8px;
-  border-left: 3px solid var(--attention);
+}
+
+/* 要再確認・不合格の報告の印は、マトリクスの升目と同じ「橙の枠」の小さな四角（左の色帯は使わない。DESIGN.md の避ける形） */
+.item-facts .warn::before,
+.item-event .ev-violation::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 2px var(--attention);
+  vertical-align: -1px;
 }
 
 .item-events,
@@ -85,6 +102,12 @@
 .item-event {
   padding-block: 10px;
   border-bottom: 1px solid var(--rule);
+}
+
+/* 最後の履歴の下線は引かない（次の節の見出しの上の罫線と 2 本並ぶため）。下の余白も外して、節の切れ目の間隔をほかとそろえる */
+.item-event:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
 }
 
 .item-event .ev-head {
@@ -103,8 +126,6 @@
 }
 
 .item-event .ev-violation {
-  padding-left: 8px;
-  border-left: 3px solid var(--attention);
   font-size: 13px;
 }
 
@@ -132,5 +153,4 @@
 
 .item-sec .unset {
   color: var(--dim);
-  font-style: italic;
 }

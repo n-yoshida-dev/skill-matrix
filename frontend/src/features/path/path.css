@@ -36,9 +36,11 @@
   margin: 0;
 }
 
+/* 目標と到達状態は短い文なので、行の長さをそろえる（スマホで最後の行に 2 字だけ残っていた。pretty では防げなかった） */
 .path-head .goal {
   margin: 2px 0 0;
   font-size: 14px;
+  text-wrap: balance;
 }
 
 /* 進捗ゲージ：1 コマ＝1 項目。レベル 1 以上のコマを塗る（色はツリーの確認済みと同じ）。項目が多ければ折り返す */
@@ -71,13 +73,14 @@
   box-shadow: none;
 }
 
-/* 一列／ツリーの切り替え。押されている側を濃くする */
+/* 一列／ツリーの切り替え。押されている側を濃くする。
+   フォーカスの朱の輪郭はほかの部品と同じく外へ出す（内側に引くと、押されている側の塗りとの差が 3 に届かなかった）。
+   そのため枠の外を切り取らず、両端のボタンに角を付ける */
 .path-mode {
   display: inline-flex;
   margin-top: 10px;
   border: 1px solid var(--rule-strong);
   border-radius: 4px;
-  overflow: hidden;
 }
 
 .path-mode button {
@@ -90,6 +93,14 @@
   cursor: pointer;
 }
 
+.path-mode button:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+.path-mode button:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
 .path-mode button + button {
   border-left: 1px solid var(--rule-strong);
 }
@@ -99,14 +110,9 @@
   color: var(--paper);
 }
 
-.path-mode button:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-}
-
+/* 「未記入」は補足の色だけで分ける（日本語を斜体にしない。日本語の書体には斜体が無く、端末が字を傾けて崩れて見える） */
 .unset {
   color: var(--dim);
-  font-style: italic;
 }
 
 .path-list {
@@ -134,11 +140,8 @@
   color: var(--dim);
 }
 
-/* 今ここは左に朱の線（公開ビューで選択中にだけ使う朱と同じ意味：目を向ける 1 か所） */
-.path-node.current {
-  box-shadow: inset 3px 0 0 var(--accent);
-}
-
+/* 今ここは朱の ▶ と「今ここ」の札で示す（公開ビューで選択中にだけ使う朱と同じ意味：目を向ける 1 か所）。
+   行の左の朱の線は、印の 3 つ目で、避ける形の「左の色帯」に当たるので外した（2026-10-11 の見た目の点検） */
 .path-node.current .mark {
   color: var(--accent);
 }
@@ -182,10 +185,12 @@
   color: var(--dim);
 }
 
+/* 到達状態・確認方法も短い文なので、行の長さをそろえる（目標と同じ理由） */
 .path-node .outcome,
 .path-node .verify,
 .path-node .ext {
   margin: 2px 0 0;
+  text-wrap: balance;
 }
 
 .path-node .outcome,
@@ -222,6 +227,7 @@
   background: var(--l5);
 }
 
-.path-legend {
+/* 凡例は .plan-note（plan.css。後から読み込まれ、上の余白を 0 にする）と同じ要素に付くので、2 つのクラスで指定して上の余白を残す */
+.plan-note.path-legend {
   margin-top: 12px;
 }

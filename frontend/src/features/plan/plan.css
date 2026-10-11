@@ -1,10 +1,12 @@
 /* 作業ビュー（SPEC.md §7.1）。色は index.css の名前だけを使う。公開ビューと同じく罫線と余白で区切る */
 
+/* 短い文なので行の長さをそろえる（最後の行に「いる。」のような仮名 2 字だけが残らないように。pretty では防げなかった） */
 .plan-lead {
   max-width: 46em;
   margin: 0;
   color: var(--dim);
   font-size: 14px;
+  text-wrap: balance;
 }
 
 /* 作業ビューの中の画面の切り替え（ダッシュボード／学習パス） */
@@ -101,8 +103,25 @@
   vertical-align: -1px;
 }
 
+.band .sw.l1 {
+  background: var(--l1);
+}
+.band .sw.l2 {
+  background: var(--l2);
+}
+.band .sw.l3 {
+  background: var(--l3);
+}
+.band .sw.l4 {
+  background: var(--l4);
+}
+.band .sw.l5 {
+  background: var(--l5);
+}
+
+/* 0 件の欄は補足の色にして、数のある欄（墨の字）を目立たせる。濃さの差は 4.5 以上を保つ */
 .band td.z {
-  color: var(--rule-strong);
+  color: var(--dim);
 }
 
 .band tfoot th,
@@ -201,15 +220,22 @@
   font-size: 13px;
 }
 
-.next-sub .unset {
-  font-style: italic;
-}
-
 .next-warn {
   margin: 4px 0 0;
-  padding-left: 8px;
-  border-left: 3px solid var(--attention);
   font-size: 13px;
+}
+
+/* 要再確認の行の印は、マトリクスの升目の要再確認と同じ「橙の枠」の小さな四角（左の色帯は使わない。DESIGN.md の避ける形） */
+.next-warn::before,
+.mx-tip .warn::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 2px var(--attention);
+  vertical-align: -1px;
 }
 
 /* ---- マトリクス（可変長グリッド） ---- */
@@ -327,9 +353,11 @@
   --corner: var(--l5);
 }
 
-.mx-cells .mx-cell:hover {
-  outline: 2px solid var(--rule-strong);
-  outline-offset: 2px;
+@media (hover: hover) {
+  .mx-cells .mx-cell:hover {
+    outline: 2px solid var(--rule-strong);
+    outline-offset: 2px;
+  }
 }
 
 .mx-cells .mx-cell.on,
@@ -383,8 +411,6 @@
 
 .mx-tip .warn {
   margin-top: 4px;
-  padding-left: 8px;
-  border-left: 3px solid var(--attention);
 }
 
 /* ---- 凡例 ---- */

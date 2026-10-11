@@ -19,9 +19,10 @@
   overflow: visible;
 }
 
+/* まだ色の付かない線は --line（地との差 3 以上。前提のつながりは線でしか分からない節があるため） */
 .tree-lines .edge {
   fill: none;
-  stroke: var(--rule-strong);
+  stroke: var(--line);
   stroke-width: 1.5;
 }
 
@@ -35,12 +36,12 @@
    前提がすべて確認済み（x = n）になったら、横棒と下りる線にも色を付ける */
 .tree-lines .junction path {
   fill: none;
-  stroke: var(--rule-strong);
+  stroke: var(--line);
   stroke-width: 1.5;
 }
 
 .tree-lines .junction circle {
-  fill: var(--rule-strong);
+  fill: var(--line);
 }
 
 .tree-lines .junction text {
@@ -53,8 +54,8 @@
   stroke-width: 2.5;
 }
 
-.tree-lines .junction.open circle,
-.tree-lines .junction.open text {
+/* 開いた合流点の「n つとも必要 n/n」の字は補足の色のまま（藍の字は地との差が 4.5 に届かない） */
+.tree-lines .junction.open circle {
   fill: var(--l3);
 }
 
@@ -82,7 +83,7 @@
   text-overflow: ellipsis;
 }
 
-/* 項目名は 2 行まで */
+/* 項目名は 2 行まで（1 字だけの行は :root の text-wrap: pretty が防ぐ） */
 .tnode .tn {
   font-weight: 700;
   display: -webkit-box;
@@ -112,10 +113,9 @@
   white-space: normal;
 }
 
-/* 前提待ち：灰色・鍵マーク */
+/* 前提待ち：灰色・鍵マーク。透かしは使わない（字が地と混ざり、濃さの差が 4.5 に届かなかった。2026-10-11 の見た目の点検） */
 .tnode.locked {
   color: var(--dim);
-  opacity: 0.8;
 }
 
 .tnode .lock {
@@ -152,7 +152,6 @@
 
 .tnode.done .tk {
   color: inherit;
-  opacity: 0.85;
 }
 
 .tnode .lv {
@@ -182,9 +181,11 @@
   -webkit-line-clamp: 1;
 }
 
-.tnode:hover {
-  outline: 2px solid var(--rule-strong);
-  outline-offset: 2px;
+@media (hover: hover) {
+  .tnode:hover {
+    outline: 2px solid var(--rule-strong);
+    outline-offset: 2px;
+  }
 }
 
 .tnode:focus-visible {

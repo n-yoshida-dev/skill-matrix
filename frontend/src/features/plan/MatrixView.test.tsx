@@ -1,4 +1,4 @@
-import { render as rtlRender, screen, within } from '@testing-library/react'
+import { act, render as rtlRender, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactElement } from 'react'
 import { MemoryRouter } from 'react-router'
@@ -18,6 +18,7 @@ const render = (ui: ReactElement) => rtlRender(<MemoryRouter>{ui}</MemoryRouter>
 // - 不合格の報告があった項目と、根拠が古い項目に枠線が付く
 // - サマリー帯に分野ごとの L0〜L5 の件数と「実装根拠あり・理解未確認」の列がある
 // - 押すと吹き出しが固定され、もう一度押すと閉じる
+// - キーボードで固定しても、Tab で吹き出しの中の「項目詳細を開く」へ進める（吹き出しは升目のすぐ後ろにある）
 
 const item = (over: Partial<ItemState> & { itemKey: string }): ItemState => ({
   verifiedLevel: 0,
@@ -163,6 +164,29 @@ describe('作業ビューのマトリクス', () => {
     expect(
       within(screen.getByRole('tooltip')).getByRole('link', { name: '項目詳細を開く' }),
     ).toHaveAttribute('href', '/plan/item/go-syntax')
+  })
+
+  it('キーボードで升目を固定すると、次の Tab で吹き出しの「項目詳細を開く」へ進める', async () => {
+    render(<PlanView data={data} today={today} />)
+    act(() => cell('go-syntax').focus())
+    await userEvent.keyboard('{Enter}')
+    await userEvent.tab()
+    expect(screen.getByRole('link', { name: '項目詳細を開く' })).toHaveFocus()
+    // その次の Tab で次の升目へ進み、吹き出しはその升目に付け替わる（固定は外れる）
+    await userEvent.tab()
+    expect(cell('go-http')).toHaveFocus()
+    expect(screen.queryByRole('link', { name: '項目詳細を開く' })).toBeNull()
+  })
+
+  it('吹き出しのリンクで Esc を押すと、吹き出しが閉じてフォーカスは押した升目に戻る', async () => {
+    render(<PlanView data={data} today={today} />)
+    act(() => cell('go-syntax').focus())
+    await userEvent.keyboard('{Enter}')
+    await userEvent.tab()
+    expect(screen.getByRole('link', { name: '項目詳細を開く' })).toHaveFocus()
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    expect(cell('go-syntax')).toHaveFocus()
   })
 
   it('サマリー帯に L0〜L5 の件数と「実装根拠あり・理解未確認」の列がある', () => {
