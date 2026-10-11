@@ -27,7 +27,7 @@
         "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L11",
         "repo:n-yoshida-dev/study@970906e/orgflow-learning/logs/2026-10-11.md#L25"
       ],
-      "rationale": "状態のルールを Service の分岐・Request のメソッド・enum の遷移表のどこに置くかで、良し悪しが分からないと答えた。Request に setter が無いことを実物で見て、Service の分岐には状態を上書きする setter が要ると言い直したうえで、推奨された Request のメソッドを選んだ。それでも Service に残る仕事は説明を受けたのみ",
+      "rationale": "状態のルールを Service の分岐・Request のメソッド・enum の遷移表のどこに置くかの問いで、選択肢を Service の分岐と Request のメソッドの 2 つに絞った説明と、Request に setter が無いことの実物を見て、Service の分岐には状態を上書きする setter が要ると言い直したうえで、推奨された Request のメソッドを選んだ。それでも Service に残る仕事は説明を受けたのみ",
       "confidence": 0.6
     },
     {
