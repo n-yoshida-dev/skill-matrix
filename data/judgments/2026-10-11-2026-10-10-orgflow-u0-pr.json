@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-11",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "drill",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-10",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L7",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L26",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L29"
+      ],
+      "rationale": "存在しない組織 ID で送ったときの 1 段目（HTTP の番号）の予想に、存在しなくて認証できないから 401 と答えた。401 は token で判断する誰かの話で組織 ID は関係しないという指摘は、説明済み・理解未確認のまま残った",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-10",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L8-L9",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L28"
+      ],
+      "rationale": "組織 ID の欄に test と入れて返った 400 について、400 は本文を読めない（デシリアライズの失敗で Controller に届かない）、422 は読めたが受け付けられない、という言い分けの説明を受けた。出どころ（DefaultHandlerExceptionResolver）が違うことには自分で気づいたと答えた",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-10",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L11",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L22",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L30"
+      ],
+      "rationale": "なぜ 3 段目に 422 が出たかの問いのあと、1 段目の理由を例外ハンドラの HttpStatus.UNPROCESSABLE_ENTITY までさかのぼる説明を経て、121 行目（返事の中身の status 欄）と 123 行目（返事のステータス行）がそれぞれ何段目かを問う確認に、121 は 3 段目・123 は 1 段目と正答した。最初の仮説（処理が止まって残りも 422）と、成功と失敗で同じ名前の status 欄が別の意味になる点は説明を受けた",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "devops-ci-execution-model",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-10",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L13",
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L24"
+      ],
+      "rationale": "PR の前に CI で何を見るかを問う確認（W-007）に、テストを実行するステップのログを開いて、テストの回数と失敗・エラーの有無を見ると、実物の行を貼って答えた。verifyBy の点（vitest と vitest run の違い、終了コードで合否が決まる仕組み）には当たらない",
+      "confidence": 0.4
+    },
+    {
+      "itemKey": "devops-pr-workflow",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-10-10",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@41edaf2/orgflow-learning/logs/2026-10-10.md#L14"
+      ],
+      "rationale": "orgflow の U0 の変更を PR #34 として自分で作成し、squash マージした。件名の末尾に GitHub が入れた既定の題名が残った",
+      "confidence": 0.6
+    }
+  ],
+  "unmatched": [
+    "API の 400 の原因を、デバッグの手順の問いを受けて API のログ（UUID に変換できない JSON の解析エラー）を自分で読んで突き止め、UUID の形の値で送り直して 422 を確かめた。手順の 2〜7 は自分で回した（デバッグの手順。ロードマップに該当する項目が無い）",
+    "4-c の予想で、2・3 段目は res.json() で JSON を取り出せず undefined になると答えたが、422 の返事には中身の JSON があり、3 段目には 422 が出た",
+    "存在しない組織での申請で行が増えるかの予想に、メソッドの途中で例外が投げられると後の保存まで届かないと理由を付けて答え、psql で行が増えていないことを確かめた（例外による処理の流れ。ロードマップに該当する項目が無い）",
+    "psql の結果が画面に収まらないときのページ送り（q・\\pset pager off・列を絞る）の説明を受けた（ロードマップに SQL の基礎の項目が無い）"
+  ]
+}
