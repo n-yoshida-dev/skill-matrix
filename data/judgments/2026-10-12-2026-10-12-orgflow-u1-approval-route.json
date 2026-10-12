@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-12",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "java-request-domain",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-12",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@fc53a00/orgflow-learning/logs/2026-10-12.md#L8-L11",
+        "repo:n-yoshida-dev/study@fc53a00/orgflow-learning/logs/2026-10-12.md#L23"
+      ],
+      "rationale": "submit 1 回で増える行の予想で requests も 1 行増えると答え、申請の行は submit の前からあるので増えずに書き換わること、足りないのは承認ルートの写しであることの説明を受けた。submit の時点で承認の条件（policy）から道順（route）を写す理由、写し元 4 テーブルと写し 3 テーブルを例の行で見せる説明と、submit 1 回で写しが何行になるかの答え合わせも受け、承認ルートの作り方は推奨された案を選んだ",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "java-request-domain",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-12",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@fc53a00/orgflow-learning/logs/2026-10-12.md#L9"
+      ],
+      "rationale": "submit の翌日に承認のルールが変わった場合を問う確認に、前日の申請は submit した時点のルール、当日の申請は変更後のルールの承認者が適用されると正答した（前日の申請の承認者の名前までは答えていない）。確かめたのは承認ルートの写しで、verifyBy の不正な状態遷移をどこで防ぐかには当たらない",
+      "confidence": 0.4
+    },
+    {
+      "itemKey": "java-request-domain",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-12",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@fc53a00/orgflow-learning/logs/2026-10-12.md#L12"
+      ],
+      "rationale": "承認の道順を毎回ルールの表から引かずに写して保存する理由を問う確認に、申請中に承認ルールが変わっても申請時のルールがそのまま適用されるようにするためと自分の言葉で答えた。確かめたのは承認ルートの写しで、verifyBy の不正な状態遷移をどこで防ぐかには当たらない",
+      "confidence": 0.4
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-12",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@fc53a00/orgflow-learning/logs/2026-10-12.md#L11",
+        "repo:n-yoshida-dev/study@fc53a00/orgflow-learning/logs/2026-10-12.md#L24"
+      ],
+      "rationale": "申請に当てはまる承認ルールが無いときに 500 を返す理由（ADR-031 の到達しない分岐で、422 にすると監視で気づけない）の説明を受け、了承だけを返した",
+      "confidence": 0.7
+    }
+  ],
+  "unmatched": [
+    "psql の \\dt で今のテーブル一覧（10 テーブル）を確かめ、承認ルートのテーブルがまだ無いことを見た（ロードマップに該当する項目が無い）"
+  ]
+}
