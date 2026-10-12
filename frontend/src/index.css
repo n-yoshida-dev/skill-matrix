@@ -78,6 +78,19 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+/* 画面には出さず、読み上げにだけ渡す文字（見た目を分けて描いた語を、読み上げでは 1 語のまま読ませるときなど） */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* 数字・日付・項目キーは等幅。日本語が混ざったときは、端末の等幅の書体ではなく本文の書体で描く
    （日本語の字は IBM Plex Mono に無い。monospace より前に日本語の書体を置かないと、Windows では MS ゴシックになる） */
 .num,

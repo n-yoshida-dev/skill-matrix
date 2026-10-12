@@ -84,9 +84,18 @@ export function PublicView({ data }: Props) {
                   >
                     {/* 上の行：項目キー（長ければ前の部分を「…」で省略し、最後の区切りは残す）と段。段は必ず全部見せる */}
                     <span className="head">
+                      {/* 2 つに分けて描くと、読み上げの名前で間に空白が入って 2 語になる（E2E で確かめた）。
+                          見た目の 2 つは読み上げから外し、読み上げにはつながったキーを 1 つ渡す */}
                       <span className="n num" title={it.key}>
-                        {head ? <span className="kh">{head}</span> : null}
-                        <span className="kt">{tail}</span>
+                        {head ? (
+                          <span className="kh" aria-hidden="true">
+                            {head}
+                          </span>
+                        ) : null}
+                        <span className="kt" aria-hidden="true">
+                          {tail}
+                        </span>
+                        <span className="sr-only">{it.key}</span>
                       </span>
                       <span className="lv num">{tileLevelLabel(st)}</span>
                     </span>
