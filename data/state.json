@@ -854,8 +854,8 @@
           "proposedLevel": 0,
           "marked": [],
           "evidenceRefs": [
-            "repo:n-yoshida-dev/study@19351f7/orgflow-learning/logs/2026-10-12.md#L8-L11",
-            "repo:n-yoshida-dev/study@19351f7/orgflow-learning/logs/2026-10-12.md#L23"
+            "repo:n-yoshida-dev/study@fc53a00/orgflow-learning/logs/2026-10-12.md#L8-L11",
+            "repo:n-yoshida-dev/study@fc53a00/orgflow-learning/logs/2026-10-12.md#L23"
           ],
           "rationale": "submit 1 回で増える行の予想で requests も 1 行増えると答え、申請の行は submit の前からあるので増えずに書き換わること、足りないのは承認ルートの写しであることの説明を受けた。submit の時点で承認の条件（policy）から道順（route）を写す理由、写し元 4 テーブルと写し 3 テーブルを例の行で見せる説明と、submit 1 回で写しが何行になるかの答え合わせも受け、承認ルートの作り方は推奨された案を選んだ",
           "confidence": 0.7,
@@ -1054,8 +1054,8 @@
           "proposedLevel": 0,
           "marked": [],
           "evidenceRefs": [
-            "repo:n-yoshida-dev/study@19351f7/orgflow-learning/logs/2026-10-12.md#L11",
-            "repo:n-yoshida-dev/study@19351f7/orgflow-learning/logs/2026-10-12.md#L24"
+            "repo:n-yoshida-dev/study@fc53a00/orgflow-learning/logs/2026-10-12.md#L11",
+            "repo:n-yoshida-dev/study@fc53a00/orgflow-learning/logs/2026-10-12.md#L24"
           ],
           "rationale": "申請に当てはまる承認ルールが無いときに 500 を返す理由（ADR-031 の到達しない分岐で、422 にすると監視で気づけない）の説明を受け、了承だけを返した",
           "confidence": 0.7,
