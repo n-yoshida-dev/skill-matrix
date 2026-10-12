@@ -64,7 +64,8 @@ export function TreeView({ data, path }: Props) {
         to={`/plan/path/${g.domainKey}`}
         className={`tnode ghost ${kind}`}
         style={{ left: g.x, top: g.y, width: g.w, height: g.h }}
-        title={`${domainName} の学習パスへ移る`}
+        // 項目名は 1 行で切れることがあるので、乗せたときの説明に全体を出す
+        title={`${it?.name ?? g.key}（${domainName} の学習パスへ移る）`}
         aria-label={`他分野：${domainName} ${it?.name ?? g.key}（${stateText(kind, st)}）`}
       >
         <span className="tk">他分野：{domainName}</span>

@@ -33,5 +33,7 @@ for (const width of [1200, 390]) {
 
     // キーは省略されても、全体は title で読める
     await expect(key).toHaveAttribute('title', KEY)
+    // キーを前の部分と最後の区切りの 2 つに分けて描いても、読み上げの名前ではつながった 1 語のまま（間に空白が入らない）
+    await expect(tile).toHaveAccessibleName(new RegExp(`^${KEY}`))
   })
 }

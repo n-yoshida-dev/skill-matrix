@@ -82,12 +82,31 @@
 
 .cell .n {
   flex: 1 1 7em;
+  display: flex;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 11px;
   line-height: 1.2;
+}
+
+/* キーは前の部分（.kh）を「…」で縮め、最後の区切り（.kt）を残す。同じ分野のキーは頭がそろうので、
+   後ろを縮めると「billing-stripe…」のように全部が同じに見えていた（2026-10-11 の見た目の点検の気づき）。
+   最後の区切りだけでも収まらないほど狭いときは、そこも「…」で縮める。
+   前の部分は「…」が描ける 2 字分より狭くしない（狭すぎると「…」が描かれず、先頭の 1 字と後ろがつながって「jtestcontainers」と別の語に見えた） */
+.cell .kh {
+  flex: 0 1 auto;
+  min-width: 2ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 後ろの部分は縮めない。ただし前の部分の 2 字分は空けておき、それでも入らなければ後ろも「…」で縮める */
+.cell .kt {
+  flex: none;
+  max-width: calc(100% - 2ch);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 段の表示はいつも右に寄せる（次の行へ送ったときも、探す場所を 1 か所にする） */
@@ -162,9 +181,15 @@
   }
 }
 
-/* 開いているタイルは朱の輪郭だけで示す。以前は根拠の枠へ向く小さな矢も付けていたが、
-   根拠の枠は分野のタイルの全部の下に開くので、上の行のタイルでは矢が下の行のタイルとの隙間を指していた（2026-10-11 の見た目の点検） */
-.cell[aria-expanded='true'],
+/* 開いているタイルは、タイルの縁の内側に引いた太い朱の枠（4px。隙間なし）で示す。
+   キーボードのフォーカスは、ほかの部品と同じく外へ 2px 離した細い朱の輪郭。太さと位置で分け、開いていてフォーカスもあるときは両方が見える。
+   以前はどちらも外の輪郭で、開いているタイルとフォーカスのあるタイルを見分けられなかった（2026-10-11 の見た目の点検の気づき）。
+   細い内枠に地の色の隙間を挟む形も試したが、外の輪郭とほぼ同じに見えた（2026-10-12 の点検。太い内枠は Claude が選んだ形）。
+   根拠の枠へ向く小さな矢は、上の行のタイルでは行の隙間を指していたので 2026-10-11 に外した */
+.cell[aria-expanded='true'] {
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+
 .cell:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -333,8 +358,11 @@
   font-weight: 500;
 }
 
+/* 段の名前は行を並べる箱にして balance を効かせる（行の中の要素のままでは効かず、「できる」の 2 字だけの行が残っていた） */
 .step span {
+  display: block;
   color: var(--dim);
+  text-wrap: balance;
 }
 
 .how {

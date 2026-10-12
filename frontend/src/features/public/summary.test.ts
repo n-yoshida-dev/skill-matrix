@@ -4,6 +4,7 @@ import {
   isImplementedButUnverified,
   shortName,
   splitEvents,
+  splitKeyTail,
   summarizeDomains,
   summarizeOverall,
   topEvidenced,
@@ -96,6 +97,18 @@ describe('表示用の整形', () => {
   it('括弧の補足を外す', () => {
     expect(shortName('基本構文（変数・型・関数）')).toBe('基本構文')
     expect(shortName('テスト')).toBe('テスト')
+  })
+
+  it('項目キーを、縮めてよい前の部分と最後の区切りに分ける', () => {
+    // 区切りの「-」は後ろの部分の頭に残す（縮めても 1 つのキーに読める）
+    expect(splitKeyTail('billing-stripe-overview')).toEqual({
+      head: 'billing-stripe',
+      tail: '-overview',
+    })
+    // 区切りが無い・先頭や末尾にしか無いキーは、全部を後ろの部分にする（前の部分が空でも崩れない）
+    expect(splitKeyTail('react')).toEqual({ head: '', tail: 'react' })
+    expect(splitKeyTail('-x')).toEqual({ head: '', tail: '-x' })
+    expect(splitKeyTail('x-')).toEqual({ head: '', tail: 'x-' })
   })
 
   it('印を付けた判定は新しい順、付けなかった判定は別に分ける', () => {

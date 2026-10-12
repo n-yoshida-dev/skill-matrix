@@ -30,6 +30,18 @@ export function shortName(name: string): string {
   return name.replace(/（[^）]*）/g, '').trim()
 }
 
+/**
+ * 項目キーを、縮めてよい前の部分と、残したい最後の区切り（最後の「-」から後ろ。「-」を含む）に分ける。
+ * タイルでは前の部分だけを「…」で縮める。同じ分野のキーは頭がそろうので（billing-stripe-overview・billing-stripe-flow）、
+ * 後ろを縮めると全部が同じ「billing-stripe…」に見えていた（2026-10-11 の見た目の点検の気づき）。
+ * 「-」を後ろに付けるのは、縮めたときに「billing-…-overview」と 1 つのキーに読めるようにするため（前に付けると「billing-… overview」と 2 語に見えた）
+ */
+export function splitKeyTail(key: string): { head: string; tail: string } {
+  const i = key.lastIndexOf('-')
+  if (i <= 0 || i === key.length - 1) return { head: '', tail: key }
+  return { head: key.slice(0, i), tail: key.slice(i) }
+}
+
 /** 項目キー → 状態の対応表 */
 export function stateByKey(data: AppData): Map<string, ItemState> {
   return new Map(data.state.items.map((s) => [s.itemKey, s]))

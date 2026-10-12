@@ -197,6 +197,8 @@ describe('スキルツリー表示', () => {
     renderTree()
     const ghost = (name: string) => screen.getByText(name).closest('a.ghost') as HTMLElement
     expect(ghost('fetch')).toHaveAttribute('href', '/plan/path/react')
+    // 項目名は 1 行で切れることがあるので、乗せたときの説明に項目名と移り先を出す
+    expect(ghost('fetch')).toHaveAttribute('title', 'fetch（React の学習パスへ移る）')
     // react-01 は前提が無くレベル 0 → 挑戦できる。react-02 はレベル 1 → 確認済み
     expect(ghost('fetch')).toHaveClass('open')
     expect(ghost('fetch')).toHaveTextContent('挑戦できる')
