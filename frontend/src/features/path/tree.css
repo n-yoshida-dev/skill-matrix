@@ -44,9 +44,10 @@
   fill: var(--line);
 }
 
+/* 字は画面の小さな字（タイル・節）と同じ 11px（以前は 10px で、ほかより 1 段小さかった。2026-10-11 の見た目の点検の気づき） */
 .tree-lines .junction text {
   fill: var(--dim);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .tree-lines .junction.open path {

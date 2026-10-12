@@ -160,6 +160,16 @@ describe('公開ビュー', () => {
     expect(within(detail).getByText('型の流れを追える')).toBeInTheDocument()
   })
 
+  it('根拠の枠を「閉じる」で閉じると、開いていたタイルへフォーカスが戻る', async () => {
+    render(<PublicView data={data} />)
+    const tile = screen.getByRole('button', { name: /go-syntax/ })
+    await userEvent.click(tile)
+    await userEvent.click(screen.getByRole('button', { name: '閉じる' }))
+    expect(document.getElementById('detail-go')).toBeNull()
+    expect(tile).toHaveAttribute('aria-expanded', 'false')
+    expect(tile).toHaveFocus()
+  })
+
   it('[3] だけの項目は「実装済み・基礎未確認」と出る', async () => {
     render(<PublicView data={data} />)
     const tile = screen.getByRole('button', { name: /go-http/ })

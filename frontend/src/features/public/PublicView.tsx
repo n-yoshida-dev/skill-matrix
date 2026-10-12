@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { AppData, ItemState, RoadmapItem } from '../../data/types'
 import {
   EVIDENCE_LABELS,
@@ -6,6 +6,7 @@ import {
   isImplementedButUnverified,
   shortName,
   splitEvents,
+  splitKeyTail,
   stateByKey,
   summarizeDomains,
   summarizeOverall,
@@ -27,6 +28,15 @@ export function PublicView({ data }: Props) {
   const domains = summarizeDomains(data)
   // 押されて根拠が開いている項目。分野をまたいで 1 つだけ
   const [openKey, setOpenKey] = useState<string | null>(null)
+  // 根拠の枠の「閉じる」で、開いていたタイルへフォーカスを戻すための参照（キーボードで読み進めた場所を失わないため）
+  const tileRefs = useRef(new Map<string, HTMLButtonElement>())
+
+  /** 根拠の枠を閉じ、開いていたタイルへフォーカスを戻す */
+  const closeDetail = () => {
+    const key = openKey
+    setOpenKey(null)
+    if (key) tileRefs.current.get(key)?.focus()
+  }
 
   return (
     <>
@@ -58,19 +68,25 @@ export function PublicView({ data }: Props) {
                 const st = states.get(it.key)
                 if (!st) return null
                 const expanded = openKey === it.key
+                const { head, tail } = splitKeyTail(it.key)
                 return (
                   <button
                     key={it.key}
+                    ref={(el) => {
+                      if (el) tileRefs.current.set(it.key, el)
+                      else tileRefs.current.delete(it.key)
+                    }}
                     type="button"
                     className={`cell${st.verifiedLevel >= 1 ? ` l${st.verifiedLevel}` : ''}`}
                     aria-expanded={expanded}
                     aria-controls={`detail-${domain.key}`}
                     onClick={() => setOpenKey(expanded ? null : it.key)}
                   >
-                    {/* 上の行：項目キー（長ければ「…」で省略）と段。段は必ず全部見せる */}
+                    {/* 上の行：項目キー（長ければ前の部分を「…」で省略し、最後の区切りは残す）と段。段は必ず全部見せる */}
                     <span className="head">
                       <span className="n num" title={it.key}>
-                        {it.key}
+                        {head ? <span className="kh">{head}</span> : null}
+                        <span className="kt">{tail}</span>
                       </span>
                       <span className="lv num">{tileLevelLabel(st)}</span>
                     </span>
@@ -81,7 +97,7 @@ export function PublicView({ data }: Props) {
             </div>
             {openItem && openState ? (
               <div className="detail" id={`detail-${domain.key}`}>
-                <Detail item={openItem} state={openState} onClose={() => setOpenKey(null)} />
+                <Detail item={openItem} state={openState} onClose={closeDetail} />
               </div>
             ) : null}
           </section>

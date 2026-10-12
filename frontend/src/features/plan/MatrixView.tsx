@@ -80,7 +80,9 @@ export function MatrixView({ data, today }: Props) {
       <section className="band-sec" aria-labelledby="band-title">
         <h2 id="band-title">サマリー</h2>
         <p className="plan-note">分野ごとに、Verified Level ごとの項目数を数えている。</p>
-        <div className="band-scroll">
+        {/* 狭い画面では表だけを横に送る。中に押せる部品が無いので、キーボードでも送れるよう枠にフォーカスを当てられるようにする
+            （Safari は横に送れる枠に自分でフォーカスを当てない。2026-10-11 の見た目の点検の気づき） */}
+        <div className="band-scroll" tabIndex={0} role="region" aria-labelledby="band-title">
           <table className="band">
             <thead>
               <tr>
