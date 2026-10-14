@@ -13,6 +13,9 @@ export const LEVEL_NAMES: Record<Level, string> = {
   5: '別の場面でも使える',
 }
 
+/** verifiedLevel 0 で実装の印だけがある項目の言い方（タイルと 1 層目で同じ言葉にする） */
+export const IMPLEMENTED_BUT_UNVERIFIED = '実装済み・基礎未確認'
+
 /** 根拠の種類の日本語 */
 export const EVIDENCE_LABELS: Record<StateEvent['evidenceType'], string> = {
   drill: '確認質問に答えた',
@@ -28,18 +31,6 @@ export const EVIDENCE_LABELS: Record<StateEvent['evidenceType'], string> = {
 /** 括弧の補足を外した短い名前。タイルに出す（正式名は根拠の見出しに出る） */
 export function shortName(name: string): string {
   return name.replace(/（[^）]*）/g, '').trim()
-}
-
-/**
- * 項目キーを、縮めてよい前の部分と、残したい最後の区切り（最後の「-」から後ろ。「-」を含む）に分ける。
- * タイルでは前の部分だけを「…」で縮める。同じ分野のキーは頭がそろうので（billing-stripe-overview・billing-stripe-flow）、
- * 後ろを縮めると全部が同じ「billing-stripe…」に見えていた（2026-10-11 の見た目の点検の気づき）。
- * 「-」を後ろに付けるのは、縮めたときに「billing-…-overview」と 1 つのキーに読めるようにするため（前に付けると「billing-… overview」と 2 語に見えた）
- */
-export function splitKeyTail(key: string): { head: string; tail: string } {
-  const i = key.lastIndexOf('-')
-  if (i <= 0 || i === key.length - 1) return { head: '', tail: key }
-  return { head: key.slice(0, i), tail: key.slice(i) }
 }
 
 /** 項目キー → 状態の対応表 */
@@ -86,25 +77,54 @@ export function summarizeDomains(data: AppData): DomainSummary[] {
   }))
 }
 
-export interface OverallSummary {
-  domains: number
-  items: number
-  withEvidence: number
-  /** verifiedLevel が 3 以上（実装まで届いている） */
-  canImplement: number
+/** 1 層目の帯の 1 コマ（1 項目）。塗りは verifiedLevel、段 0 で実装の印だけある項目は枠だけ */
+export interface OverviewUnit {
+  level: Level
+  /** verifiedLevel 0 で、実装の印（3 以上）だけがある */
+  implOnly: boolean
 }
 
-/** 見出し下の 2 文目に使う全体の数 */
-export function summarizeOverall(data: AppData): OverallSummary {
+export interface DomainOverview {
+  key: string
+  name: string
+  /** 分野の中で一番高い verifiedLevel */
+  top: Level
+  /** top の段の名前。top が 0 で実装の印だけの項目があれば「実装済み・基礎未確認」（タイルと同じ言い方） */
+  topName: string
+  total: number
+  withEvidence: number
+  /** 1 コマ＝1 項目。段の高い順、同じ段なら実装の印だけのものを先に */
+  units: OverviewUnit[]
+  /** この分野に添える自己申告の資格の名前 */
+  certifications: string[]
+}
+
+/** 公開ビューの 1 層目（分野ごとの要約）を作る。分野の並びはロードマップのとおり */
+export function domainOverview(data: AppData): DomainOverview[] {
   const states = stateByKey(data)
-  const all = allItems(data.roadmap)
-  const sts = all.map((it) => states.get(it.key)).filter((s): s is ItemState => s !== undefined)
-  return {
-    domains: data.roadmap.domains.length,
-    items: all.length,
-    withEvidence: sts.filter(hasEvidence).length,
-    canImplement: sts.filter((s) => s.verifiedLevel >= 3).length,
-  }
+  return data.roadmap.domains.map((d) => {
+    const sts = d.items
+      .map((it) => states.get(it.key))
+      .filter((s): s is ItemState => s !== undefined)
+    const units = sts
+      .map((s) => ({ level: s.verifiedLevel, implOnly: s.verifiedLevel === 0 && hasEvidence(s) }))
+      .sort((a, b) => b.level - a.level || Number(b.implOnly) - Number(a.implOnly))
+    const top = sts.reduce<Level>((m, s) => (s.verifiedLevel > m ? s.verifiedLevel : m), 0)
+    const topName =
+      top === 0 && units.some((u) => u.implOnly) ? IMPLEMENTED_BUT_UNVERIFIED : LEVEL_NAMES[top]
+    return {
+      key: d.key,
+      name: d.name,
+      top,
+      topName,
+      total: d.items.length,
+      withEvidence: sts.filter(hasEvidence).length,
+      units,
+      certifications: (data.certifications ?? [])
+        .filter((c) => c.domainKey === d.key)
+        .map((c) => c.name),
+    }
+  })
 }
 
 export function allItems(roadmap: Roadmap): RoadmapItem[] {

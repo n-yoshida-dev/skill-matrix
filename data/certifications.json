@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "description": "自己申告の資格。判定の対象外で、理解度（verifiedLevel）は変わらない。公開ビューの 1 層目で、関係する分野の行に添えるだけ。ポートフォリオの Skills（public-profile/skills.md）と同じ事実なので、片方を直したらもう片方も直す（logs/decisions.md 2026-10-12）",
+  "certifications": [
+    { "domainKey": "java-spring", "name": "Java Silver SE 17" },
+    { "domainKey": "db", "name": "ORACLE MASTER Silver SQL 2019" }
+  ]
+}

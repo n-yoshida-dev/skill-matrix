@@ -1,39 +1,49 @@
 import { expect, test } from '@playwright/test'
 import { E2E_PORTS } from './ports.ts'
 
-// 公開ビューのタイルで、長い項目キーと段の表示（「実装済み・基礎未確認」）が重ならないことを確かめる。
-// 重なりは見た目の問題で、単体テスト（jsdom）は配置を計算しないので、実際のブラウザで箱の位置を比べる。
-// 差し替え後のダミー（e2e/fixtures/after）では、長いキーの項目に実装の印だけ（[3]）が付いていて、いちばん長い段の表示になる。
-// 段の表示が長いときは次の行へ送る（2026-10-11 の見た目の点検。キーが「jav…」のように 2〜3 字しか見えなくなっていた）ので、
-// 横に並んでも縦に並んでもよく、キーはタイルの幅の半分以上を使えることも確かめる。
+// 公開ビューのタイルと 1 層目（分野の要約）を、実際のブラウザで確かめる。
+// 重なりと読み上げの名前は見た目・ブラウザの計算に依るので、単体テスト（jsdom）では確かめられない。
+// 差し替え後のダミー（e2e/fixtures/after）では、「長い項目キー」の項目に実装の印だけ（[3]）が付いていて、いちばん長い段の表示になる。
+// タイルは項目名と段だけで、項目キー（内部名）は出さない（2026-10-12 決定）。
 
+const NAME = '長い項目キー'
 const KEY = 'e2e-long-item-key-for-tile-overlap'
+const LABEL = '実装済み・基礎未確認'
 
 for (const width of [1200, 390]) {
-  test(`長い項目キーと段の表示が重ならない（幅 ${width}px）`, async ({ page }) => {
+  test(`タイルの項目名と段の表示が重ならず、項目キーを出さない（幅 ${width}px）`, async ({
+    page,
+  }) => {
     await page.setViewportSize({ width, height: 900 })
     await page.goto(`http://localhost:${E2E_PORTS.after}/#/`)
-    const tile = page.getByRole('button', { name: /長い項目キー/ })
-    const key = tile.locator('.n')
+    const tile = page.getByRole('button', { name: new RegExp(`^${NAME}`) })
+    const name = tile.locator('.name')
     const label = tile.locator('.lv')
-    await expect(label).toHaveText('実装済み・基礎未確認')
+    await expect(label).toHaveText(LABEL)
 
-    const k = await key.boundingBox()
+    const n = await name.boundingBox()
     const l = await label.boundingBox()
     const t = await tile.boundingBox()
-    if (!k || !l || !t) throw new Error('タイルの箱が取れない')
-    // キーと段の表示の箱が重ならない（横に並ぶならキーの右端が段の左端より左、縦に並ぶならキーの下端が段の上端より上）
-    const sideBySide = k.x + k.width <= l.x
-    const stacked = k.y + k.height <= l.y
-    expect(sideBySide || stacked).toBe(true)
+    if (!n || !l || !t) throw new Error('タイルの箱が取れない')
+    // 項目名の下に段の表示が来る（重ならない）
+    expect(n.y + n.height).toBeLessThanOrEqual(l.y)
     // 段の表示はタイルの中に収まっている
     expect(l.x + l.width).toBeLessThanOrEqual(t.x + t.width)
-    // キーは数字しか見えないほど縮まない（タイルの幅の半分以上）
-    expect(k.width).toBeGreaterThanOrEqual(t.width / 2)
 
-    // キーは省略されても、全体は title で読める
-    await expect(key).toHaveAttribute('title', KEY)
-    // キーを前の部分と最後の区切りの 2 つに分けて描いても、読み上げの名前ではつながった 1 語のまま（間に空白が入らない）
-    await expect(tile).toHaveAccessibleName(new RegExp(`^${KEY}`))
+    // 項目キーは見た目にも読み上げにも出ない。読み上げの名前は「項目名 段」
+    await expect(tile).not.toContainText(KEY)
+    await expect(tile).toHaveAccessibleName(`${NAME} ${LABEL}`)
   })
 }
+
+test('1 層目の分野を押すと、その分野のタイルへ移って見出しにフォーカスが来る', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 700 })
+  await page.goto(`http://localhost:${E2E_PORTS.after}/#/`)
+  const overview = page.getByRole('region', { name: '分野ごとに、確認できた一番高い段' })
+  await overview.getByRole('link', { name: /E2E 分野/ }).click()
+  const heading = page.getByRole('heading', { level: 2, name: 'E2E 分野' })
+  await expect(heading).toBeFocused()
+  await expect(heading).toBeInViewport()
+  // 経路（HashRouter の #/）は変わらない
+  await expect(page).toHaveURL(/#\/$/)
+})

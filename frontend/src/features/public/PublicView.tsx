@@ -1,41 +1,81 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import type { AppData, ItemState, RoadmapItem } from '../../data/types'
 import {
   EVIDENCE_LABELS,
+  IMPLEMENTED_BUT_UNVERIFIED,
   LEVEL_NAMES,
+  domainOverview,
   isImplementedButUnverified,
   shortName,
   splitEvents,
-  splitKeyTail,
   stateByKey,
   summarizeDomains,
-  summarizeOverall,
   topEvidenced,
 } from './summary'
+import { Overview } from './Overview'
 import { DEFAULT_REPO_URL } from '../../data/load'
 import './public.css'
 
 // 公開ビュー（SPEC.md §7.3）。初めて見る人（SNS・個人サイトから来た人、友人、採用担当者）向けの 1 画面。
 // 出すのは「何をどこまでできるか」と「その根拠」だけ。段階前の状態・鮮度・保留・優先度・検証の記号は出さない。
+// 並びは 3 層：1 層目は分野ごとの要約（Overview）、2 層目は分野ごとのタイル、3 層目はタイルを押すと開く根拠
+// （2026-10-12 決定。いきなり 46 枚のタイルから始まり、何を見たらいいか分かりづらかった）
 
 interface Props {
   data: AppData
 }
 
+/** 動きを減らす設定の端末か。テストの環境（matchMedia が無い）では減らす側に倒す */
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window.matchMedia !== 'function' ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
+/** 要素までページの中で移り、移り先の見出しにフォーカスを置く（読み上げとキーボードでも移った先が分かるように） */
+function moveTo(id: string): void {
+  const el = document.getElementById(id)
+  if (!el) return
+  el.scrollIntoView?.({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
+  const heading = el.matches('h2') ? el : el.querySelector('h2')
+  if (heading instanceof HTMLElement) heading.focus({ preventScroll: true })
+}
+
 export function PublicView({ data }: Props) {
   const states = stateByKey(data)
-  const overall = summarizeOverall(data)
   const domains = summarizeDomains(data)
+  const overview = domainOverview(data)
   // 押されて根拠が開いている項目。分野をまたいで 1 つだけ
   const [openKey, setOpenKey] = useState<string | null>(null)
+  // 1 層目から移ってきた分野。見出しを一瞬だけ朱にして、どこへ来たかを示す
+  const [arrived, setArrived] = useState<string | null>(null)
   // 根拠の枠の「閉じる」で、開いていたタイルへフォーカスを戻すための参照（キーボードで読み進めた場所を失わないため）
   const tileRefs = useRef(new Map<string, HTMLButtonElement>())
+
+  useEffect(() => {
+    if (!arrived) return
+    const t = window.setTimeout(() => setArrived(null), 900)
+    return () => window.clearTimeout(t)
+  }, [arrived])
 
   /** 根拠の枠を閉じ、開いていたタイルへフォーカスを戻す */
   const closeDetail = () => {
     const key = openKey
     setOpenKey(null)
     if (key) tileRefs.current.get(key)?.focus()
+  }
+
+  /** 1 層目で押した分野のタイルへ移る */
+  const jumpToDomain = (key: string) => {
+    moveTo(`d-${key}`)
+    setArrived(key)
+  }
+
+  /** 2 層目の「↑ 要約へ」で 1 層目へ戻る */
+  const backToOverview = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    moveTo('overview-title')
   }
 
   return (
@@ -45,22 +85,30 @@ export function PublicView({ data }: Props) {
         学習ログを AI
         が読んで理解度を判定し、ルールで検証したうえで履歴に残しています。自己申告ではレベルが上がりません。
       </p>
-      <p className="thesis sub">
-        {overall.domains} 分野 {overall.items} 項目のうち、根拠のある項目が {overall.withEvidence}
-        。そのうち実装まで届いているものが {overall.canImplement}。
-      </p>
+
+      <Overview domains={overview} onJump={jumpToDomain} />
 
       {data.roadmap.domains.map((domain, i) => {
         const summary = domains[i]
         const openItem = domain.items.find((it) => it.key === openKey)
         const openState = openItem ? states.get(openItem.key) : undefined
         return (
-          <section className="domain" key={domain.key}>
+          <section
+            className={`domain${arrived === domain.key ? ' arrived' : ''}`}
+            key={domain.key}
+            id={`d-${domain.key}`}
+          >
             <div className="domain-head">
-              <h2>{domain.name}</h2>
+              <h2 tabIndex={-1}>{domain.name}</h2>
               {domain.goal ? <span className="goal">{domain.goal}</span> : null}
-              <span className="count">
-                {summary.total} 項目中 {summary.withEvidence} に根拠
+              {/* 数と「↑ 要約へ」はいつも一緒に右端へ寄せる（片方だけ折り返して左端に落ちないように） */}
+              <span className="meta">
+                <span className="count">
+                  {summary.total} 項目中 {summary.withEvidence} に根拠
+                </span>
+                <a className="up" href="#overview" onClick={backToOverview}>
+                  ↑ 要約へ
+                </a>
               </span>
             </div>
             <div className="cells">
@@ -68,7 +116,6 @@ export function PublicView({ data }: Props) {
                 const st = states.get(it.key)
                 if (!st) return null
                 const expanded = openKey === it.key
-                const { head, tail } = splitKeyTail(it.key)
                 return (
                   <button
                     key={it.key}
@@ -82,24 +129,10 @@ export function PublicView({ data }: Props) {
                     aria-controls={`detail-${domain.key}`}
                     onClick={() => setOpenKey(expanded ? null : it.key)}
                   >
-                    {/* 上の行：項目キー（長ければ前の部分を「…」で省略し、最後の区切りは残す）と段。段は必ず全部見せる */}
-                    <span className="head">
-                      {/* 2 つに分けて描くと、読み上げの名前で間に空白が入って 2 語になる（E2E で確かめた）。
-                          見た目の 2 つは読み上げから外し、読み上げにはつながったキーを 1 つ渡す */}
-                      <span className="n num" title={it.key}>
-                        {head ? (
-                          <span className="kh" aria-hidden="true">
-                            {head}
-                          </span>
-                        ) : null}
-                        <span className="kt" aria-hidden="true">
-                          {tail}
-                        </span>
-                        <span className="sr-only">{it.key}</span>
-                      </span>
-                      <span className="lv num">{tileLevelLabel(st)}</span>
-                    </span>
-                    <span className="name">{shortName(it.name)}</span>
+                    {/* 項目名と段だけ。項目キー（内部名）は初めて見る人に意味が無いので出さない（2026-10-12 決定） */}
+                    {/* 間の空白は、読み上げの名前を「項目名 段」と区切るため（グリッドの中なので見た目には出ない） */}
+                    <span className="name">{shortName(it.name)}</span>{' '}
+                    <span className="lv num">{tileLevelLabel(st)}</span>
                   </button>
                 )
               })}
@@ -164,7 +197,7 @@ export function PublicView({ data }: Props) {
 /** タイル右上の文字。レベルか、未着手か、実装の根拠だけがある状態か */
 function tileLevelLabel(st: ItemState): string {
   if (st.verifiedLevel >= 1) return `L${st.verifiedLevel}`
-  if (isImplementedButUnverified(st)) return '実装済み・基礎未確認'
+  if (isImplementedButUnverified(st)) return IMPLEMENTED_BUT_UNVERIFIED
   return '未着手'
 }
 
