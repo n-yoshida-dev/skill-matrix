@@ -214,12 +214,14 @@ data/
     2026-09-22-http-server.json
   state.json                         理解度。導出値。CLI が毎回まるごと書き直す。手で編集しない（§3.4）
   settings.json                      検証ルール・鮮度・重み・禁止語の設定（§8.3）。省略可
+  certifications.json                自己申告の資格（§7.3）。人が書く。判定の対象外で、公開ビューの 1 層目に添えるだけ
   forbidden-words.local.json         本人しか知らない禁止語。コミットしない。省略可（§6）
 sources.local.json                   根拠の出どころ（学習ログのパス等）。コミットしない（§3.5）
 sources.local.json.example           その雛形。こちらはコミットする
 ```
 
-画面が読むのは `roadmap.json` と `state.json` と `settings.json` の3つだけ。`judgments/` は CLI しか読まない
+画面が読むのは `roadmap.json` と `state.json` と `settings.json` と `certifications.json` の 4 つだけ。`judgments/` は CLI しか読まない。
+`certifications.json` は CLI が読まないので、分野のキーの検査は画面の読み込みで行う（ロードマップに無いキーなら例外。§7.3）
 （項目ごとの履歴は `state.json` に写してあるので画面はそちらを見る）。
 
 ### 3.2 設計の要点
