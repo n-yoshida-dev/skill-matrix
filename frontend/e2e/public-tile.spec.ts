@@ -47,3 +47,20 @@ test('1 層目の分野を押すと、その分野のタイルへ移って見出
   // 経路（HashRouter の #/）は変わらない
   await expect(page).toHaveURL(/#\/$/)
 })
+
+// 「図で見る」の多角形の点が、広がり終わったあとに正しい位置（中心より上）へ来るか。
+// 差し替え後のダミーの分野は 1 つで、一番高い段は 2（「基礎」がレベル 2）。点は中心から真上へ半径の 2/5 の所に来る
+for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+  test(`「図で見る」で多角形が描かれる（動き：${reducedMotion}）`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion })
+    await page.goto(`http://localhost:${E2E_PORTS.after}/#/`)
+    await page.getByRole('button', { name: '図で見る' }).click()
+    const dot = page.locator('.lb-svg .dot').first()
+    // 動きを減らす設定なら押した直後から最終の形。動く場合は広がり終わる（0.55 秒）のを待つ
+    if (reducedMotion === 'no-preference') await page.waitForTimeout(800)
+    const cy = Number(await dot.getAttribute('cy'))
+    // RADAR の中心 cy=235、半径 150 → 段 2 なら 235 - 60 = 175
+    expect(cy).toBeCloseTo(175, 0)
+    await expect(page.getByRole('img', { name: /多角形/ })).toBeVisible()
+  })
+}

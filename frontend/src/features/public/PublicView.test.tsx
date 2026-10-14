@@ -166,6 +166,31 @@ describe('公開ビュー', () => {
     ).toHaveFocus()
   })
 
+  it('1 層目は最初「一覧で見る」で、「図で見る」で能力値チャートと分野の一覧に切り替わる', async () => {
+    render(<PublicView data={data} />)
+    const overview = screen.getByRole('region', { name: '分野ごとに、確認できた一番高い段' })
+    const listBtn = within(overview).getByRole('button', { name: '一覧で見る' })
+    const chartBtn = within(overview).getByRole('button', { name: '図で見る' })
+    expect(listBtn).toHaveAttribute('aria-pressed', 'true')
+    expect(within(overview).queryByRole('img')).toBeNull()
+
+    await userEvent.click(chartBtn)
+    expect(chartBtn).toHaveAttribute('aria-pressed', 'true')
+    expect(listBtn).toHaveAttribute('aria-pressed', 'false')
+    expect(within(overview).getByRole('img', { name: /多角形/ })).toBeInTheDocument()
+    // キーボードと読み上げの止まり場所は一覧だけ（図の分野名は読み上げから外す）。「2/9」ではなく文で読む
+    const rows = within(overview).getAllByRole('link')
+    expect(rows).toHaveLength(2)
+    expect(rows[0]).toHaveAccessibleName('Go L2 3 項目中 3 に根拠')
+    await userEvent.click(rows[1])
+    expect(screen.getByRole('heading', { level: 2, name: 'React' })).toHaveFocus()
+
+    // 一覧に戻すと、ステータス帳の行（大きな Lv の数字）に戻る。テストの環境は動きを減らす側なので数字はすぐ最終の値
+    await userEvent.click(listBtn)
+    expect(within(overview).queryByRole('img')).toBeNull()
+    expect(within(overview).getAllByRole('link')[0]).toHaveTextContent('Lv2')
+  })
+
   it('タイルを押すと、その根拠が新しい順に開く', async () => {
     render(<PublicView data={data} />)
     const tile = screen.getByRole('button', { name: /^基本構文/ })

@@ -13,6 +13,7 @@ import {
   topEvidenced,
 } from './summary'
 import { Overview } from './Overview'
+import { prefersReducedMotion } from './motion'
 import { DEFAULT_REPO_URL } from '../../data/load'
 import './public.css'
 
@@ -23,14 +24,6 @@ import './public.css'
 
 interface Props {
   data: AppData
-}
-
-/** 動きを減らす設定の端末か。テストの環境（matchMedia が無い）では減らす側に倒す */
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window.matchMedia !== 'function' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
 }
 
 /** 要素までページの中で移り、移り先の見出しにフォーカスを置く（読み上げとキーボードでも移った先が分かるように） */
