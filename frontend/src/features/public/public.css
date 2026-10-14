@@ -15,15 +15,220 @@
   margin-top: 30px;
 }
 
+/* 1 層目の頭：小さな見出しと「一覧で見る／図で見る」の切り替え。下の濃い罫線（ink）で 1 層目の始まりを示す */
+.ov-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ink);
+}
+
 /* 「↑ 要約へ」で戻ったとき、見出しのフォーカスの輪郭が画面の上端で切れないよう少し下で止める */
 .ov-title {
   scroll-margin-top: 16px;
   margin: 0;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--ink);
   font-size: 13px;
   font-weight: 400;
   color: var(--dim);
+}
+
+/* 切り替えは学習パスの一列／ツリー（path.css の .path-mode）と同じ形：1px の枠でつないだ 2 つのボタン、押されている側を ink で塗る */
+.ov-mode {
+  display: inline-flex;
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+}
+
+.ov-mode button {
+  padding: 2px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--dim);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.ov-mode button:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+.ov-mode button:last-child {
+  border-radius: 0 3px 3px 0;
+  border-left: 1px solid var(--rule-strong);
+}
+
+.ov-mode button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* フォーカスの輪郭が隣の押されている側の塗りに重ならないよう、上に重ねて地の色の縁を敷く（.path-mode と同じ） */
+.ov-mode button:focus-visible {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 0 4px var(--paper);
+}
+
+/* 一覧に戻したとき、帯が左から 1 コマずつ埋まる（遅れは部品が --delay で渡す）。動きを減らす設定では動かさない */
+@media (prefers-reduced-motion: no-preference) {
+  .lc.filling .u {
+    animation: unit-in 0.15s ease-out both;
+    animation-delay: var(--delay, 0ms);
+  }
+  @keyframes unit-in {
+    from {
+      background: var(--empty);
+      box-shadow: none;
+    }
+  }
+}
+
+/* ---- 1 層目の「図で見る」：能力値チャート（2026-10-12 決定） ----
+   左に 8 分野の多角形、右に分野の一覧。狭い画面では縦に並べる */
+.lb {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 8px 28px;
+  align-items: center;
+  padding-top: 6px;
+}
+
+.lb-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 線の太さは図を縮めても細くならないよう、画面の px で指定する（non-scaling-stroke）。
+   外の輪（L5）と軸はツリーの線と同じ line（地との差 3.1）。内側の輪（L1〜L4）は補助の線で rule のまま
+   （値は横の一覧に字で出ている。2026-10-14 の点検で、輪と軸が地との差 3 に届かないと指摘された） */
+.lb-svg .ring,
+.lb-svg .axis {
+  fill: none;
+  stroke: var(--rule);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.lb-svg .ring.outer,
+.lb-svg .axis {
+  stroke: var(--line);
+}
+
+/* 多角形の塗りは L1 を薄く、縁と点は L3（確認済みの色）。塗りの透かしは図の面だけで、字には使わない */
+.lb-svg .area {
+  fill: var(--l1);
+  fill-opacity: 0.45;
+  stroke: var(--l3);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.lb-svg .dot {
+  fill: var(--l3);
+  stroke: var(--paper);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+/* 分野名の書体は本文から受け継ぐ */
+/* 字の大きさは viewBox の単位（radar.ts の LABEL_FONT と同じ 22）。図はスマホで約 0.51 倍に縮むので、描いたときに約 11px になる */
+.lb-svg .lab {
+  fill: var(--ink);
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .lb-svg a:hover .lab {
+    text-decoration: underline;
+  }
+}
+
+/* 目盛りの数字は .num と同じ等幅の並び（index.css） */
+.lb-svg .tick {
+  fill: var(--dim);
+  font-family:
+    'IBM Plex Mono', ui-monospace, Menlo, 'IBM Plex Sans JP', 'Hiragino Sans', 'Yu Gothic',
+    monospace;
+  font-size: 22px;
+  /* 輪の線が数字の下を通るので、地の色の縁を字の下に敷いて読みやすくする（2026-10-14 の点検の気づき） */
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+
+.lb-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lb-h,
+.lb-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.5em 3.5em;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.lb-h {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.lb-row {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.lb-n {
+  min-width: 0;
+  font-weight: 700;
+}
+
+@media (hover: hover) {
+  .lb-row:hover .lb-n {
+    text-decoration: underline;
+  }
+}
+
+.lb-l b {
+  font-weight: 500;
+}
+
+.lb-c {
+  text-align: right;
+  font-size: 13px;
+  color: var(--dim);
+}
+
+/* 段の色の見本は根拠の枠と同じ .swatch（色は下の .swatch.l1〜l5） */
+.lb-l .swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  border-radius: 2px;
+  vertical-align: -1px;
+}
+
+@media (max-width: 720px) {
+  .lb {
+    grid-template-columns: 1fr;
+  }
 }
 
 .lc {
@@ -104,7 +309,8 @@
   color: var(--dim);
 }
 
-.overview .lc + .legend {
+.overview .lc + .legend,
+.overview .lb + .legend {
   margin-top: 12px;
 }
 
