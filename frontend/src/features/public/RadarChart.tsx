@@ -68,7 +68,7 @@ export function RadarChart({ domains, onJump, animate }: Props) {
         className="lb-svg"
         viewBox={`0 0 ${RADAR.width} ${RADAR.height}`}
         role="img"
-        aria-label="8 分野で確認できた一番高い段を結んだ多角形。値は図の横（狭い画面では下）の一覧と同じ"
+        aria-label={`${n} 分野で確認できた一番高い段を結んだ多角形。値は図の横（狭い画面では下）の一覧と同じ`}
       >
         {[1, 2, 3, 4, 5].map((lv) => (
           <polygon
