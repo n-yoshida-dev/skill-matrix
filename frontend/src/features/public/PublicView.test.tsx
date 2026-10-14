@@ -7,7 +7,8 @@ import { PublicView } from './PublicView'
 // 公開ビュー（SPEC.md §7.3）が「出すもの」を出し、「出さないもの」を出さないことを確かめる。
 // data/*.json ではなく、このファイルの中の小さなデータで確かめる（data/ を実物に差し替えても落ちないように）。
 // 「何を保証しているか」：
-// - 分野ごとの行と、項目名が常時見えるタイルがある
+// - 1 層目に分野ごとの要約（一番高い段・段の名前・根拠の数・資格）があり、押すとその分野の見出しへ移る
+// - 分野ごとの行と、項目名が常時見えるタイルがある（項目キーは出さない）
 // - タイルを押すと根拠（日付・根拠の種類・一文）が開く
 // - [3] だけの項目は「実装済み・基礎未確認」と出る
 // - 段階前の状態・鮮度・保留・優先度・検証ルールの記号・確信度・evidenceRefs の生の文字列は出ない
@@ -125,27 +126,49 @@ const data: AppData = {
 }
 
 describe('公開ビュー', () => {
-  it('分野ごとの行と、項目名の見えるタイルを出す', () => {
+  it('分野ごとの行と、項目名の見えるタイルを出す。タイルに項目キーは出さない', () => {
     const { container } = render(<PublicView data={data} />)
     expect(screen.getByRole('heading', { level: 1, name: '理解度台帳' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: 'Go' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: 'React' })).toBeInTheDocument()
     // 数字と文字が別の要素に分かれるので、要素ごとの文字列で見る
-    const counts = [...container.querySelectorAll('.count')].map((el) => el.textContent)
+    const counts = [...container.querySelectorAll('.domain .count')].map((el) => el.textContent)
     expect(counts).toEqual(['3 項目中 3 に根拠', '1 項目中 0 に根拠'])
-    expect(container.querySelector('.thesis.sub')?.textContent).toBe(
-      '2 分野 4 項目のうち、根拠のある項目が 3。そのうち実装まで届いているものが 0。',
-    )
-    // タイルには括弧を除いた項目名が、押さなくても出ている
-    const tile = screen.getByRole('button', { name: /go-syntax/ })
+    // タイルには括弧を除いた項目名と段が、押さなくても出ている。項目キー（内部名）は出ない
+    const tile = screen.getByRole('button', { name: /^基本構文/ })
     expect(tile).toHaveTextContent('基本構文')
     expect(tile).not.toHaveTextContent('変数')
     expect(tile).toHaveTextContent('L2')
+    expect(tile).not.toHaveTextContent('go-syntax')
+    expect(tile).toHaveAccessibleName('基本構文 L2')
+  })
+
+  it('1 層目に分野ごとの要約を出し、押すとその分野の見出しへ移る', async () => {
+    const withCerts: AppData = { ...data, certifications: [{ domainKey: 'go', name: 'Go 資格' }] }
+    render(<PublicView data={withCerts} />)
+    const overview = screen.getByRole('region', { name: '分野ごとに、確認できた一番高い段' })
+    const rows = within(overview).getAllByRole('link')
+    expect(rows).toHaveLength(2)
+    // Go は一番高い段が 2、資格を添える。React は未着手で資格なし
+    expect(rows[0]).toHaveTextContent('Lv2')
+    expect(rows[0]).toHaveTextContent('自分の言葉で説明できる')
+    expect(rows[0]).toHaveTextContent('3 項目中 3 に根拠')
+    expect(rows[0]).toHaveTextContent('資格：Go 資格')
+    expect(rows[1]).toHaveTextContent('未着手')
+    expect(rows[1]).not.toHaveTextContent('資格')
+    await userEvent.click(rows[1])
+    expect(screen.getByRole('heading', { level: 2, name: 'React' })).toHaveFocus()
+    // 「↑ 要約へ」で 1 層目の見出しへ戻る
+    const reactSection = document.getElementById('d-react')!
+    await userEvent.click(within(reactSection).getByRole('link', { name: '↑ 要約へ' }))
+    expect(
+      screen.getByRole('heading', { level: 2, name: '分野ごとに、確認できた一番高い段' }),
+    ).toHaveFocus()
   })
 
   it('タイルを押すと、その根拠が新しい順に開く', async () => {
     render(<PublicView data={data} />)
-    const tile = screen.getByRole('button', { name: /go-syntax/ })
+    const tile = screen.getByRole('button', { name: /^基本構文/ })
     expect(tile).toHaveAttribute('aria-expanded', 'false')
     await userEvent.click(tile)
     expect(tile).toHaveAttribute('aria-expanded', 'true')
@@ -162,7 +185,7 @@ describe('公開ビュー', () => {
 
   it('根拠の枠を「閉じる」で閉じると、開いていたタイルへフォーカスが戻る', async () => {
     render(<PublicView data={data} />)
-    const tile = screen.getByRole('button', { name: /go-syntax/ })
+    const tile = screen.getByRole('button', { name: /^基本構文/ })
     await userEvent.click(tile)
     await userEvent.click(screen.getByRole('button', { name: '閉じる' }))
     expect(document.getElementById('detail-go')).toBeNull()
@@ -172,7 +195,7 @@ describe('公開ビュー', () => {
 
   it('[3] だけの項目は「実装済み・基礎未確認」と出る', async () => {
     render(<PublicView data={data} />)
-    const tile = screen.getByRole('button', { name: /go-http/ })
+    const tile = screen.getByRole('button', { name: /^HTTP サーバ/ })
     expect(tile).toHaveTextContent('実装済み・基礎未確認')
     await userEvent.click(tile)
     expect(screen.getByText(/基礎の確認が未了/)).toBeInTheDocument()
@@ -180,7 +203,7 @@ describe('公開ビュー', () => {
 
   it('印の無い項目は「未着手」で、根拠を開くと手をつけていない旨が出る', async () => {
     render(<PublicView data={data} />)
-    const tile = screen.getByRole('button', { name: /react-state/ })
+    const tile = screen.getByRole('button', { name: /^state/ })
     expect(tile).toHaveTextContent('未着手')
     await userEvent.click(tile)
     // 自己申告の記録は無いので「手をつけていない」
@@ -190,7 +213,7 @@ describe('公開ビュー', () => {
   it('作業用の情報（出さないもの）を描画せず、フッターはリポジトリへのリンクだけ', async () => {
     const { container } = render(<PublicView data={data} />)
     // 不合格の報告・保留のある項目の根拠を開いた状態でも出ないことを確かめる
-    await userEvent.click(screen.getByRole('button', { name: /go-test/ }))
+    await userEvent.click(screen.getByRole('button', { name: /^テスト/ }))
     const text = container.textContent ?? ''
     for (const banned of [
       '鮮度',

@@ -122,9 +122,18 @@ export interface Settings {
   forbiddenWords?: string[]
 }
 
+/** 自己申告の資格（data/certifications.json）。判定の対象外で、関係する分野の行に添えるだけ */
+export interface Certification {
+  /** 添える分野のキー（roadmap.domains[].key） */
+  domainKey: string
+  name: string
+}
+
 /** 画面に渡す一式 */
 export interface AppData {
   roadmap: Roadmap
   state: State
   settings: Settings
+  /** 自己申告の資格。無ければ何も添えない */
+  certifications?: Certification[]
 }
