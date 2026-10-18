@@ -5,6 +5,7 @@ import { PlanView } from './features/plan/PlanView'
 
 // 画面の入口は 2 つ（SPEC.md §7）。
 // 公開ビュー（/）は初めて見る人（SNS・個人サイトから来た人、友人、採用担当者）向け、作業ビュー（/plan）は自分向け。
+// 作業ビューの入口の名前は「学習パス」（中身が学習パスと項目詳細だけになったため。2026-10-13 決定）
 // データはどちらも同じ data/*.json をビルド時に取り込む
 const data = loadData()
 
@@ -18,7 +19,7 @@ function App() {
           <NavLink to="/" end>
             理解度台帳
           </NavLink>
-          <NavLink to="/plan">作業ビュー</NavLink>
+          <NavLink to="/plan">学習パス</NavLink>
           <a href={data.settings.site?.repoUrl ?? DEFAULT_REPO_URL} target="_blank" rel="noopener">
             GitHub
           </a>

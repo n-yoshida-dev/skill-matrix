@@ -14,7 +14,8 @@ import { ItemView } from './ItemView'
 // - 保留（deferred）がこの項目の分だけ出る
 // - 前提と、この項目を前提にする項目へのリンクがある
 // - 編集の手段（入力欄・ボタン）を置かない
-// - ロードマップに無い項目キーなら、無いと言って作業ビューへ戻るリンクを出す
+// - 上に、その項目の分野の学習パスへ戻るリンクがある
+// - ロードマップに無い項目キーなら、無いと言って学習パスへ戻るリンクを出す
 
 const ev = (over: Partial<StateEvent>): StateEvent => ({
   file: '2026-09-28-x.json',
@@ -219,9 +220,17 @@ describe('項目詳細', () => {
     expect(screen.queryByRole('button')).toBeNull()
   })
 
-  it('ロードマップに無い項目キーなら、無いと言って作業ビューへ戻るリンクを出す', () => {
+  it('上に、その項目の分野の学習パスへ戻るリンクがある', () => {
+    renderItem('db-schema')
+    expect(screen.getByRole('link', { name: 'データベースの学習パスへ戻る' })).toHaveAttribute(
+      'href',
+      '/plan/path/db',
+    )
+  })
+
+  it('ロードマップに無い項目キーなら、無いと言って学習パスへ戻るリンクを出す', () => {
     renderItem('no-such-item')
     expect(screen.getByText(/はロードマップに無い/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '作業ビューへ戻る' })).toHaveAttribute('href', '/plan')
+    expect(screen.getByRole('link', { name: '学習パスへ戻る' })).toHaveAttribute('href', '/plan')
   })
 })

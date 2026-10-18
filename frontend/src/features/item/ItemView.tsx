@@ -47,7 +47,7 @@ export function ItemView({ data, today }: Props) {
           項目 <span className="num">{itemKey}</span> はロードマップに無い。
         </p>
         <p>
-          <Link to="/plan">作業ビューへ戻る</Link>
+          <Link to="/plan">学習パスへ戻る</Link>
         </p>
       </section>
     )
@@ -83,8 +83,7 @@ export function ItemView({ data, today }: Props) {
   return (
     <section className="item-sec" aria-labelledby="item-title">
       <p className="item-crumb">
-        <Link to="/plan">作業ビュー</Link> ／{' '}
-        <Link to={`/plan/path/${domain.key}`}>{domain.name}の学習パス</Link>
+        <Link to={`/plan/path/${domain.key}`}>{domain.name}の学習パスへ戻る</Link>
       </p>
       <p className="item-key num">{item.key}</p>
       <h2 id="item-title">{item.name}</h2>
