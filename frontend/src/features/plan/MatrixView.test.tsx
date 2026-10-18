@@ -4,9 +4,9 @@ import type { ReactElement } from 'react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import type { AppData, ItemState } from '../../data/types'
-import { PlanView } from './PlanView'
+import { Dashboard } from './Dashboard'
 
-/** 作業ビューは中で画面を切り替えるので、ルーターの中で描く（初期の画面はダッシュボード） */
+/** 升目の吹き出しが項目詳細へのリンクを持つので、ルーターの中で描く。ダッシュボードは画面から外して棚上げ中（SPEC.md §10.10） */
 const render = (ui: ReactElement) => rtlRender(<MemoryRouter>{ui}</MemoryRouter>)
 
 // 作業ビューのマトリクス（SPEC.md §7.1、TODO 2-5 の完了条件）を確かめる。
@@ -102,7 +102,7 @@ const cell = (key: string) => screen.getByRole('button', { name: new RegExp(`^${
 
 describe('作業ビューのマトリクス', () => {
   it('升目の塗りは verifiedLevel で、[3] だけの項目は塗らずに右上の三角を付ける', () => {
-    render(<PlanView data={data} today={today} />)
+    render(<Dashboard data={data} today={today} />)
     expect(cell('go-syntax')).toHaveClass('l2')
     expect(cell('go-syntax')).not.toHaveClass('up')
     expect(cell('java-rest')).toHaveClass('l3')
@@ -114,7 +114,7 @@ describe('作業ビューのマトリクス', () => {
   })
 
   it('不合格の報告と古い根拠に枠線を付け、新しい根拠には付けない', () => {
-    render(<PlanView data={data} today={today} />)
+    render(<Dashboard data={data} today={today} />)
     expect(cell('java-test')).toHaveClass('attn')
     expect(cell('go-old')).toHaveClass('attn')
     expect(cell('go-syntax')).not.toHaveClass('attn')
@@ -122,7 +122,7 @@ describe('作業ビューのマトリクス', () => {
   })
 
   it('升目に乗せると吹き出しに印・未確認の段・最終根拠日が出る', async () => {
-    render(<PlanView data={data} today={today} />)
+    render(<Dashboard data={data} today={today} />)
     await userEvent.hover(cell('go-http'))
     const tip = screen.getByRole('tooltip')
     expect(tip).toHaveTextContent('Verified 0 / 根拠の印 3 / 未確認 1, 2')
@@ -133,7 +133,7 @@ describe('作業ビューのマトリクス', () => {
   })
 
   it('吹き出しに段階前の状態と、要再確認の理由が出る', async () => {
-    render(<PlanView data={data} today={today} />)
+    render(<Dashboard data={data} today={today} />)
     await userEvent.hover(cell('java-test'))
     const tip = screen.getByRole('tooltip')
     expect(tip).toHaveTextContent('Verified 0 / 根拠の印 なし / 未確認 なし')
@@ -146,7 +146,7 @@ describe('作業ビューのマトリクス', () => {
   })
 
   it('押すと吹き出しが固定され、もう一度押すと閉じる', async () => {
-    render(<PlanView data={data} today={today} />)
+    render(<Dashboard data={data} today={today} />)
     await userEvent.click(cell('go-syntax'))
     await userEvent.unhover(cell('go-syntax'))
     expect(screen.getByRole('tooltip')).toHaveTextContent('Verified 2 / 根拠の印 1, 2')
@@ -155,7 +155,7 @@ describe('作業ビューのマトリクス', () => {
   })
 
   it('固定した吹き出しにだけ、項目詳細へのリンクが出る', async () => {
-    render(<PlanView data={data} today={today} />)
+    render(<Dashboard data={data} today={today} />)
     await userEvent.hover(cell('go-syntax'))
     expect(
       within(screen.getByRole('tooltip')).queryByRole('link', { name: '項目詳細を開く' }),
@@ -167,7 +167,7 @@ describe('作業ビューのマトリクス', () => {
   })
 
   it('キーボードで升目を固定すると、次の Tab で吹き出しの「項目詳細を開く」へ進める', async () => {
-    render(<PlanView data={data} today={today} />)
+    render(<Dashboard data={data} today={today} />)
     act(() => cell('go-syntax').focus())
     await userEvent.keyboard('{Enter}')
     await userEvent.tab()
@@ -179,7 +179,7 @@ describe('作業ビューのマトリクス', () => {
   })
 
   it('吹き出しのリンクで Esc を押すと、吹き出しが閉じてフォーカスは押した升目に戻る', async () => {
-    render(<PlanView data={data} today={today} />)
+    render(<Dashboard data={data} today={today} />)
     act(() => cell('go-syntax').focus())
     await userEvent.keyboard('{Enter}')
     await userEvent.tab()
@@ -190,7 +190,7 @@ describe('作業ビューのマトリクス', () => {
   })
 
   it('サマリー帯に L0〜L5 の件数と「実装根拠あり・理解未確認」の列がある', () => {
-    render(<PlanView data={data} today={today} />)
+    render(<Dashboard data={data} today={today} />)
     const table = screen.getByRole('table')
     const headers = within(table)
       .getAllByRole('columnheader')
