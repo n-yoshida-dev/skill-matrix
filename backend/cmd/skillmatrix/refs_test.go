@@ -170,7 +170,7 @@ func TestRun_refs(t *testing.T) {
 	repo := t.TempDir()
 	git := func(args ...string) string {
 		t.Helper()
-		out, err := gitOutput(repo, args...)
+		out, err := gitOutput(repo, append(testGitConfig(), args...)...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -179,7 +179,7 @@ func TestRun_refs(t *testing.T) {
 	git("init", "-q")
 	writeFile(t, filepath.Join(repo, "log.md"), "見出し\nドリルに答えた\n")
 	git("add", "log.md")
-	git("-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m", "log")
+	git("commit", "-q", "-m", "log")
 	commit := git("rev-parse", "--short", "HEAD")
 
 	judgmentWith := func(lines string) string {

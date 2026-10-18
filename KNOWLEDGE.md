@@ -1559,5 +1559,7 @@ TODO フェーズ2d のタスク。2026-10-11 の KNOWLEDGE の末尾の一覧�
 viewBox の 22 にし、長い分野名を区切りで 2 行に折って図の幅に収めた（スマホで約 11px）。線の太さも同じく縮むので `vector-effect: non-scaling-stroke` で画面の px にした。
 **点検**：点検役 2 回（1 回目 直すべき 2・DESIGN.md に足すべき 6、2 回目 直すべき 0。気づきの「目盛りの数字に輪の線が重なる」は地の色の縁で直した）、Impeccable 0 件、はみ出し・画面のエラー 0。比較ページ https://claude.ai/artifact/2Vn2UTqNKiFSuddRreB9q1
 **CI で 1 回落ちたテスト**：PR #114 の 1 回目の CI で、画面と関係のない `TestRun_pending`（CLI の `pending`）が落ちた。一時フォルダの片付けで `.git: directory not empty`。
-再実行では通った。テストの中の `git commit` が裏で自動の片付け（`gc --auto`）を始め、`t.TempDir` の削除と重なったと推定（確かめてはいない）。TODO フェーズ2d に置いた
+再実行では通った。テストの中の `git commit` が裏で自動の片付け（`gc --auto`）を始め、`t.TempDir` の削除と重なったと推定（確かめてはいない）。TODO フェーズ2d に置いた。
+（2026-10-18 追記：原因は確かめずに、テストの一時リポジトリで git に `gc.auto=0`・`gc.autoDetach=false`・`maintenance.auto=false` を渡すようにした（`main_test.go` の `testGitConfig`。git を使う `refs` のテストも同じ形にした）。
+`go test ./cmd/skillmatrix -count=20`（パッケージ全体）が手元で通った。もともと手元では再現しなかったので、通ったことは直った証拠としては弱い。CI でまた落ちたら原因を調べ直す）
 **点検役の 1 回目のもう 1 件**：輪と軸が `rule`（地との差 1.2）で、図の線の決まり（3 以上）に届かなかった。外の輪と軸を `line`（3.1）にし、内側の輪は補助として `rule` のまま（値は一覧に字で出ている）。DESIGN.md の決まりに例外として書いた

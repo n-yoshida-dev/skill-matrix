@@ -166,7 +166,7 @@ func TestRun_pending(t *testing.T) {
 	repo := t.TempDir()
 	git := func(args ...string) string {
 		t.Helper()
-		out, err := gitOutput(repo, append([]string{"-c", "user.name=t", "-c", "user.email=t@example.com"}, args...)...)
+		out, err := gitOutput(repo, append(testGitConfig(), args...)...)
 		if err != nil {
 			t.Fatal(err)
 		}

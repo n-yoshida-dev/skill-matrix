@@ -64,6 +64,20 @@ func writeFile(t *testing.T, path, raw string) {
 	}
 }
 
+// testGitConfig はテストの一時リポジトリで git に渡す設定を返す。
+// コミットの名前のほか、コミットの後に裏で走る自動の片付け（gc --auto・maintenance）を止める。
+// 止めないと、片付けが .git に書いている最中に t.TempDir の削除が走り、
+// 「.git: directory not empty」でテストが落ちることがある（2026-10-14 に CI で 1 回。KNOWLEDGE.md 同日）
+func testGitConfig() []string {
+	return []string{
+		"-c", "user.name=t",
+		"-c", "user.email=t@example.com",
+		"-c", "gc.auto=0",
+		"-c", "gc.autoDetach=false",
+		"-c", "maintenance.auto=false",
+	}
+}
+
 // runCLI は CLI を走らせ、終了コードと標準出力・標準エラーを返す。
 func runCLI(args ...string) (int, string, string) {
 	var stdout, stderr bytes.Buffer
