@@ -1,5 +1,14 @@
 /* 作業ビュー（SPEC.md §7.1）。色は index.css の名前だけを使う。公開ビューと同じく罫線と余白で区切る */
 
+/* 説明の段落。学習パスからは 2026-10-24 に外したが、棚上げ中のダッシュボード（Dashboard.tsx。SPEC.md §10.10）が使うので残す */
+.plan-lead {
+  max-width: 46em;
+  margin: 0;
+  color: var(--dim);
+  font-size: 14px;
+  text-wrap: balance;
+}
+
 /* 作業ビューの中の画面の切り替え（ダッシュボード／学習パス）。2026-10-13 にダッシュボードと一緒に外し、棚上げ中（SPEC.md §10.10） */
 .plan-tabs {
   display: flex;

@@ -3,7 +3,8 @@ import { E2E_PORTS } from './ports.ts'
 
 // 公開ビューのタイルと 1 層目（分野の要約）を、実際のブラウザで確かめる。
 // 重なりと読み上げの名前は見た目・ブラウザの計算に依るので、単体テスト（jsdom）では確かめられない。
-// 差し替え後のダミー（e2e/fixtures/after）では、「長い項目キー」の項目に実装の印だけ（[3]）が付いていて、いちばん長い段の表示になる。
+// 差し替え後のダミー（e2e/fixtures/after）では、「長い項目キー」の項目に実装の印だけ（[3]）が付いている。
+// その段の表示は、画面では右下の枠だけのコマ、読み上げでは「実装済み・基礎未確認」（2026-10-24）。
 // タイルは項目名と段だけで、項目キー（内部名）は出さない（2026-10-12 決定）。
 
 const NAME = '長い項目キー'
@@ -20,6 +21,9 @@ for (const width of [1200, 390]) {
     const name = tile.locator('.name')
     const label = tile.locator('.lv')
     await expect(label).toHaveText(LABEL)
+    // 段の名前は読み上げだけで、画面には枠だけのコマが見えている
+    await expect(label.locator('.sr-only')).toHaveText(LABEL)
+    await expect(label.locator('.u.impl')).toBeVisible()
 
     const n = await name.boundingBox()
     const l = await label.boundingBox()

@@ -229,6 +229,9 @@ describe('公開ビュー', () => {
     render(<PublicView data={data} />)
     const tile = screen.getByRole('button', { name: /^HTTP サーバ/ })
     expect(tile).toHaveTextContent('実装済み・基礎未確認')
+    // 字は読み上げだけで、画面には帯と同じ枠だけのコマを出す（2026-10-24）
+    expect(within(tile).getByText('実装済み・基礎未確認')).toHaveClass('sr-only')
+    expect(tile.querySelector('.u.impl')).not.toBeNull()
     await userEvent.click(tile)
     expect(screen.getByText(/基礎の確認が未了/)).toBeInTheDocument()
   })
