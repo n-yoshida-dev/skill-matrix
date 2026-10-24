@@ -11,7 +11,7 @@
 
 /* 文ごとの塊。balance だけでは語の途中で折れた（スマホで「学ぶ／かを」。2026-10-18 の点検）ので、
    折る所を文の切れ目に限る。1 文が画面より長いときだけ、塊の中で折れる */
-.plan-lead > span {
+.plan-lead-sentence {
   display: inline-block;
 }
 
