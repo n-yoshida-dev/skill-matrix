@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-24",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "java-request-domain",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-13",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@6d790ca/orgflow-learning/logs/2026-10-18.md#L7"
+      ],
+      "rationale": "approval policy と route の違いを問う想起に、route は正答し、policy は申請内容によってどの承認が要るかを定めるものと答え、道順そのものではなくどの道順を使うかの条件であることは補足を受けた。確かめたのは承認ルートの用語で、verifyBy の不正な状態遷移をどこで防ぐかには当たらない",
+      "confidence": 0.4
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-13",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@6d790ca/orgflow-learning/logs/2026-10-18.md#L7"
+      ],
+      "rationale": "画面の 3 段目に 422 が出た理由を問う想起では token の期限切れの 401 と混ざって答えられず、説明を受け直したあと、tenant を選ぶ前の申請なら 3 段目は何かという確認に 403 と正答した。続く想起で、権限が無い場面は 403、認証できていない場面は 401 と 2 つとも正答した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "java-request-domain",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-18",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@6d790ca/orgflow-learning/logs/2026-10-18.md#L10",
+        "repo:n-yoshida-dev/study@6d790ca/orgflow-learning/logs/2026-10-18.md#L20"
+      ],
+      "rationale": "ADR-037 を閉じた説明で、状態の変更を Service に戻すと Request に setStatus を足す必要があり、意図しない場所から呼ばれて想定しない status の変化が起きうるので、処理を Request に書くと自分の言葉で説明した。最初は Service に書く方向に倒し、問いを受けて撤回した。不正な遷移の具体的なパターン（下書き以外からの提出など）は挙げていない",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "java-adr-design-docs",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-10-18",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@6d790ca/orgflow-learning/logs/2026-10-18.md#L10",
+        "repo:n-yoshida-dev/study@6d790ca/orgflow-learning/logs/2026-10-18.md#L20-L23"
+      ],
+      "rationale": "ADR-037〜040 の 4 本を、ADR を閉じて口頭で説明し、4 本とも合格した。各 ADR の決定の理由と、採用しなかった案を退けた理由（status が String 型で変換が要る、承認ルールが変わったときの修正負荷が高い、仕様書に書かないと仕様書とずれた結果が出続けるなど）を自分の言葉で述べた。ADR-040 でエラーの本文をそろえる利点は答えられず、説明を受け直した",
+      "confidence": 0.75
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-18",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@6d790ca/orgflow-learning/logs/2026-10-18.md#L23"
+      ],
+      "rationale": "ADR-040 でエラーの本文をそろえる利点は答えられず、説明を受け直したあと、Spring 標準の 400 の本文で json.message は何になるかという確認に、message が定義されていないので undefined になると答えた（画面に何も描かれないこと、本文を作るのが Spring であることは補足を受けた）",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-10-18",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@6d790ca/orgflow-learning/logs/2026-10-18.md#L21-L24",
+        "repo:n-yoshida-dev/study@6d790ca/orgflow-learning/logs/2026-10-18.md#L28"
+      ],
+      "rationale": "ADR-038・039・040 を閉じた説明で、当てはまる承認ルールが無いときは申請者には直しようがないので 500 を返すこと、400 と 422 の分け方を自分の言葉で説明した。検査の順序を問う振り返りには、送る内容を変えても通らない検査（tenant の選択違いなど）を先に行い、tenant の選択違いを先に判定しないと 403 によって存在を暗に示してしまうと答えた。404 で隠すものを、その申請 ID の申請が別の tenant に実在することではなく tenant の存在と言い表す取り違えが 3 回残った",
+      "confidence": 0.55
+    },
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-18",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@6d790ca/orgflow-learning/logs/2026-10-18.md#L31"
+      ],
+      "rationale": "ADR-040 の、型の変換に失敗する例外が増えたら例外ハンドラを足すという方針の説明を受けた（理解は確かめていない）",
+      "confidence": 0.6
+    }
+  ],
+  "unmatched": [
+    "ADR-037 の制約の文で、規則が 2 か所に書かれるという比べ方の誤りを学習者が指摘し、比べる相手を enum の案に直した（ADR の本文を書き直したのは AI）",
+    "ADR のひな形に、主語を省かない・決定の直後に例を置く・置き場所を決める ADR ではクラス名を書くの 3 行を足す案を了承した",
+    "ADR-039 の、submit のときに申請者のロールを確かめ直さないことの説明を受けた（理解は確かめていない）",
+    "ADR-037〜040 とひな形の PR を学習者が squash マージした"
+  ]
+}

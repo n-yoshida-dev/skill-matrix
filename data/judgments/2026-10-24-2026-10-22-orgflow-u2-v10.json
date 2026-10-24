@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-24",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "java-exception-http-status",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-19",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L7",
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L21"
+      ],
+      "rationale": "404 で隠すものを問う想起に別の tenant の UUID の存在と答え、送っているのは申請 ID だけであることを行の例で説明し直されたあと、当てずっぽうに 1 万回送ったら何の一覧が作れるかという確認に、存在する申請 ID の一覧と正答した。続く想起で、当てはまる承認ルールが無いときは利用者には直しようがないので 422 ではなく 500 と答えた",
+      "confidence": 0.75
+    },
+    {
+      "itemKey": "java-request-domain",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-19",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L7"
+      ],
+      "rationale": "setStatus() を作らない理由を問う想起に、意図しない場所から setStatus() が使われて status の値が変わるのを防ぎ、Request の決められたロジックの中でだけ status を変えるためと自分の言葉で答えた。不正な遷移の具体的なパターンは挙げていない",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "db-flyway-migration",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-19",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L9"
+      ],
+      "rationale": "V10 を足して起動したら Flyway は何を流すかの予想に、どこまで流したかを管理しているので V10 だけを流すと正答した（記録が同じ DB の flyway_schema_history 表にあることは補足を受けた）。verifyBy のうち、seed を環境で分けた理由は確かめていない",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "db-flyway-migration",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-19",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L9",
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L31"
+      ],
+      "rationale": "流し済みのマイグレーションのファイルを書き換えると Flyway が起動を止めることの説明を受けた（理解は確かめていない）",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "db-multitenant-schema",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-19",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L8",
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L35-L36"
+      ],
+      "rationale": "写し元の部署と承認ルートに別の tenant の行が混ざる穴について、(…, tenant_id) の組の外部キーにしてルール名を tenant 内で一意にする案を、示された選択肢から選んだ（選んだ理由は自分では述べていない。書いたのは AI）",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "java-request-domain",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-10-20",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L10",
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L12",
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L24",
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L35"
+      ],
+      "rationale": "承認ルートの写し 3 表と、requests の今の段を自分の申請の段に限る組の外部キーを、学習者が V10 に書き、AI のレビュー 3 回で構文の誤り・REFERENCES の書き方・UNIQUE の不足・63 文字を超える制約名を直して完成させ、コミットした。写し元の 4 表は AI が書いた",
+      "confidence": 0.75
+    },
+    {
+      "itemKey": "db-multitenant-schema",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-21",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L11",
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L22",
+        "repo:n-yoshida-dev/study@d25a98a/orgflow-learning/logs/2026-10-22.md#L24"
+      ],
+      "rationale": "(R1, Y) の段が入るかの確認に答えられず、行の表で説明を受けたあと、(R2, X) は登録された組と一致しないので断られ、2 列の組で外部キーを張ると DB が組の一致する行を探すと自分の言葉で答えた。確かめた組の外部キーは申請と段の組で、verifyBy の tenant の混入を防ぐ例ではない",
+      "confidence": 0.45
+    }
+  ],
+  "unmatched": [
+    "承認者役を users にだけ入れた場合の予想で、外部キーが承認ルールまで表を順にたどって断ると答えて外し、外部キーは参照先の 1 行だけを確かめるという説明のあと、別の tenant にだけ属する利用者を段の承認者に入れられるかという確認に、外部キーは users.id だけなので入ると答えた（挙げた表は写しのほうだった）",
+    "seed の V11 を書き始め、承認者役 2 人の tenant への割り当てを INSERT … SELECT と IN で書いた（未コミット）",
+    "段の ID を得るためにアプリの起動が要ると考え、tenant の UUID を手元の DB から写して seed に直書きした（DB を作り直すと値が変わる点を指摘された）",
+    "組の片方が NULL なら外部キーの確認を飛ばすこと、PostgreSQL の名前が 63 文字までであることの説明を受けた（理解は確かめていない）"
+  ]
+}
