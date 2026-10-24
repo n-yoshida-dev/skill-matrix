@@ -32,7 +32,7 @@ export function PlanView({ data, today = new Date() }: Props) {
         <Route
           path="path/:domainKey"
           element={
-            // 見出しの下の説明の 1 行は置かない。見出し「学習パス」と分野のタブが画面の仕事を示す（2026-10-24 の試作）
+            // 見出しの下の説明の 1 行は置かない。見出し「学習パス」と分野のタブが画面の仕事を示す（2026-10-24）
             <PathView data={data} today={today} />
           }
         />

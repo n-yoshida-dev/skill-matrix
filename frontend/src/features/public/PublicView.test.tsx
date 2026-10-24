@@ -131,8 +131,10 @@ describe('公開ビュー', () => {
     expect(screen.getByRole('heading', { level: 1, name: '理解度台帳' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: 'Go' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: 'React' })).toBeInTheDocument()
-    // 数字と文字が別の要素に分かれるので、要素ごとの文字列で見る
-    const counts = [...container.querySelectorAll('.domain .count')].map((el) => el.textContent)
+    // 分野の数は画面に出さず、読み上げにだけ渡す（1 層目の帯とタイルの数が示すため。2026-10-24）
+    const counts = [...container.querySelectorAll('.domain-head .sr-only')].map(
+      (el) => el.textContent,
+    )
     expect(counts).toEqual(['3 項目中 3 に根拠', '1 項目中 0 に根拠'])
     // タイルには括弧を除いた項目名と段が、押さなくても出ている。項目キー（内部名）は出ない
     const tile = screen.getByRole('button', { name: /^基本構文/ })
@@ -141,6 +143,9 @@ describe('公開ビュー', () => {
     expect(tile).toHaveTextContent('L2')
     expect(tile).not.toHaveTextContent('go-syntax')
     expect(tile).toHaveAccessibleName('基本構文 L2')
+    // 段 0 のタイルは「未着手」を画面に出さず、読み上げの名前にだけ残す
+    const empty = screen.getByRole('button', { name: /未着手$/ })
+    expect(within(empty).getByText('未着手')).toHaveClass('sr-only')
   })
 
   it('1 層目に分野ごとの要約を出し、押すとその分野の見出しへ移る', async () => {
@@ -152,8 +157,10 @@ describe('公開ビュー', () => {
     // Go は一番高い段が 2、資格を添える。React は未着手で資格なし
     expect(rows[0]).toHaveTextContent('Lv2')
     expect(rows[0]).toHaveTextContent('自分の言葉で説明できる')
-    expect(rows[0]).toHaveTextContent('3 項目中 3 に根拠')
-    expect(rows[0]).toHaveTextContent('資格：Go 資格')
+    // 数は読み上げにだけ渡す（画面では帯のコマの数が示す）
+    expect(rows[0].querySelector('.sr-only')).toHaveTextContent('3 項目中 3 に根拠')
+    expect(rows[0].querySelector('.lc-c')).toBeNull()
+    expect(rows[0]).toHaveTextContent('資格：Go 資格（自己申告）')
     expect(rows[1]).toHaveTextContent('未着手')
     expect(rows[1]).not.toHaveTextContent('資格')
     await userEvent.click(rows[1])

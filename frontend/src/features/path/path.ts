@@ -112,7 +112,7 @@ export function buildPath(domain: RoadmapDomain, states: Map<string, ItemState>)
 export interface ProgressGauge {
   /** 1 コマ＝分野の 1 項目。true が塗ったコマ（レベル 1 以上）で、左に詰める */
   cells: boolean[]
-  /** 例「基礎確認 2/9 項目」。% は出さない */
+  /** 例「2/9」（レベル 1 以上の項目数／分野の項目数）。% は出さない。画面は数だけで、読み上げに「基礎確認 2/9 項目」と添える（2026-10-24） */
   label: string
 }
 

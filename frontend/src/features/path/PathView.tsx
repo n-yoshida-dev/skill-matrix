@@ -13,7 +13,7 @@ import './path.css'
 // 一列表示は依存順に縦一列（次に何をやるか）、ツリー表示は前提が上・派生が下の階層図（どの前提を取ると何が解放されるか）。
 // マトリクスが「今の状態」を見せるのに対し、こちらは「道筋」を見せる。
 // 常に上部に分野の目標と進捗を出し、「あと何個でどうなるか」が視界から消えないようにする。
-// 進捗は 1 コマ＝1 項目のゲージで、レベル 1 以上のコマを塗り「基礎確認 x/n 項目」と添える（% は出さない。2026-10-03 本人了承の 7）。
+// 進捗は 1 コマ＝1 項目のゲージで、レベル 1 以上のコマを塗り「x/n」と添える（読み上げは「基礎確認 x/n 項目」。% は出さない。2026-10-03 本人了承の 7、添える字は 2026-10-24）。
 // 表示の選択はブラウザに記憶する（初回は一列表示）。
 
 interface Props {
@@ -25,8 +25,8 @@ interface Props {
 /** 行頭の記号。済／今ここ／この先 */
 const MARKS = { done: '✓', current: '▶', upcoming: '・' } as const
 
-/** 行頭の記号を読み上げで伝える名前（凡例を置かないため） */
-const MARK_NAMES = { done: '済', current: '今ここ', upcoming: 'この先' } as const
+/** 行頭の記号を読み上げで伝える名前（凡例を置かないため）。今ここは札が同じ言葉を読むので重ねない */
+const MARK_NAMES = { done: '済', current: null, upcoming: 'この先' } as const
 
 export function PathView({ data, today }: Props) {
   const { domainKey } = useParams()
@@ -75,7 +75,7 @@ export function PathView({ data, today }: Props) {
 
       <header className="path-head">
         <h2 id="path-title">{path.domainName}</h2>
-        {/* 分野名の真下の 1 行が目標だと並びで分かるので、「目標：」は付けない（2026-10-24 の試作） */}
+        {/* 分野名の真下の 1 行が目標だと並びで分かるので、「目標：」は付けない（2026-10-24） */}
         <p className="goal">
           {path.goal ? path.goal : <span className="unset">目標は未記入</span>}
         </p>
@@ -106,7 +106,7 @@ export function PathView({ data, today }: Props) {
               />
             ))}
           </ol>
-          {/* 一列の凡例は置かない。行頭の記号の意味は読み上げに渡し、目では上からの並びと「今ここ」の札で読む（2026-10-24 の試作） */}
+          {/* 一列の凡例は置かない。行頭の記号の意味は読み上げに渡し、目では上からの並びと「今ここ」の札で読む（2026-10-24） */}
         </>
       ) : (
         <>
@@ -135,14 +135,15 @@ function PathRow({ n, deepen, externals }: RowProps) {
   const { item, state: st, status } = n
   const top = topEvidenced(st)
   return (
-    <li className={`path-node ${status}`}>
+    // 項目キーは画面に出さないので、行を見分ける印として data-key に持たせる（テストと E2E が使う）
+    <li className={`path-node ${status}`} data-key={item.key}>
       <span className="mark" aria-hidden="true">
         {MARKS[status]}
       </span>
-      <span className="sr-only">{MARK_NAMES[status]}</span>
+      {MARK_NAMES[status] ? <span className="sr-only">{MARK_NAMES[status]}</span> : null}
       <div className="body">
         <div className="head">
-          {/* 項目キーは項目詳細にだけ出す。行では名前で探す（2026-10-24 の試作） */}
+          {/* 項目キーは項目詳細にだけ出す。行では名前で探す（2026-10-24） */}
           <Link className="nm" to={`/plan/item/${item.key}`}>
             {item.name}
           </Link>
@@ -161,7 +162,7 @@ function PathRow({ n, deepen, externals }: RowProps) {
           {/* 「まだ着手できない」ことを伝える札なので、済んだ項目には出さない */}
           {!n.ready && status !== 'done' ? <span className="badge dim">前提が未達</span> : null}
         </div>
-        {/* 項目名の下の薄い 1 行が到達状態。「身につくと：」は付けない（2026-10-24 の試作） */}
+        {/* 項目名の下の薄い 1 行が到達状態。「身につくと：」は付けない（2026-10-24） */}
         {item.outcome ? (
           <p className="outcome">{item.outcome}</p>
         ) : (
@@ -200,7 +201,7 @@ function ProgressBar({ gauge }: { gauge: ProgressGauge }) {
           <i key={i} className={on ? 'on' : undefined} />
         ))}
       </span>
-      {/* 画面ではコマの横の数だけ。何の数かは読み上げにだけ渡す（2026-10-24 の試作） */}
+      {/* 画面ではコマの横の数だけ。何の数かは読み上げにだけ渡す（2026-10-24） */}
       <span className="num" aria-hidden="true">
         {gauge.label}
       </span>

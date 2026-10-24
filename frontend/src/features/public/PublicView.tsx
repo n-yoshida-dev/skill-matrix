@@ -94,7 +94,7 @@ export function PublicView({ data }: Props) {
             <div className="domain-head">
               <h2 tabIndex={-1}>{domain.name}</h2>
               {domain.goal ? <span className="goal">{domain.goal}</span> : null}
-              {/* 数は 1 層目の帯とタイルの数が示すので、読み上げにだけ残す（2026-10-24 の試作） */}
+              {/* 数は 1 層目の帯とタイルの数が示すので、読み上げにだけ残す（2026-10-24） */}
               <span className="meta">
                 <span className="sr-only">
                   {summary.total} 項目中 {summary.withEvidence} に根拠
@@ -125,7 +125,7 @@ export function PublicView({ data }: Props) {
                     {/* 項目名と段だけ。項目キー（内部名）は初めて見る人に意味が無いので出さない（2026-10-12 決定） */}
                     {/* 間の空白は、読み上げの名前を「項目名 段」と区切るため（グリッドの中なので見た目には出ない） */}
                     {/* 段 0 のタイルは、地の色（未着手）と右下の枠だけのコマ（実装済み・基礎未確認。1 層目の帯と同じ形）が状態を示すので、
-                        段の名前は読み上げにだけ出す（2026-10-24 の試作） */}
+                        段の名前は読み上げにだけ出す（2026-10-24） */}
                     <span className="name">{shortName(it.name)}</span>{' '}
                     {st.verifiedLevel >= 1 ? (
                       <span className="lv num">{tileLevelLabel(st)}</span>
@@ -162,7 +162,7 @@ export function PublicView({ data }: Props) {
               </div>
             </div>
           ))}
-          {/* 1 層目の帯の枠だけのコマと、2 層目の枠のタイルの読み方。凡例をここ 1 か所に寄せた（2026-10-24 の試作） */}
+          {/* 1 層目の帯と 2 層目のタイルの右下に出る、枠だけのコマの読み方。凡例をここ 1 か所に寄せた（2026-10-24） */}
           <div className="step">
             <i className="impl" />
             <div>
