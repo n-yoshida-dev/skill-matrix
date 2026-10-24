@@ -21,16 +21,14 @@ const tile = (page: Page, name: string) =>
 const treeNode = (page: Page, key: string) =>
   page.getByRole('link', { name: new RegExp(`^${key} `) })
 
-/** 学習パスの一列表示の行 */
-const row = (page: Page, key: string) =>
-  page.getByRole('listitem').filter({ has: page.getByText(key, { exact: true }) })
+/** 学習パスの一列表示の行（項目キーは画面に出さないので data-key で見る。2026-10-24） */
+const row = (page: Page, key: string) => page.locator(`li.path-node[data-key="${key}"]`)
 
 test('/plan を開くと学習パスが出て、ダッシュボードのタブは無い', async ({ page }) => {
   await page.goto(`${site('before')}/plan`)
   await expect(page.getByRole('heading', { level: 1, name: '学習パス' })).toBeVisible()
-  await expect(
-    page.getByText('自分用の画面です。次に何を学ぶかを分野ごとに並べています。'),
-  ).toBeVisible()
+  // 見出しの下の説明の 1 行は 2026-10-24 に外した（見出しとタブが画面の仕事を示す）
+  await expect(page.getByText(/自分用の画面です/)).toHaveCount(0)
   await expect(page.getByRole('heading', { level: 2, name: 'E2E 分野' })).toBeVisible()
   // /plan は最初の分野の URL へ移り、その分野のタブが選ばれていると読み上げにも伝わる
   await expect(page).toHaveURL(/#\/plan\/path\/e2e$/)

@@ -32,15 +32,8 @@ export function PlanView({ data, today = new Date() }: Props) {
         <Route
           path="path/:domainKey"
           element={
-            <>
-              {/* 説明の 1 行は学習パスの画面だけ（項目詳細ではパンくずが行き先を示す）。
-                  文ごとに折れない塊にし、狭い画面では「。」の後でだけ折る */}
-              <p className="plan-lead">
-                <span className="plan-lead-sentence">自分用の画面です。</span>
-                <span className="plan-lead-sentence">次に何を学ぶかを分野ごとに並べています。</span>
-              </p>
-              <PathView data={data} today={today} />
-            </>
+            // 見出しの下の説明の 1 行は置かない。見出し「学習パス」と分野のタブが画面の仕事を示す（2026-10-24）
+            <PathView data={data} today={today} />
           }
         />
         <Route path="item/:itemKey" element={<ItemView data={data} today={today} />} />

@@ -13,7 +13,7 @@ import { buildPath, progressGauge, topoSort } from './path'
 // - 分野の目標を持ち回る
 // - 分野の外を指す依存は並び順に影響せず、externalDeps に残る
 // - 循環参照があっても全項目を返して落ちない
-// - 上部のゲージは 1 コマ＝分野の 1 項目で、レベル 1 以上のコマを左から塗り、「基礎確認 x/n 項目」と添える。% は出さない。他分野の前提は数えない
+// - 上部のゲージは 1 コマ＝分野の 1 項目で、レベル 1 以上のコマを左から塗り、「x/n」と添える。% は出さない。他分野の前提は数えない
 // - 学習パスの「今ここ」と「次にやること」の 1 位は別の問いに答えるので一致しないことがある
 
 /** Go の planRoadmap()：go-01 ── go-02 ── go-03、go-01 ── go-04、react-01（依存なし） */
@@ -147,11 +147,11 @@ it('学習パスの「今ここ」と「次にやること」の 1 位は別の�
 })
 
 describe('進捗ゲージ', () => {
-  it('1 コマ＝分野の 1 項目で、レベル 1 以上の数だけ左から塗り、「基礎確認 x/n 項目」と添える', () => {
+  it('1 コマ＝分野の 1 項目で、レベル 1 以上の数だけ左から塗り、「x/n」と添える', () => {
     // go-01 がレベル 2、go-04 がレベル 1。go-02・go-03 はレベル 0
     const got = progressGauge(buildPath(goDomain, states(at('go-01', 2), at('go-04', 1))))
     expect(got.cells).toEqual([true, true, false, false])
-    expect(got.label).toBe('基礎確認 2/4 項目')
+    expect(got.label).toBe('2/4')
     expect(got.label).not.toMatch(/%/)
   })
 
@@ -167,13 +167,13 @@ describe('進捗ゲージ', () => {
     }
     const got = progressGauge(buildPath(d, states(at('react-01', 1), at('go-01', 1))))
     expect(got.cells).toEqual([true, false])
-    expect(got.label).toBe('基礎確認 1/2 項目')
+    expect(got.label).toBe('1/2')
   })
 
   it('項目が無い分野はコマも無い', () => {
     expect(progressGauge({ doneCount: 0, totalCount: 0 })).toEqual({
       cells: [],
-      label: '基礎確認 0/0 項目',
+      label: '0/0',
     })
   })
 })

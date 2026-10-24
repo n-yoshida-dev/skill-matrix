@@ -13,7 +13,7 @@ import './path.css'
 // 一列表示は依存順に縦一列（次に何をやるか）、ツリー表示は前提が上・派生が下の階層図（どの前提を取ると何が解放されるか）。
 // マトリクスが「今の状態」を見せるのに対し、こちらは「道筋」を見せる。
 // 常に上部に分野の目標と進捗を出し、「あと何個でどうなるか」が視界から消えないようにする。
-// 進捗は 1 コマ＝1 項目のゲージで、レベル 1 以上のコマを塗り「基礎確認 x/n 項目」と添える（% は出さない。2026-10-03 本人了承の 7）。
+// 進捗は 1 コマ＝1 項目のゲージで、レベル 1 以上のコマを塗り「x/n」と添える（読み上げは「基礎確認 x/n 項目」。% は出さない。2026-10-03 本人了承の 7、添える字は 2026-10-24）。
 // 表示の選択はブラウザに記憶する（初回は一列表示）。
 
 interface Props {
@@ -24,6 +24,9 @@ interface Props {
 
 /** 行頭の記号。済／今ここ／この先 */
 const MARKS = { done: '✓', current: '▶', upcoming: '・' } as const
+
+/** 行頭の記号を読み上げで伝える名前（凡例を置かないため）。今ここは札が同じ言葉を読むので重ねない */
+const MARK_NAMES = { done: '済', current: null, upcoming: 'この先' } as const
 
 export function PathView({ data, today }: Props) {
   const { domainKey } = useParams()
@@ -72,8 +75,9 @@ export function PathView({ data, today }: Props) {
 
       <header className="path-head">
         <h2 id="path-title">{path.domainName}</h2>
+        {/* 分野名の真下の 1 行が目標だと並びで分かるので、「目標：」は付けない（2026-10-24） */}
         <p className="goal">
-          目標：{path.goal ? path.goal : <span className="unset">未記入</span>}
+          {path.goal ? path.goal : <span className="unset">目標は未記入</span>}
         </p>
         <ProgressBar gauge={progressGauge(path)} />
         <div className="path-mode" role="group" aria-label="表示の切り替え">
@@ -102,13 +106,7 @@ export function PathView({ data, today }: Props) {
               />
             ))}
           </ol>
-          {/* 文は文字列で書く。JSX の改行は空白 1 つになり、「。」のあとに半角の空白が入るため */}
-          <p className="plan-note path-legend">
-            {
-              '✓ 済（レベル 1 以上）／▶ 今ここ（依存順で最初の、まだ済んでいない着手できる項目）／・この先。'
-            }
-            {'「深掘り候補」は、済んだ項目のうち「次にやること」に入っているもの。'}
-          </p>
+          {/* 一列の凡例は置かない。行頭の記号の意味は読み上げに渡し、目では上からの並びと「今ここ」の札で読む（2026-10-24） */}
         </>
       ) : (
         <>
@@ -137,20 +135,25 @@ function PathRow({ n, deepen, externals }: RowProps) {
   const { item, state: st, status } = n
   const top = topEvidenced(st)
   return (
-    <li className={`path-node ${status}`}>
+    // 項目キーは画面に出さないので、行を見分ける印として data-key に持たせる（テストと E2E が使う）
+    <li className={`path-node ${status}`} data-key={item.key}>
       <span className="mark" aria-hidden="true">
         {MARKS[status]}
       </span>
+      {MARK_NAMES[status] ? <span className="sr-only">{MARK_NAMES[status]}</span> : null}
       <div className="body">
         <div className="head">
-          <span className="k num">{item.key}</span>
+          {/* 項目キーは項目詳細にだけ出す。行では名前で探す（2026-10-24） */}
           <Link className="nm" to={`/plan/item/${item.key}`}>
             {item.name}
           </Link>
-          <span className="lvtxt">
-            <LevelSwatch level={st.verifiedLevel} />
-            レベル <span className="num">{st.verifiedLevel}</span>
-          </span>
+          {/* レベル 0 は「まだ」を言うだけなので出さない。行頭の記号と札が状態を示す */}
+          {st.verifiedLevel >= 1 ? (
+            <span className="lvtxt">
+              <LevelSwatch level={st.verifiedLevel} />
+              <span className="num">L{st.verifiedLevel}</span>
+            </span>
+          ) : null}
           {status === 'current' ? <span className="badge now">今ここ</span> : null}
           {deepen ? <span className="badge">深掘り候補</span> : null}
           {top > st.verifiedLevel ? (
@@ -159,10 +162,11 @@ function PathRow({ n, deepen, externals }: RowProps) {
           {/* 「まだ着手できない」ことを伝える札なので、済んだ項目には出さない */}
           {!n.ready && status !== 'done' ? <span className="badge dim">前提が未達</span> : null}
         </div>
+        {/* 項目名の下の薄い 1 行が到達状態。「身につくと：」は付けない（2026-10-24） */}
         {item.outcome ? (
-          <p className="outcome">身につくと：{item.outcome}</p>
+          <p className="outcome">{item.outcome}</p>
         ) : (
-          <p className="outcome unset">身につくと：未記入</p>
+          <p className="outcome unset">到達状態は未記入</p>
         )}
         {status === 'current' && item.verifyBy ? (
           <p className="verify">次の確認方法：{item.verifyBy}</p>
@@ -197,7 +201,11 @@ function ProgressBar({ gauge }: { gauge: ProgressGauge }) {
           <i key={i} className={on ? 'on' : undefined} />
         ))}
       </span>
-      <span>{gauge.label}</span>
+      {/* 画面ではコマの横の数だけ。何の数かは読み上げにだけ渡す（2026-10-24） */}
+      <span className="num" aria-hidden="true">
+        {gauge.label}
+      </span>
+      <span className="sr-only">基礎確認 {gauge.label} 項目</span>
     </div>
   )
 }

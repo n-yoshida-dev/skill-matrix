@@ -9,13 +9,13 @@
 }
 
 /* ---- 1 層目：分野ごとの要約（ステータス帳。2026-10-12 決定） ----
-   分野ごとに、一番高い段の大きな数字・段の名前・1 コマ＝1 項目の帯・「m 項目中 x に根拠」・資格。PC は 2 列。
-   押すと 2 層目のその分野のタイルへ移る。見出しは小さく、見出しの下の濃い罫線（ink）で 1 層目の始まりを示す */
+   分野ごとに、一番高い段の大きな数字・段の名前・1 コマ＝1 項目の帯・資格。PC は 2 列。
+   押すと 2 層目のその分野のタイルへ移る。見出しと「m 項目中 x に根拠」は読み上げだけ（2026-10-24）。頭の下の濃い罫線（ink）で 1 層目の始まりを示す */
 .overview {
   margin-top: 30px;
 }
 
-/* 1 層目の頭：小さな見出しと「一覧で見る／図で見る」の切り替え。下の濃い罫線（ink）で 1 層目の始まりを示す */
+/* 1 層目の頭：「一覧で見る／図で見る」の切り替え（見出しは読み上げだけ）。下の濃い罫線（ink）で 1 層目の始まりを示す */
 .ov-head {
   display: flex;
   flex-wrap: wrap;
@@ -26,13 +26,10 @@
   border-bottom: 1px solid var(--ink);
 }
 
-/* 「↑ 要約へ」で戻ったとき、見出しのフォーカスの輪郭が画面の上端で切れないよう少し下で止める */
+/* 「↑ 要約へ」で戻ったとき、頭の帯ごと出す朱の輪郭が画面の上端で切れないよう少し下で止める。
+   見出しは読み上げだけの 1px の箱で、帯の縦の真ん中（上端から約 14px）に来るので、その分も足す */
 .ov-title {
-  scroll-margin-top: 16px;
-  margin: 0;
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--dim);
+  scroll-margin-top: 32px;
 }
 
 /* 切り替えは学習パスの一列／ツリー（path.css の .path-mode）と同じ形：1px の枠でつないだ 2 つのボタン、押されている側を ink で塗る */
@@ -297,10 +294,14 @@
   margin-top: 6px;
 }
 
-.lc-c,
 .lc-cert {
   font-size: 12px;
   color: var(--dim);
+}
+
+/* 「（自己申告）」は 1 つの塊のまま折る（スマホで「（自／己申告）」と割れた。2026-10-24） */
+.lc-cert .nb {
+  white-space: nowrap;
 }
 
 .overview .legend {
@@ -309,7 +310,6 @@
   color: var(--dim);
 }
 
-.overview .lc + .legend,
 .overview .lb + .legend {
   margin-top: 12px;
 }
@@ -344,9 +344,15 @@
   box-shadow: inset 0 0 0 2px var(--l3);
 }
 
-.legend .u {
-  margin: 0 4px;
-  vertical-align: -1px;
+/* 小さな見出しは読み上げだけに残したので（2026-10-24）、切り替えを右端に置き、
+   「↑ 要約へ」で見出しにフォーカスが来たときは頭の帯ごと朱の輪郭で示す */
+.ov-mode {
+  margin-left: auto;
+}
+
+.ov-head:has(.ov-title:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 @media (max-width: 640px) {
@@ -388,8 +394,7 @@
 }
 
 /* 移った先の見出しにはフォーカスを置く。キーボードで移ったときは輪郭が出る */
-.domain-head h2:focus-visible,
-.ov-title:focus-visible {
+.domain-head h2:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -399,17 +404,12 @@
   font-size: 14px;
 }
 
-/* 数と「↑ 要約へ」はひとまとめで右端へ。片方だけが折り返して左端に落ちると、置き場が分野ごとにそろわなかった（2026-10-14 の点検） */
+/* 「↑ 要約へ」（と読み上げだけの数）を右端へ寄せる箱。2026-10-14 は数と並べて片方だけ折り返すのを防いでいた。数を読み上げだけにした（2026-10-24）あとも置き場はそのまま */
 .domain-head .meta {
   display: flex;
   gap: 18px;
   margin-left: auto;
   white-space: nowrap;
-}
-
-.domain-head .count {
-  font-size: 13px;
-  color: var(--dim);
 }
 
 .domain-head .up {
@@ -680,6 +680,15 @@
   height: 24px;
   border-radius: 4px;
   background: var(--empty);
+}
+
+/* 実装の根拠だけがある項目：塗らずに藍の枠（1 層目の帯の .u.impl と、2 層目のタイルの右下のコマと同じ形） */
+.step i.impl {
+  height: 12px;
+  margin-top: 6px;
+  border-radius: 2px;
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--l3);
 }
 
 .step b {

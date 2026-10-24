@@ -9,9 +9,10 @@ import { PathView } from './PathView'
 // data/*.json ではなく、このファイルの中の小さなデータで確かめる（data/ が更新されても落ちないように）。
 // 「何を保証しているか」：
 // - 分野を選ぶと、その分野の項目が依存順に縦一列で並ぶ（前提が先）
-// - 上部に分野の目標と、1 コマ＝1 項目のゲージと「基礎確認 M/N 項目」の進捗が出る（% は出ない）
-// - 済・今ここ・この先が記号と「今ここ」の札で分かる。今ここには次の確認方法が出る
-// - どの行にも到達状態（身につくと）が出て、空なら「未記入」
+// - 上部に分野の目標（「目標：」は付けない）と、1 コマ＝1 項目のゲージと「M/N」の進捗が出る（% は出ない。読み上げには「基礎確認 M/N 項目」）
+// - 済・今ここ・この先が記号と「今ここ」の札で分かる（記号の意味は読み上げに渡す）。今ここには次の確認方法が出る
+// - 行に項目キーとレベル 0 は出ない。レベル 1 以上は「L1」と出る
+// - どの行にも到達状態が出て（「身につくと：」は付けない）、空なら「到達状態は未記入」
 // - 済んだ項目のうち「次にやること」に入っているものに「深掘り候補」が付く
 // - 印が表示レベルより上にある項目に「上位の根拠あり」が付く
 // - 分野の外の前提は、名前とレベルを添えて出る
@@ -97,16 +98,16 @@ function renderAt(path: string) {
   )
 }
 
-/** 学習パスの行を、上から項目キーの並びで返す */
+/** 学習パスの行を、上から項目キーの並びで返す（キーは画面に出ないので data-key で見る） */
 function rowKeys(): string[] {
   const list = screen.getByRole('list')
   return within(list)
     .getAllByRole('listitem')
-    .map((li) => li.querySelector('.k')?.textContent ?? '')
+    .map((li) => li.dataset.key ?? '')
 }
 
 function row(key: string) {
-  const li = within(screen.getByRole('list')).getByText(key).closest('li')
+  const li = screen.getByRole('list').querySelector<HTMLElement>(`li[data-key="${key}"]`)
   if (!li) throw new Error(`${key} の行が無い`)
   return within(li)
 }
@@ -120,8 +121,11 @@ describe('学習パス・一列表示', () => {
 
   it('上部に目標と進捗が出る', () => {
     renderAt('/plan/path/go')
-    expect(screen.getByText('目標：Go で Web API を書ける')).toBeInTheDocument()
-    expect(screen.getByText('基礎確認 1/3 項目')).toBeInTheDocument()
+    expect(screen.getByText('Go で Web API を書ける')).toBeInTheDocument()
+    expect(screen.queryByText(/目標：/)).toBeNull()
+    // 画面には「1/3」、読み上げには何の数かを添える
+    expect(screen.getByText('1/3')).toBeInTheDocument()
+    expect(screen.getByText('基礎確認 1/3 項目')).toHaveClass('sr-only')
     // コマは分野の 3 項目ぶんで、塗ったコマは 1 つ
     const cells = document.querySelectorAll('.progress .gauge i')
     expect(cells).toHaveLength(3)
@@ -137,6 +141,16 @@ describe('学習パス・一列表示', () => {
     expect(row('go-errors').getByText('今ここ')).toBeInTheDocument()
     expect(row('go-errors').getByText('次の確認方法：error を返すドリル（L1）')).toBeInTheDocument()
     expect(row('go-syntax').queryByText(/次の確認方法/)).toBeNull()
+    // 記号の意味は凡例ではなく読み上げに渡す
+    expect(row('go-syntax').getByText('済')).toHaveClass('sr-only')
+    expect(row('go-http').getByText('この先')).toHaveClass('sr-only')
+  })
+
+  it('行に項目キーとレベル 0 を出さず、レベル 1 以上は L と数字で出す', () => {
+    renderAt('/plan/path/go')
+    expect(row('go-syntax').queryByText('go-syntax')).toBeNull()
+    expect(row('go-syntax').getByText('L1')).toBeInTheDocument()
+    expect(row('go-errors').queryByText(/L0|レベル 0/)).toBeNull()
   })
 
   it('済んだ項目には、前提が未達でも「前提が未達」を出さない', () => {
@@ -172,8 +186,9 @@ describe('学習パス・一列表示', () => {
 
   it('到達状態を出し、空なら未記入と出す', () => {
     renderAt('/plan/path/go')
-    expect(row('go-http').getByText('身につくと：最小の API を書ける')).toBeInTheDocument()
-    expect(row('go-errors').getByText('身につくと：未記入')).toBeInTheDocument()
+    expect(row('go-http').getByText('最小の API を書ける')).toBeInTheDocument()
+    expect(row('go-errors').getByText('到達状態は未記入')).toBeInTheDocument()
+    expect(screen.queryByText(/身につくと/)).toBeNull()
   })
 
   it('済んだ項目のうち「次にやること」に入るものに深掘り候補、上位の印がある項目に上位の根拠ありが付く', () => {
