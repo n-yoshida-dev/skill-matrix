@@ -25,6 +25,9 @@ interface Props {
 /** 行頭の記号。済／今ここ／この先 */
 const MARKS = { done: '✓', current: '▶', upcoming: '・' } as const
 
+/** 行頭の記号を読み上げで伝える名前（凡例を置かないため） */
+const MARK_NAMES = { done: '済', current: '今ここ', upcoming: 'この先' } as const
+
 export function PathView({ data, today }: Props) {
   const { domainKey } = useParams()
   const [mode, setMode] = useState<PathViewMode>(() => readViewMode())
@@ -72,8 +75,9 @@ export function PathView({ data, today }: Props) {
 
       <header className="path-head">
         <h2 id="path-title">{path.domainName}</h2>
+        {/* 分野名の真下の 1 行が目標だと並びで分かるので、「目標：」は付けない（2026-10-24 の試作） */}
         <p className="goal">
-          目標：{path.goal ? path.goal : <span className="unset">未記入</span>}
+          {path.goal ? path.goal : <span className="unset">目標は未記入</span>}
         </p>
         <ProgressBar gauge={progressGauge(path)} />
         <div className="path-mode" role="group" aria-label="表示の切り替え">
@@ -102,13 +106,7 @@ export function PathView({ data, today }: Props) {
               />
             ))}
           </ol>
-          {/* 文は文字列で書く。JSX の改行は空白 1 つになり、「。」のあとに半角の空白が入るため */}
-          <p className="plan-note path-legend">
-            {
-              '✓ 済（レベル 1 以上）／▶ 今ここ（依存順で最初の、まだ済んでいない着手できる項目）／・この先。'
-            }
-            {'「深掘り候補」は、済んだ項目のうち「次にやること」に入っているもの。'}
-          </p>
+          {/* 一列の凡例は置かない。行頭の記号の意味は読み上げに渡し、目では上からの並びと「今ここ」の札で読む（2026-10-24 の試作） */}
         </>
       ) : (
         <>
@@ -141,16 +139,20 @@ function PathRow({ n, deepen, externals }: RowProps) {
       <span className="mark" aria-hidden="true">
         {MARKS[status]}
       </span>
+      <span className="sr-only">{MARK_NAMES[status]}</span>
       <div className="body">
         <div className="head">
-          <span className="k num">{item.key}</span>
+          {/* 項目キーは項目詳細にだけ出す。行では名前で探す（2026-10-24 の試作） */}
           <Link className="nm" to={`/plan/item/${item.key}`}>
             {item.name}
           </Link>
-          <span className="lvtxt">
-            <LevelSwatch level={st.verifiedLevel} />
-            レベル <span className="num">{st.verifiedLevel}</span>
-          </span>
+          {/* レベル 0 は「まだ」を言うだけなので出さない。行頭の記号と札が状態を示す */}
+          {st.verifiedLevel >= 1 ? (
+            <span className="lvtxt">
+              <LevelSwatch level={st.verifiedLevel} />
+              <span className="num">L{st.verifiedLevel}</span>
+            </span>
+          ) : null}
           {status === 'current' ? <span className="badge now">今ここ</span> : null}
           {deepen ? <span className="badge">深掘り候補</span> : null}
           {top > st.verifiedLevel ? (
@@ -159,10 +161,11 @@ function PathRow({ n, deepen, externals }: RowProps) {
           {/* 「まだ着手できない」ことを伝える札なので、済んだ項目には出さない */}
           {!n.ready && status !== 'done' ? <span className="badge dim">前提が未達</span> : null}
         </div>
+        {/* 項目名の下の薄い 1 行が到達状態。「身につくと：」は付けない（2026-10-24 の試作） */}
         {item.outcome ? (
-          <p className="outcome">身につくと：{item.outcome}</p>
+          <p className="outcome">{item.outcome}</p>
         ) : (
-          <p className="outcome unset">身につくと：未記入</p>
+          <p className="outcome unset">到達状態は未記入</p>
         )}
         {status === 'current' && item.verifyBy ? (
           <p className="verify">次の確認方法：{item.verifyBy}</p>
@@ -197,7 +200,11 @@ function ProgressBar({ gauge }: { gauge: ProgressGauge }) {
           <i key={i} className={on ? 'on' : undefined} />
         ))}
       </span>
-      <span>{gauge.label}</span>
+      {/* 画面ではコマの横の数だけ。何の数かは読み上げにだけ渡す（2026-10-24 の試作） */}
+      <span className="num" aria-hidden="true">
+        {gauge.label}
+      </span>
+      <span className="sr-only">基礎確認 {gauge.label} 項目</span>
     </div>
   )
 }

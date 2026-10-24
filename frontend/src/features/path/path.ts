@@ -119,5 +119,5 @@ export interface ProgressGauge {
 /** 分野の項目数だけコマを作り、レベル 1 以上の項目の数だけ左から塗る。他分野の前提は数えない */
 export function progressGauge(path: Pick<Path, 'doneCount' | 'totalCount'>): ProgressGauge {
   const cells = Array.from({ length: path.totalCount }, (_, i) => i < path.doneCount)
-  return { cells, label: `基礎確認 ${path.doneCount}/${path.totalCount} 項目` }
+  return { cells, label: `${path.doneCount}/${path.totalCount}` }
 }

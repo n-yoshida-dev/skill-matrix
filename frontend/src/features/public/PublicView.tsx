@@ -94,9 +94,9 @@ export function PublicView({ data }: Props) {
             <div className="domain-head">
               <h2 tabIndex={-1}>{domain.name}</h2>
               {domain.goal ? <span className="goal">{domain.goal}</span> : null}
-              {/* 数と「↑ 要約へ」はいつも一緒に右端へ寄せる（片方だけ折り返して左端に落ちないように） */}
+              {/* 数は 1 層目の帯とタイルの数が示すので、読み上げにだけ残す（2026-10-24 の試作） */}
               <span className="meta">
-                <span className="count">
+                <span className="sr-only">
                   {summary.total} 項目中 {summary.withEvidence} に根拠
                 </span>
                 <a className="up" href="#overview" onClick={backToOverview}>
@@ -124,8 +124,19 @@ export function PublicView({ data }: Props) {
                   >
                     {/* 項目名と段だけ。項目キー（内部名）は初めて見る人に意味が無いので出さない（2026-10-12 決定） */}
                     {/* 間の空白は、読み上げの名前を「項目名 段」と区切るため（グリッドの中なので見た目には出ない） */}
+                    {/* 段 0 のタイルは、地の色（未着手）と右下の枠だけのコマ（実装済み・基礎未確認。1 層目の帯と同じ形）が状態を示すので、
+                        段の名前は読み上げにだけ出す（2026-10-24 の試作） */}
                     <span className="name">{shortName(it.name)}</span>{' '}
-                    <span className="lv num">{tileLevelLabel(st)}</span>
+                    {st.verifiedLevel >= 1 ? (
+                      <span className="lv num">{tileLevelLabel(st)}</span>
+                    ) : (
+                      <span className="lv">
+                        {isImplementedButUnverified(st) ? (
+                          <i className="u impl" aria-hidden="true" />
+                        ) : null}
+                        <span className="sr-only">{tileLevelLabel(st)}</span>
+                      </span>
+                    )}
                   </button>
                 )
               })}
@@ -151,6 +162,14 @@ export function PublicView({ data }: Props) {
               </div>
             </div>
           ))}
+          {/* 1 層目の帯の枠だけのコマと、2 層目の枠のタイルの読み方。凡例をここ 1 か所に寄せた（2026-10-24 の試作） */}
+          <div className="step">
+            <i className="impl" />
+            <div>
+              <b className="num">L0</b>
+              <span>{IMPLEMENTED_BUT_UNVERIFIED}</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -187,7 +206,7 @@ export function PublicView({ data }: Props) {
   )
 }
 
-/** タイル右上の文字。レベルか、未着手か、実装の根拠だけがある状態か */
+/** タイル右下の文字。レベルか、未着手か、実装の根拠だけがある状態か */
 function tileLevelLabel(st: ItemState): string {
   if (st.verifiedLevel >= 1) return `L${st.verifiedLevel}`
   if (isImplementedButUnverified(st)) return IMPLEMENTED_BUT_UNVERIFIED

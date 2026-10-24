@@ -4,7 +4,9 @@ import { RadarChart } from './RadarChart'
 import { prefersReducedMotion } from './motion'
 
 // 公開ビューの 1 層目（分野ごとの要約。SPEC.md §7.3）。最初は「一覧で見る」（ステータス帳）で、
-// 分野ごとに一番高い段の大きな数字・段の名前・1 コマ＝1 項目の帯・「m 項目中 x に根拠」・資格を出す。
+// 分野ごとに一番高い段の大きな数字・段の名前・1 コマ＝1 項目の帯・資格を出す。
+// 補足のラベルは画面に出さず、並びと形に読ませる（2026-10-24 の試作）：小さな見出し・「m 項目中 x に根拠」は読み上げだけに残し、
+// 帯の読み方は公開ビューの末尾の「色の読み方」に寄せた。
 // 「図で見る」で能力値チャート（RadarChart）に切り替える。切り替えたときだけ動く（2026-10-12 決定）：
 // 図は多角形が中心から広がり、一覧に戻すと帯が左から 1 コマずつ埋まって Lv の数字が 0 から数え上がる。
 // 分野を押すと、2 層目のその分野のタイルへ移る（移る処理は親が持つ）
@@ -63,7 +65,8 @@ export function Overview({ domains, onJump }: Props) {
   return (
     <section className="overview" id="overview" aria-labelledby="overview-title">
       <div className="ov-head">
-        <h2 className="ov-title" id="overview-title" tabIndex={-1}>
+        {/* 見出しは読み上げと「↑ 要約へ」の移り先にだけ使う。画面では大きな Lv の数字と帯が何の一覧かを示す */}
+        <h2 className="ov-title sr-only" id="overview-title" tabIndex={-1}>
           分野ごとに、確認できた一番高い段
         </h2>
         <div className="ov-mode" role="group" aria-label="表示の切り替え">
@@ -89,7 +92,7 @@ export function Overview({ domains, onJump }: Props) {
                   <span className="lc-body">
                     <span className="lc-name">{d.name}</span>
                     <span className="lc-tn">{d.topName}</span>
-                    {/* 帯は見た目の要約。読み上げには下の「m 項目中 x に根拠」と段の名前で足りる */}
+                    {/* 帯は見た目の要約。読み上げには下の「m 項目中 x に根拠」と段の名前で足りる。数は帯のコマが示すので画面には出さない */}
                     <span className="lc-bar" aria-hidden="true">
                       {d.units.map((u, i) => (
                         <i
@@ -99,23 +102,21 @@ export function Overview({ domains, onJump }: Props) {
                         />
                       ))}
                     </span>
-                    <span className="lc-c">
+                    <span className="sr-only">
                       <span className="num">{d.total}</span> 項目中{' '}
                       <span className="num">{d.withEvidence}</span> に根拠
                     </span>
                     {d.certifications.length > 0 ? (
-                      <span className="lc-cert">資格：{d.certifications.join('、')}</span>
+                      <span className="lc-cert">
+                        資格：{d.certifications.join('、')}
+                        <span className="nb">（自己申告）</span>
+                      </span>
                     ) : null}
                   </span>
                 </a>
               </li>
             ))}
           </ul>
-          <p className="legend">
-            Lv は分野で確認できた一番高い段。帯は 1 コマ＝1 項目で、塗りは確認できた段（
-            <i className="u impl" aria-hidden="true" />
-            は実装の根拠だけがあり、基礎の確認がまだ）。資格は自己申告で、段には数えていません。
-          </p>
         </>
       ) : (
         <>
@@ -126,8 +127,6 @@ export function Overview({ domains, onJump }: Props) {
           </p>
         </>
       )}
-      {/* 凡例の末尾に足すと、スマホで最後の行が「ます。」だけになった（2026-10-14 の点検）。短い 1 文は別の行にする */}
-      <p className="legend">分野を押すと、その分野の項目へ移ります。</p>
     </section>
   )
 }

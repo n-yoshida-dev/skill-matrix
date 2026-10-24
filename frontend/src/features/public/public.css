@@ -303,6 +303,11 @@
   color: var(--dim);
 }
 
+/* 「（自己申告）」は 1 つの塊のまま折る（スマホで「（自／己申告）」と割れた。2026-10-24 の試作） */
+.lc-cert .nb {
+  white-space: nowrap;
+}
+
 .overview .legend {
   margin: 4px 0 0;
   font-size: 13px;
@@ -347,6 +352,17 @@
 .legend .u {
   margin: 0 4px;
   vertical-align: -1px;
+}
+
+/* 小さな見出しは読み上げだけに残したので（2026-10-24 の試作）、切り替えを右端に置き、
+   「↑ 要約へ」で見出しにフォーカスが来たときは頭の帯ごと朱の輪郭で示す */
+.ov-mode {
+  margin-left: auto;
+}
+
+.ov-head:has(.ov-title:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 @media (max-width: 640px) {
@@ -680,6 +696,15 @@
   height: 24px;
   border-radius: 4px;
   background: var(--empty);
+}
+
+/* 実装の根拠だけがある項目：塗らずに藍の枠（1 層目の帯の .u.impl と、2 層目のタイルの右下のコマと同じ形） */
+.step i.impl {
+  height: 12px;
+  margin-top: 6px;
+  border-radius: 2px;
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--l3);
 }
 
 .step b {
