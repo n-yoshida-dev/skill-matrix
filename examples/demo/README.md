@@ -6,7 +6,8 @@
 
 | 見どころ | 項目の例 |
 |---|---|
-| 段の違う分野（Lv 0〜5） | `delivery-git-flow`（5）、`react-components`（4）、`react-state-hooks`（3）、`db-sql-basics`（1） |
+| 段の違う分野（分野の最高段が 2〜5） | CI とデプロイ（5）、React・Go の API（4）、TypeScript（3）、データベース（2） |
+| 段の違う項目（Lv 0〜5） | `delivery-git-flow`（5）、`react-components`（4）、`react-state-hooks`（3）、`db-schema-design`（2）、`db-sql-basics`（1） |
 | 実装したが基礎が未確認（印が 3 だけ） | `react-routing`、`go-testing`、`delivery-docker` |
 | 要再確認（不合格の報告） | `react-data-fetching` |
 | 根拠が古い | `db-sql-basics`、`db-schema-design`（2026-05 の根拠） |
