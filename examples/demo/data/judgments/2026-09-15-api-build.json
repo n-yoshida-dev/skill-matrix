@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-09-15",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "go-syntax",
+      "evidenceType": "unaided_implementation",
+      "proposedLevel": 4,
+      "occurredAt": "2026-09-15",
+      "evidenceRefs": ["log:learning-logs/2026-09-15.md"],
+      "rationale": "入力の検査と並べ替えの関数を、AI のコード提示なしで書き、テストを通した",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "go-http-handler",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-09-15",
+      "evidenceRefs": ["log:learning-logs/2026-09-15.md"],
+      "rationale": "一覧と 1 件取得の API を、AI の例を見ながら実装した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "go-testing",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-09-15",
+      "evidenceRefs": ["log:learning-logs/2026-09-15.md"],
+      "rationale": "ハンドラのテストを表の形で書いた。形は資料の例を写した",
+      "confidence": 0.75
+    },
+    {
+      "itemKey": "react-components",
+      "evidenceType": "unaided_implementation",
+      "proposedLevel": 4,
+      "occurredAt": "2026-09-15",
+      "evidenceRefs": ["log:learning-logs/2026-09-15.md"],
+      "rationale": "API の一覧を出す画面の部品を自分だけで分けて書き、別の人の部品の分け方にも改善の指摘を書いた",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "delivery-git-flow",
+      "evidenceType": "unaided_implementation",
+      "proposedLevel": 4,
+      "occurredAt": "2026-09-15",
+      "evidenceRefs": ["log:learning-logs/2026-09-15.md"],
+      "rationale": "ブランチを切って PR を作り、レビューの指摘を直してマージするまでを自分だけで回した",
+      "confidence": 0.8
+    }
+  ],
+  "unmatched": []
+}

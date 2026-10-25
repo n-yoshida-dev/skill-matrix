@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-08-10",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "react-components",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-10",
+      "evidenceRefs": ["log:learning-logs/2026-08-10.md"],
+      "rationale": "ToDo アプリの一覧・行・入力欄を部品に分けて実装した。分け方は AI の提案を見ながら決めた",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "react-state-hooks",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-08-10",
+      "evidenceRefs": ["log:learning-logs/2026-08-10.md"],
+      "rationale": "useEffect の依存配列を空にすると最初の描画のあと 1 回だけ、省くと描画のたびに動くことを、自分の言葉で説明した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "react-state-hooks",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-10",
+      "evidenceRefs": ["log:learning-logs/2026-08-10.md"],
+      "rationale": "入力中の文字と ToDo の一覧を state に持ち、追加と完了の切り替えを実装した。資料を見ながら",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "ts-basic-types",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-08-10",
+      "evidenceRefs": ["log:learning-logs/2026-08-10.md"],
+      "rationale": "変数の型は推論に任せ、部品の props と関数の戻り値には型を書く、と使い分けの理由を説明した",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "ts-basic-types",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-10",
+      "evidenceRefs": ["log:learning-logs/2026-08-10.md"],
+      "rationale": "ToDo の型を定義し、部品の props に型を付けて実装した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "react-routing",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-10",
+      "evidenceRefs": ["log:learning-logs/2026-08-10.md"],
+      "rationale": "一覧と詳細の 2 画面を URL で切り替える形を、AI のコード例を写しながら実装した。仕組みの説明はまだしていない",
+      "confidence": 0.75
+    },
+    {
+      "itemKey": "delivery-ci",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-10",
+      "evidenceRefs": ["log:learning-logs/2026-08-10.md"],
+      "rationale": "PR ごとに型の検査とテストを回す CI の設定を、資料の例をもとに書いた",
+      "confidence": 0.8
+    }
+  ],
+  "unmatched": []
+}

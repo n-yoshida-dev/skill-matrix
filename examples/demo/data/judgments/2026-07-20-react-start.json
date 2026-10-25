@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-07-20",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "react-components",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-07-20",
+      "evidenceRefs": ["log:learning-logs/2026-07-20.md"],
+      "rationale": "props は親から受け取る読み取り専用の値で、state は部品が自分で持って変える値だと、一覧と行の部品の例で説明した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "ts-basic-types",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-07-20",
+      "evidenceRefs": ["log:learning-logs/2026-07-20.md"],
+      "rationale": "引数と戻り値に型を付ける確認問題に正答し、出た型エラーの文を読んで直した",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "delivery-git-flow",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-07-20",
+      "evidenceRefs": ["log:learning-logs/2026-07-20.md"],
+      "rationale": "main に直接コミットすると、確かめる前の変更が全員の土台に入ってしまうことを、自分の言葉で説明した",
+      "confidence": 0.75
+    }
+  ],
+  "unmatched": []
+}

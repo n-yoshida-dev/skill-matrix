@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-05-10",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "db-sql-basics",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-05-10",
+      "evidenceRefs": ["log:learning-logs/2026-05-10.md"],
+      "rationale": "JOIN と GROUP BY の確認問題 3 問に、何も見ずに正答した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "db-schema-design",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-05-10",
+      "evidenceRefs": ["log:learning-logs/2026-05-10.md"],
+      "rationale": "顧客名を注文の表にも持つと、名前を変えたときに片方だけ古く残ることを、更新の例を挙げて自分の言葉で説明した",
+      "confidence": 0.75
+    }
+  ],
+  "unmatched": []
+}

@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-05",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "go-http-handler",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-05",
+      "evidenceRefs": ["log:learning-logs/2026-10-05.md"],
+      "rationale": "入力が不正なら 400、見つからなければ 404 を返す、という確認問題に正答した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "react-data-fetching",
+      "evidenceType": "learning_activity",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-05",
+      "evidenceRefs": ["log:learning-logs/2026-10-05.md"],
+      "rationale": "データ取得の章を読み、読み込み中と失敗の表示を写経した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "react-data-fetching",
+      "evidenceType": "drill",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-05",
+      "evidenceRefs": ["log:learning-logs/2026-10-05.md"],
+      "rationale": "取得中に別の画面へ移ったときに起きることを問う確認問題で、古い結果が画面に入ることに気付けず、その場では正答に至らなかった",
+      "confidence": 0.75
+    },
+    {
+      "itemKey": "ts-union-narrowing",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-10-05",
+      "evidenceRefs": ["log:learning-logs/2026-10-05.md"],
+      "rationale": "状態をユニオン型にして switch で分けると、場合を足したときに書き漏れた分岐が型エラーになる、と説明した",
+      "confidence": 0.75
+    },
+    {
+      "itemKey": "delivery-ci",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-10-05",
+      "evidenceRefs": ["log:learning-logs/2026-10-05.md"],
+      "rationale": "CI の失敗の記録で、落ちた手順を開いて最初のエラーの行から探す、という手順を自分の言葉で説明した",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "delivery-ci",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-10-05",
+      "evidenceRefs": ["log:learning-logs/2026-10-05.md"],
+      "rationale": "CI がどの出来事で動くかの確認問題に正答した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "react-ui-testing",
+      "evidenceType": "learning_activity",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-05",
+      "evidenceRefs": ["log:learning-logs/2026-10-05.md"],
+      "rationale": "画面のテストの入門記事を読んだ。まだ書いていない",
+      "confidence": 0.8
+    }
+  ],
+  "unmatched": []
+}

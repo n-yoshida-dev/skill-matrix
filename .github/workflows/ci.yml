@@ -151,6 +151,11 @@ jobs:
       - name: 判定を検証し、state.json が再計算結果と一致するか
         run: go run ./cmd/skillmatrix verify --data ../data
 
+      # 見本の画面のデータ（架空の学習者。TODO フェーズ2.5）も同じ検査を通す。
+      # ジョブ名を変えるとブランチ保護の必須チェック名とずれるので、ジョブは分けずに手順を足す
+      - name: 見本のデータ（examples/demo/data）も同じく検証する
+        run: go run ./cmd/skillmatrix verify --data ../examples/demo/data
+
   no-secrets:
     name: 秘密情報が混入していないか
     runs-on: ubuntu-latest

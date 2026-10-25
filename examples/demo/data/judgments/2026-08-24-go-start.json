@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-08-24",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "go-syntax",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-08-24",
+      "evidenceRefs": ["log:learning-logs/2026-08-24.md"],
+      "rationale": "宣言しただけの変数にもゼロ値が入るので、未初期化のまま読んで落ちることが無い、と例を挙げて説明した",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "go-error-handling",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-08-24",
+      "evidenceRefs": ["log:learning-logs/2026-08-24.md"],
+      "rationale": "エラーを戻り値で返すと失敗しうる箇所が呼び出しの行で見える一方、毎回 if で確かめる手間がある、と比べて説明した",
+      "confidence": 0.75
+    },
+    {
+      "itemKey": "go-concurrency",
+      "evidenceType": "learning_activity",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-24",
+      "evidenceRefs": ["log:learning-logs/2026-08-24.md"],
+      "rationale": "goroutine の章を読み、例を写経した。理解の確認はまだ",
+      "confidence": 0.8
+    },
+    {
+      "itemKey": "delivery-docker",
+      "evidenceType": "implementation",
+      "proposedLevel": 3,
+      "occurredAt": "2026-08-24",
+      "evidenceRefs": ["log:learning-logs/2026-08-24.md"],
+      "rationale": "API とデータベースを 1 つのコマンドで立てる設定ファイルを、AI と一緒に書いて動かした",
+      "confidence": 0.75
+    },
+    {
+      "itemKey": "ts-generics",
+      "evidenceType": "explained_to",
+      "proposedLevel": 0,
+      "occurredAt": "2026-08-24",
+      "evidenceRefs": ["log:learning-logs/2026-08-24.md"],
+      "rationale": "ジェネリクスの説明を AI から受けた。自分で説明する・書くところまでは進んでいない",
+      "confidence": 0.8
+    }
+  ],
+  "unmatched": []
+}

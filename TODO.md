@@ -314,7 +314,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 2026-10-25 に、Template での配布をやめて「見本つきの再現ガイド」にした（`logs/decisions.md` 同日「外に出す形は…」、`PLAN.md`「v1.5 見本つきの再現ガイド」）。
 架空の人のデータで動く見本の画面を公開し、相手の AI が読む「自分用に作るには」の説明書を置く。約束は「参考にどうぞ」。着手順は上から。
 
-- [ ] 見本のデータ（架空の人）を `examples/demo/data/` に置く
+- [x] 見本のデータ（架空の人）を `examples/demo/data/` に置く（2026-10-25 完了。5 分野・22 項目・判定 8 本。見どころの対応は `examples/demo/README.md`）
   完了条件：`roadmap.json`・`judgments/`・`state.json`・`settings.json`・`certifications.json` があり、`recalc` / `verify` が通る（CI の `verify` もこのディレクトリを見る）。
   ステータス帳・能力値チャート・タイル・学習パス・スキルツリーの見どころ（段の違う分野、実装済み・基礎未確認の項目、要再確認、資格）が全部出る中身になっている。
   作者の実データ・study の場所・個人の文脈を含まない（`evidenceRefs` は架空の `log:` だけ）

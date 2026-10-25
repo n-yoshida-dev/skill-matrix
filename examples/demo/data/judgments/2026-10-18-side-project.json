@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-18",
+  "source": "ai",
+  "judge": "codex",
+  "judgments": [
+    {
+      "itemKey": "delivery-git-flow",
+      "evidenceType": "cross_context",
+      "proposedLevel": 5,
+      "occurredAt": "2026-10-18",
+      "evidenceRefs": ["log:learning-logs/2026-10-18.md"],
+      "rationale": "学んだ ToDo アプリとは別の、文章を書くリポジトリでも、ブランチと PR で直しを確かめてから取り込む流れを自分で組んで回した",
+      "confidence": 0.7
+    },
+    {
+      "itemKey": "db-index",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 2,
+      "occurredAt": "2026-10-18",
+      "evidenceRefs": ["log:learning-logs/2026-10-18.md"],
+      "rationale": "索引で検索が速くなる話は出たが、書き込みが遅くなる点に触れたかがログから読み取れない",
+      "confidence": 0.4
+    }
+  ],
+  "unmatched": []
+}
