@@ -1201,6 +1201,23 @@
           "rationale": "404 で隠すものを問う想起に別の tenant の UUID の存在と答え、送っているのは申請 ID だけであることを行の例で説明し直されたあと、当てずっぽうに 1 万回送ったら何の一覧が作れるかという確認に、存在する申請 ID の一覧と正答した。続く想起で、当てはまる承認ルールが無いときは利用者には直しようがないので 422 ではなく 500 と答えた",
           "confidence": 0.75,
           "violations": []
+        },
+        {
+          "file": "2026-10-25-2026-10-25-orgflow-u2-seed.json",
+          "index": 1,
+          "occurredAt": "2026-10-24",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@74f6ef2/orgflow-learning/logs/2026-10-25.md#L8"
+          ],
+          "rationale": "404 で隠すものを問う想起に、別の tenant にその ID の申請があることを隠していると正答し、10-18 から続いた tenant の存在を隠すという言い方が何も見ずに直った",
+          "confidence": 0.8,
+          "violations": []
         }
       ]
     },
@@ -1476,7 +1493,7 @@
       ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-10-19",
+      "lastEvidenceAt": "2026-10-25",
       "events": [
         {
           "file": "2026-09-27-migration-db.json",
@@ -1527,6 +1544,42 @@
           ],
           "rationale": "流し済みのマイグレーションのファイルを書き換えると Flyway が起動を止めることの説明を受けた（理解は確かめていない）",
           "confidence": 0.6,
+          "violations": []
+        },
+        {
+          "file": "2026-10-25-2026-10-25-orgflow-u2-seed.json",
+          "index": 0,
+          "occurredAt": "2026-10-24",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@74f6ef2/orgflow-learning/logs/2026-10-25.md#L8"
+          ],
+          "rationale": "Flyway の記録と書き換えを問う想起に、どこまで流したかは DB の中の表で管理していて、流し済みのファイルを書き換えると起動時にエラーになると自分の言葉で答えた。verifyBy のうち、seed を環境で分けた理由は確かめていない",
+          "confidence": 0.65,
+          "violations": []
+        },
+        {
+          "file": "2026-10-25-2026-10-25-orgflow-u2-seed.json",
+          "index": 2,
+          "occurredAt": "2026-10-25",
+          "source": "ai",
+          "evidenceType": "implementation",
+          "proposedLevel": 3,
+          "marked": [
+            3
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@74f6ef2/orgflow-learning/logs/2026-10-25.md#L9",
+            "repo:n-yoshida-dev/study@74f6ef2/orgflow-learning/logs/2026-10-25.md#L11-L12",
+            "repo:n-yoshida-dev/study@74f6ef2/orgflow-learning/logs/2026-10-25.md#L20"
+          ],
+          "rationale": "承認ルート・段・承認者・承認ルールの seed（V11）を、tenant や ID を名前から引く INSERT … SELECT で学習者が書き、AI のレビューで承認者の行数・FROM の表・WHERE の条件・引用符・ルール名の重複を直して、起動時に V11 が流れることを確かめてコミットした",
+          "confidence": 0.75,
           "violations": []
         }
       ]
