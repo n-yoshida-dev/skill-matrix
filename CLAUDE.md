@@ -63,6 +63,10 @@
 - ロジックを変更したら、対応する単体テストを同時に更新する
 - **棚上げしたコード（`SPEC.md` §10 の一覧）は消さない。** テストを緑に保つための最小限の追随（型に 1 フィールド足す等）はしてよい。
   それ以上の手直しが要るなら、直さずに棚上げの範囲を見直す。Go 側の `Staleness` / `NextActions` 等は参照実装として残す（`SPEC.md` §5）
+- **棚上げするコードは、使い続けるコードと同じ Go パッケージに置かない。** Go の import はパッケージ単位なので、同じパッケージにあると使わないつもりの依存まで付いてくる
+  （PR #43 で `internal/llm` から形の検査を `internal/judgment` に切り出した。KNOWLEDGE.md 2026-09-26）
+- **`backend/internal/store` を触る PR は、コミット前に手元でも DB テストを回す**（`docker compose up -d postgres` を立て、`TEST_DATABASE_URL` 付きで `go -C backend test ./internal/store/`。コマンドは HANDOFF.md §3）。
+  Postgres が無いとこのテストは黙ってスキップされ、手元で全部通っても CI だけが落ちる（PR #41。KNOWLEDGE.md 2026-09-26）
 
 ## 開発ダッシュボード（`dashboard/`。試験導入 2026-09-26）
 
