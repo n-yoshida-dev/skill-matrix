@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-10-20",
+  "source": "manual",
+  "judgments": [
+    {
+      "itemKey": "delivery-deploy",
+      "evidenceType": "self_report",
+      "proposedLevel": 0,
+      "occurredAt": "2026-10-20",
+      "evidenceRefs": ["log:learning-logs/2026-10-20.md"],
+      "rationale": "静的サイトを公開したことがあると自己申告した。確かめる根拠はまだ無い"
+    }
+  ],
+  "unmatched": []
+}

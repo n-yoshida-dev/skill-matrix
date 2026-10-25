@@ -314,13 +314,14 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
 2026-10-25 に、Template での配布をやめて「見本つきの再現ガイド」にした（`logs/decisions.md` 同日「外に出す形は…」、`PLAN.md`「v1.5 見本つきの再現ガイド」）。
 架空の人のデータで動く見本の画面を公開し、相手の AI が読む「自分用に作るには」の説明書を置く。約束は「参考にどうぞ」。着手順は上から。
 
-- [ ] 見本のデータ（架空の人）を `examples/demo/data/` に置く
+- [x] 見本のデータ（架空の人）を `examples/demo/data/` に置く（2026-10-25 完了。5 分野・22 項目・判定 8 本。見どころの対応は `examples/demo/README.md`）
   完了条件：`roadmap.json`・`judgments/`・`state.json`・`settings.json`・`certifications.json` があり、`recalc` / `verify` が通る（CI の `verify` もこのディレクトリを見る）。
   ステータス帳・能力値チャート・タイル・学習パス・スキルツリーの見どころ（段の違う分野、実装済み・基礎未確認の項目、要再確認、資格）が全部出る中身になっている。
   作者の実データ・study の場所・個人の文脈を含まない（`evidenceRefs` は架空の `log:` だけ）
 - [ ] 見本の画面を公開する（本物と同じ Pages の `demo/`）
   完了条件：ビルドのモード `demo` で `examples/demo/data/` を取り込み、`pages.yml` が本物の画面と見本の画面を両方上げる。
-  公開後に `https://n-yoshida-dev.github.io/skill-matrix/demo/` で見本の画面が開く。見本だと分かる 1 行が画面にある。本物の画面は変わらない
+  公開後に `https://n-yoshida-dev.github.io/skill-matrix/demo/` で見本の画面が開く。見本だと分かる 1 行が画面にある。本物の画面は変わらない。
+  鮮度は「今日」から計算するので、見本の日付が古くなっても見どころ（古い根拠が `db-*` の 2 件だけ）が崩れない扱いになっている（PR #126 の受け入れレビューで判明）
 - [ ] AI 向けの説明書「自分用に作るには」を書く（旧タスク「作者固有のものの洗い出し」をここに吸収）
   完了条件：`docs/build-your-own.md` に、仕組み（データの形・判定の流れ・再計算・画面）、写すもの（`prompts/judge.md`・CLI・画面・見本のデータ）と
   写さないもの（`data/` の実データ・`sources.local.json`・開発用の文書・`.claude/` の設定・棚上げのコード）、相手が自分の AI に渡す最初の頼み方の例がある。

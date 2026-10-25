@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "name": "Web アプリ開発の学習ロードマップ（見本）",
+  "description": "見本の画面のための架空の学習者のロードマップ。React・TypeScript・Go の API・データベース・CI とデプロイの 5 分野。作者の実データではない",
+  "origin": "manual",
+  "source": "https://github.com/n-yoshida-dev/skill-matrix/tree/main/examples/demo",
+  "checkedAt": "2026-10-25",
+  "levels": [
+    {
+      "level": 1,
+      "name": "基礎理解を確認",
+      "criteria": "確認質問・ドリル・自分の言葉での説明で基礎理解を確認できた"
+    },
+    {
+      "level": 2,
+      "name": "自分で説明可能",
+      "criteria": "他人（または AI）に自分の言葉で説明できる"
+    },
+    { "level": 3, "name": "ガイド付き実装", "criteria": "AI や資料の助けを借りれば実装できる" },
+    {
+      "level": 4,
+      "name": "自力実装・レビュー",
+      "criteria": "独力で実装でき、他者のコードをレビューできる"
+    },
+    { "level": 5, "name": "別文脈へ応用", "criteria": "学んだ文脈と異なる場面で使える" }
+  ],
+  "domains": [
+    {
+      "key": "react",
+      "name": "React",
+      "goal": "React で、状態とデータ取得を持つ画面を組み立てられる",
+      "items": [
+        {
+          "key": "react-components",
+          "name": "コンポーネントと JSX",
+          "description": "画面を関数の部品に分け、props で値を渡す",
+          "outcome": "画面の図を見て、部品の分け方と props の流れを書き出せる",
+          "verifyBy": "props と state の違いを、親子の部品の例で自分の言葉で説明する（L2）"
+        },
+        {
+          "key": "react-state-hooks",
+          "name": "state とフック",
+          "description": "useState・useEffect。描画のたびに関数が呼び直される",
+          "outcome": "入力に応じて表示が変わる部品を、state を最小にして書ける",
+          "dependsOn": ["react-components"],
+          "verifyBy": "useEffect の依存配列を空にしたときと省いたときの違いを説明する（L2）"
+        },
+        {
+          "key": "react-routing",
+          "name": "画面の切り替え（ルーティング）",
+          "description": "URL と表示する部品を対応させる",
+          "outcome": "一覧と詳細の 2 画面を、URL で行き来できる形にできる",
+          "dependsOn": ["react-components"],
+          "verifyBy": "URL のパラメータから詳細画面の中身を決める流れを説明する（L2）"
+        },
+        {
+          "key": "react-data-fetching",
+          "name": "サーバからのデータ取得",
+          "description": "読み込み中・失敗・成功の 3 つの状態を画面に出す",
+          "outcome": "API から取った一覧を、読み込み中と失敗の表示つきで出せる",
+          "dependsOn": ["react-state-hooks"],
+          "verifyBy": "取得中に別の画面へ移ったときに起きることと、その防ぎ方を説明する（L2）"
+        },
+        {
+          "key": "react-ui-testing",
+          "name": "画面のテスト",
+          "description": "利用者の操作の順で部品を動かして確かめる",
+          "outcome": "ボタンを押すと表示が変わることを、テストで確かめられる",
+          "dependsOn": ["react-state-hooks"],
+          "verifyBy": "見た目の細部ではなく利用者の操作でテストを書く理由を説明する（L2）"
+        }
+      ]
+    },
+    {
+      "key": "typescript",
+      "name": "TypeScript",
+      "goal": "型で、間違った値の受け渡しを書いた時点で見つけられる",
+      "items": [
+        {
+          "key": "ts-basic-types",
+          "name": "基本の型と型注釈",
+          "description": "string・number・配列・オブジェクトの型。推論に任せる所と書く所",
+          "outcome": "関数の引数と戻り値に型を付け、型エラーの文を読んで直せる",
+          "verifyBy": "型を書かなくても推論される場面と、書いたほうがよい場面を説明する（L2）"
+        },
+        {
+          "key": "ts-union-narrowing",
+          "name": "ユニオン型と絞り込み",
+          "description": "「A か B」の型を、条件分岐で 1 つに絞る",
+          "outcome": "読み込み中・失敗・成功を 1 つの型で表し、分岐で取り出せる",
+          "dependsOn": ["ts-basic-types"],
+          "verifyBy": "分岐の書き漏れを型で見つける仕組みを説明する（L2）"
+        },
+        {
+          "key": "ts-generics",
+          "name": "ジェネリクス",
+          "description": "型を引数のように受け取る",
+          "outcome": "どの型の配列にも使える小さな関数を、型を失わずに書ける",
+          "dependsOn": ["ts-basic-types"],
+          "verifyBy": "any で書いた場合と比べて何が守られるかを説明する（L2）"
+        },
+        {
+          "key": "ts-strict-config",
+          "name": "strict の設定",
+          "description": "null の扱いなどを厳しく検査する設定",
+          "outcome": "strict を有効にしたプロジェクトで、出た型エラーを直せる",
+          "dependsOn": ["ts-union-narrowing"],
+          "verifyBy": "strictNullChecks が防ぐ不具合を、例を挙げて説明する（L2）"
+        }
+      ]
+    },
+    {
+      "key": "go-api",
+      "name": "Go の API",
+      "goal": "Go で、テスト付きの小さな Web API を書ける",
+      "items": [
+        {
+          "key": "go-syntax",
+          "name": "基本の構文",
+          "description": "変数・関数・複数の戻り値・struct",
+          "outcome": "20 行ほどの関数を、型と値の流れを追いながら書ける",
+          "verifyBy": "ゼロ値がある理由を、初期化し忘れた変数の例で説明する（L2）"
+        },
+        {
+          "key": "go-error-handling",
+          "name": "エラーの扱い",
+          "description": "エラーを値として返し、呼んだ側で確かめる",
+          "outcome": "失敗しうる処理で、エラーに文脈を足して返せる",
+          "dependsOn": ["go-syntax"],
+          "verifyBy": "例外を投げる言語と比べて、エラーを値で返す良さと手間を説明する（L2）"
+        },
+        {
+          "key": "go-http-handler",
+          "name": "HTTP のハンドラ",
+          "description": "リクエストを受けて JSON を返す関数",
+          "outcome": "一覧と 1 件取得の API を、状態コードを分けて返せる",
+          "dependsOn": ["go-error-handling"],
+          "verifyBy": "入力が不正なときと見つからないときで、状態コードを分ける理由を説明する（L2）"
+        },
+        {
+          "key": "go-testing",
+          "name": "テスト",
+          "description": "表で入力と期待値を並べるテスト",
+          "outcome": "ハンドラを、サーバを立てずにテストできる",
+          "dependsOn": ["go-http-handler"],
+          "verifyBy": "表の形でテストを書くと何が楽になるかを説明する（L2）"
+        },
+        {
+          "key": "go-concurrency",
+          "name": "並行処理",
+          "description": "goroutine と channel",
+          "outcome": "複数の処理を同時に走らせ、全部の終わりを待てる",
+          "dependsOn": ["go-syntax"],
+          "verifyBy": "共有した変数を同時に書き換えると何が起きるかを説明する（L2）"
+        }
+      ]
+    },
+    {
+      "key": "database",
+      "name": "データベース",
+      "goal": "アプリのデータを、表の設計から SQL まで自分で用意できる",
+      "items": [
+        {
+          "key": "db-sql-basics",
+          "name": "SQL の基本",
+          "description": "SELECT・JOIN・GROUP BY",
+          "outcome": "2 つの表を結合して、集計した結果を取り出せる",
+          "verifyBy": "INNER JOIN と LEFT JOIN で結果の行数が変わる例を説明する（L2）"
+        },
+        {
+          "key": "db-schema-design",
+          "name": "表の設計",
+          "description": "正規化・主キー・外部キー",
+          "outcome": "画面の要件から、表と列と結び付きを書き出せる",
+          "dependsOn": ["db-sql-basics"],
+          "verifyBy": "同じ値を 2 つの表に持つと何が困るかを、更新の例で説明する（L2）"
+        },
+        {
+          "key": "db-index",
+          "name": "インデックス",
+          "description": "検索を速くする索引。書き込みは遅くなる",
+          "outcome": "遅い検索に、どの列の索引が効くかを見当付けられる",
+          "dependsOn": ["db-sql-basics"],
+          "verifyBy": "索引を増やしすぎると困る理由を説明する（L2）"
+        },
+        {
+          "key": "db-transaction",
+          "name": "トランザクション",
+          "description": "複数の更新を、全部成功か全部取り消しにする",
+          "outcome": "振替のような 2 つの更新を、途中で失敗しても壊れない形にできる",
+          "dependsOn": ["db-schema-design"],
+          "verifyBy": "トランザクションが無いと振替の途中の失敗で何が起きるかを説明する（L2）"
+        }
+      ]
+    },
+    {
+      "key": "delivery",
+      "name": "CI とデプロイ",
+      "goal": "変更を、自動の検査を通して公開まで届けられる",
+      "items": [
+        {
+          "key": "delivery-git-flow",
+          "name": "Git のブランチと PR",
+          "description": "作業ごとにブランチを切り、PR で確かめてから取り込む",
+          "outcome": "ブランチ・PR・マージの一通りを、迷わずに回せる",
+          "verifyBy": "main に直接コミットしない理由を説明する（L2）"
+        },
+        {
+          "key": "delivery-ci",
+          "name": "CI の設定",
+          "description": "PR ごとに型・テスト・ビルドを自動で回す",
+          "outcome": "テストが落ちた PR を、マージの前に止められる",
+          "dependsOn": ["delivery-git-flow"],
+          "verifyBy": "CI の失敗の記録から、落ちた箇所を探す手順を説明する（L2）"
+        },
+        {
+          "key": "delivery-docker",
+          "name": "Docker",
+          "description": "アプリと動く環境をまとめて箱にする",
+          "outcome": "API とデータベースを、1 つのコマンドで手元に立てられる",
+          "dependsOn": ["delivery-git-flow"],
+          "verifyBy": "イメージとコンテナの違いを説明する（L2）"
+        },
+        {
+          "key": "delivery-deploy",
+          "name": "公開（デプロイ）",
+          "description": "静的サイトやサーバを、インターネットから見える場所に置く",
+          "outcome": "main に入った変更が、自動で公開される流れを作れる",
+          "dependsOn": ["delivery-ci"],
+          "verifyBy": "公開の途中で失敗したとき、前の版に戻す手順を説明する（L2）"
+        }
+      ]
+    }
+  ]
+}
