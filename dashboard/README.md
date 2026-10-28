@@ -37,7 +37,7 @@ git / gh / bd を実行し、「更新」ボタン（`POST /update`）を受け�
 | データ（このプロジェクト固有） | `data/roadmap.json` `data/state.json` `data/judgments/` の件数と分布、`skillmatrix verify` の結果、`skillmatrix pending --count` の未判定ログの本数（`sources.local.json` が無ければ「-」） |
 | 折りたたみ：引き継ぎメモ全文・最近の合意・verify の出力・未コミットのファイル・Claude 側の付箋・よく変わったファイル | `HANDOFF.md`・`logs/decisions.md`・`git status`・Beads・`git log` |
 
-進捗の数え方は apps-workflow の `progress.sh` と同じ（`##` 見出し = フェーズ、「確認待ち」「保留」の節は合計から外す）。
+進捗の数え方は todo-progress（apps-workflow が依存する公開版）の `progress.sh` と同じ（`##` 見出し = フェーズ、「確認待ち」「保留」の節は合計から外す）。
 
 ## 更新と自動化
 

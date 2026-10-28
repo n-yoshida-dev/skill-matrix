@@ -71,7 +71,7 @@ function projectName() {
 }
 
 /**
- * TODO.md を apps-workflow の progress.sh と同じ規則で数える。
+ * TODO.md を todo-progress（apps-workflow が依存する公開版）の progress.sh と同じ規則で数える。
  * `## ` 見出し = フェーズ。見出しに「確認待ち」を含む節は回答待ち、「保留」を含む節は保留として合計から外す。
  * 字下げした子項目も 1 件と数える。未完タスクの一覧は先頭レベルだけを取る。
  */
