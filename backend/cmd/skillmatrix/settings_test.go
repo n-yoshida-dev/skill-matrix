@@ -20,7 +20,7 @@ func TestParseSettings(t *testing.T) {
 			"staleness": {"freshWithinDays": 14, "agingWithinDays": 60},
 			"weights": {"readiness": 2, "gap": 1, "staleness": 0.5, "unlocks": 0.1},
 			"nextActions": {"limit": 3},
-			"site": {"repoUrl": "https://example.com/repo"}
+			"site": {"repoUrl": "https://example.com/repo", "fixedToday": "2026-10-25", "notice": "見本の画面です"}
 		}`))
 		if err != nil {
 			t.Fatalf("エラーになった: %v", err)

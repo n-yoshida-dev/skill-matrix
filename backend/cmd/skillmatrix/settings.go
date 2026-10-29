@@ -59,9 +59,11 @@ type wireSettings struct {
 		Limit *int `json:"limit"`
 	} `json:"nextActions"`
 	ForbiddenWords *[]string `json:"forbiddenWords"`
-	// Site は画面だけが使う（ヘッダ・フッターのリンク先）。CLI は読まないが、未知のキーとして弾かないために定義する。
+	// Site は画面だけが使う（ヘッダ・フッターのリンク先、見本の画面の「今日」と注記）。CLI は読まないが、未知のキーとして弾かないために定義する。
 	Site *struct {
-		RepoURL *string `json:"repoUrl"`
+		RepoURL    *string `json:"repoUrl"`
+		FixedToday *string `json:"fixedToday"`
+		Notice     *string `json:"notice"`
 	} `json:"site"`
 }
 

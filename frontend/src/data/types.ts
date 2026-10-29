@@ -116,8 +116,12 @@ export interface Settings {
   staleness?: { freshWithinDays?: number; agingWithinDays?: number }
   weights?: { readiness?: number; gap?: number; staleness?: number; unlocks?: number }
   nextActions?: { limit?: number }
-  /** 画面のフッターとヘッダが指すリポジトリ（v1.5 のテンプレート利用者は自分のものに変える） */
-  site?: { repoUrl?: string }
+  /**
+   * 画面だけが使う設定（SPEC.md §8.3）。repoUrl はフッターとヘッダが指すリポジトリ。
+   * fixedToday（YYYY-MM-DD）は鮮度を測る「今日」をこの日に固定する。notice はヘッダの下に出す 1 行。
+   * どちらも見本の画面（examples/demo/data）のためのもので、本物の data/ には書かない
+   */
+  site?: { repoUrl?: string; fixedToday?: string; notice?: string }
   /** 公開される文に入れてはいけない語。CLI の recalc / verify だけが使い、画面は読まない（SPEC.md §8.3） */
   forbiddenWords?: string[]
 }

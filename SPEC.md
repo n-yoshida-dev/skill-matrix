@@ -986,7 +986,8 @@ dashboard/                  開発の観測画面（v1 の機能ではない。�
 - フロントは React + TypeScript + Vite。React Router は **ハッシュルーティング**（GitHub Pages では深いパスの直リンクが 404 になるため）。
   **TanStack Query は入れない**（サーバ通信が無い）。React Hook Form / Zod は入力フォームが無いので入れない。Recharts はサマリー帯に要れば使う
 - `data/` は `frontend/` の外にあるので、`vite.config.ts` の別名（`@data`）で指し、dev サーバの `server.fs.allow` に加える
-- 静的サイトは GitHub Actions でビルドして GitHub Pages に置く（`main` への push で更新）
+- 静的サイトは GitHub Actions でビルドして GitHub Pages に置く（`main` への push で更新）。
+  本物（`data/`）を `dist/` に、見本の画面（`examples/demo/data/`。ビルドのモード `demo`）を `dist/demo/` に作り、一緒に上げる（v1.5）
 
 ### 8.3 設定 `data/settings.json`
 
@@ -999,6 +1000,10 @@ CLI と画面が共通で読む。秘密情報は入らないのでコミット�
   "weights":   { "readiness": 1.0, "gap": 0.8, "staleness": 0.3, "unlocks": 0.5 },        // §5.1。domain.DefaultWeights()
   "nextActions": { "limit": 5 },
   "site": { "repoUrl": "https://github.com/n-yoshida-dev/skill-matrix" },  // 画面のヘッダ・フッターが指すリポジトリ（§7.3）。v1.5 の利用者は自分のものに変える
+  // site には見本の画面（examples/demo/data/settings.json）だけが書く欄が 2 つある。本物の data/ には書かない。
+  //   "fixedToday": "2026-10-25"  鮮度を測る「今日」をこの日に固定する（日付の止まった見本で、日が経っても古い根拠の見え方が変わらないように）。YYYY-MM-DD でなければ画面が例外にする
+  //   "notice": "見本の画面です。…"  ヘッダの下に補足の色で 1 行出す
+  // CLI は site を読まない（未知のキーとして弾かないために形だけ持つ）
   "forbiddenWords": ["所属", "企業", "面接", "転職", "応募", "人事"]          // 公開される文に入れてはいけない語（§6・§9）。CLI だけが使う。コードに既定の語は持たない
 }
 ```
