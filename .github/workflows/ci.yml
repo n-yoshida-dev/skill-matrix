@@ -72,6 +72,10 @@ jobs:
       - name: ビルド
         run: npm run build
 
+      # 見本の画面（examples/demo/data）も PR のうちにビルドする。Pages（pages.yml）だけで作ると、壊れてもマージ後まで気づかない
+      - name: 見本の画面をビルド
+        run: npm run build:demo
+
       # E2E（TODO 2-6）はジョブを分けずにここで走らせる。ジョブ名を変える・増やすと、
       # main のブランチ保護の必須チェック名と dashboard/update.mjs の読み取りも直す必要があるため（CLAUDE.md「開発ダッシュボード」）
       - name: E2E 用のブラウザを入れる
