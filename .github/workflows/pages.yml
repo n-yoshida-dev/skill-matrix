@@ -69,6 +69,11 @@ jobs:
       - name: ビルド
         run: npm run build
 
+      # 見本の画面（架空の学習者のデータ。examples/demo/data）を dist/demo/ に作り、本物と一緒に上げる（TODO フェーズ2.5）。
+      # 公開先は https://<ユーザー名>.github.io/<リポジトリ名>/demo/。本物のビルドの後に走らせる（本物のビルドは dist/ を空にするため）
+      - name: 見本の画面をビルド
+        run: npm run build:demo
+
       - name: 公開用に固める
         if: steps.pages.outputs.enabled == 'true'
         uses: actions/upload-pages-artifact@v3

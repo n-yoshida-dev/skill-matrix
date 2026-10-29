@@ -5,10 +5,15 @@ import react from '@vitejs/plugin-react'
 // 画面に取り込むデータ（ロードマップ・理解度の JSON）の置き場。リポジトリ直下の data/（frontend/ の外）。
 // E2E だけは、ビルドのモード e2e-before / e2e-after で e2e/fixtures/<before|after> のダミーを取り込む
 // （playwright.config.ts。JSON を差し替えると画面が変わることを確かめるため）。
-// 環境変数では切り替えない（SPEC.md §8.3「環境変数は v1 では使わない」）。E2E 以外のモードでは常に data/
+// 見本の画面（Pages の demo/）は、モード demo で examples/demo/data の架空の学習者のデータを取り込む（TODO フェーズ2.5）。
+// 環境変数では切り替えない（SPEC.md §8.3「環境変数は v1 では使わない」）。E2E と見本以外のモードでは常に data/
 function dataDirFor(mode: string): string {
   const e2e = /^e2e-(before|after)$/.exec(mode)
-  const dir = e2e ? `./e2e/fixtures/${e2e[1]}` : '../data'
+  const dir = e2e
+    ? `./e2e/fixtures/${e2e[1]}`
+    : mode === 'demo'
+      ? '../examples/demo/data'
+      : '../data'
   return fileURLToPath(new URL(dir, import.meta.url))
 }
 

@@ -318,7 +318,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   完了条件：`roadmap.json`・`judgments/`・`state.json`・`settings.json`・`certifications.json` があり、`recalc` / `verify` が通る（CI の `verify` もこのディレクトリを見る）。
   ステータス帳・能力値チャート・タイル・学習パス・スキルツリーの見どころ（段の違う分野、実装済み・基礎未確認の項目、要再確認、資格）が全部出る中身になっている。
   作者の実データ・study の場所・個人の文脈を含まない（`evidenceRefs` は架空の `log:` だけ）
-- [ ] 見本の画面を公開する（本物と同じ Pages の `demo/`）
+- [x] 見本の画面を公開する（本物と同じ Pages の `demo/`）（2026-10-29 完了。「今日」の固定と注記は `settings.json` の `site.fixedToday` / `site.notice`。公開後の URL はマージ後に確かめる）
   完了条件：ビルドのモード `demo` で `examples/demo/data/` を取り込み、`pages.yml` が本物の画面と見本の画面を両方上げる。
   公開後に `https://n-yoshida-dev.github.io/skill-matrix/demo/` で見本の画面が開く。見本だと分かる 1 行が画面にある。本物の画面は変わらない。
   鮮度は「今日」から計算するので、見本の日付が古くなっても見どころ（古い根拠が `db-*` の 2 件だけ）が崩れない扱いになっている（PR #126 の受け入れレビューで判明）

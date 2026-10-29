@@ -142,6 +142,13 @@ code {
   }
 }
 
+/* 見本の画面の注記（settings.json の site.notice）。ヘッダの下に補足の色で 1 行。箱にしない（DESIGN.md Layout） */
+.notice {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--dim);
+}
+
 h1 {
   font-size: clamp(28px, 4.6vw, 40px);
   font-weight: 700;

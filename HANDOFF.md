@@ -29,7 +29,7 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
 ## 進捗
 
 ```
-進捗（TODO.md より自動集計・2026-10-25） / Progress from TODO.md
+進捗（TODO.md より自動集計・2026-10-29） / Progress from TODO.md
 
                      完了率  残り/全体  フェーズ   (done %, open/total, phase)
 ████████████████████  100%     0 / 11    フェーズ1：設計（完了）
@@ -38,18 +38,20 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
 ████████████████████  100%     0 / 8     フェーズ2c：判定の回し方を作り直す（2026-10-03 決定）
 ████████████░░░░░░░░   60%     2 / 5     フェーズ2d：リリース後の改善（少しずつ。2026-10-10 決定）
 ████████████████████  100%     0 / 3     フェーズ2e：トップを「要約 → 項目 → 根拠」の 3 層にする（2026-10-12 決定）
-████████░░░░░░░░░░░░   40%     3 / 5     フェーズ2.5：v1.5 見本つきの再現ガイド（2026-10-25。対象は手元の AI＝Claude Code・Codex を使う人）
-██████████████████░░   93%     5 / 79    合計 / Total
+████████████░░░░░░░░   60%     2 / 5     フェーズ2.5：v1.5 見本つきの再現ガイド（2026-10-25。対象は手元の AI＝Claude Code・Codex を使う人）
+██████████████████░░   94%     4 / 79    合計 / Total
 回答待ち：6 件（回答済み 17 件） / Waiting: 6 open, 17 answered
 保留（合計に含めない）：19 件（済み 15 件） / On hold (not in total): 19 open, 15 done
 
-前回の区切り（2026-10-25）から：完了 +1 件、タスクの数 +0 件 / Since last checkpoint (2026-10-25): done +1, tasks +0
+前回の区切り（2026-10-28）から：完了 +1 件、タスクの数 +0 件 / Since last checkpoint (2026-10-28): done +1, tasks +0
 ```
 
 ## 1. 現在地
 
 - **フェーズ2.5（v1.5）は 2026-10-25 に「見本つきの再現ガイド」へ切り替えた**（Template での配布はやめて保留へ。`logs/decisions.md` 同日「外に出す形は…」）。
-  見本のデータ（架空の学習者。5 分野・22 項目）は `examples/demo/data/` に入れた（`feat/demo-data` の PR。CI の verify も見る。このマージ後の状態で書いている）。残りは見本の画面の公開・AI 向けの説明書 `docs/build-your-own.md`・紹介向けの README と `LICENSE`（TODO フェーズ2.5）。Template 設定の付箋 `ops-dhj.5` は閉じた
+  見本のデータ（架空の学習者。5 分野・22 項目）は `examples/demo/data/`（PR #126）。見本の画面は https://n-yoshida-dev.github.io/skill-matrix/demo/ （`feat/demo-site` の PR。このマージ後の状態で書いている）。
+  見本の「今日」は 2026-10-25 に固定し、ヘッダの下に見本だと書いた 1 行を出す（`settings.json` の `site.fixedToday` / `site.notice`。KNOWLEDGE.md 2026-10-29）。
+  残りは AI 向けの説明書 `docs/build-your-own.md`・紹介向けの README と `LICENSE`（TODO フェーズ2.5）。Template 設定の付箋 `ops-dhj.5` は閉じた
 
 - **リリース済み**：https://n-yoshida-dev.github.io/skill-matrix/ （GitHub Pages。`main` への push ごとに `pages.yml` が公開する。push での公開も確かめた）。フェーズ1〜2c は全部完了。
   方針は「少しずつ改善する」（`logs/decisions.md` 2026-10-10）。残りはフェーズ2d の 2 件（どちらも本人の答えが先に要る）と確認待ち
@@ -73,7 +75,7 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
 ## 2. 次セッションで最初にやること
 
 1. 起動時の「未判定の学習ログ n 本」が 1 本以上なら `/judge-log` で判定する（study のログなら確認なし）
-2. フェーズ2.5 の次：見本の画面を公開する。`frontend/vite.config.ts` の `dataDirFor` にモード `demo`（`../examples/demo/data`）を足し、`pages.yml` で本物を `dist/`、見本を `dist/demo/` にビルドして一緒に上げる。見本だと分かる 1 行の出し方は画面の PR なので `DESIGN.md` を先に読む
+2. フェーズ2.5 の次：AI 向けの説明書 `docs/build-your-own.md` を書く（完了条件は TODO）。写すもの・写さないものは、実際のファイルの一覧（`git ls-files`）から起こす。最後に Claude Code か Codex に説明書だけを読ませ、空のフォルダで見本のデータの画面が出るところまで試す
 3. **本人への確認は、作業の区切りに 1 メッセージ 1 件ずつ**（付箋の順。「何のためか」を具体例から噛み砕き、おすすめを添える。
    次のセッションのプロンプトに「A／B」の選ぶ欄を入れない。KNOWLEDGE.md 2026-10-10）
 

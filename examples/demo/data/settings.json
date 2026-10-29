@@ -17,7 +17,9 @@
     "limit": 5
   },
   "site": {
-    "repoUrl": "https://github.com/n-yoshida-dev/skill-matrix"
+    "repoUrl": "https://github.com/n-yoshida-dev/skill-matrix",
+    "fixedToday": "2026-10-25",
+    "notice": "見本の画面です。架空の学習者のデータを、2026-10-25 時点として表示しています。"
   },
   "forbiddenWords": ["所属", "企業", "面接", "転職", "応募", "人事"]
 }
