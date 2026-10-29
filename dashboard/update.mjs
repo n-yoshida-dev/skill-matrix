@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // 開発ダッシュボードのデータ生成。
-// リポジトリ内の正本（TODO.md / HANDOFF.md / logs/decisions.md / data/）と git / gh / bd の出力を読み、
+// リポジトリ内の正本（TODO.md / HANDOFF.md / logs/decisions.md / data/）と git / gh の出力を読み、
 // dashboard/data.js（`window.DASHBOARD_DATA = {...}` という 1 文の JS ファイル）を書き出す。JSON ではなく JS にしているのは、
 // index.html をブラウザでダブルクリックして開いても（file:// でも）読めるようにするため（fetch は file:// では使えない）。
 // ダッシュボード独自の状態は持たない（ここで作るデータは毎回捨てて作り直す派生物）。
@@ -10,9 +10,12 @@
 //   node dashboard/update.mjs                  data.js を作り直すだけ → dashboard/index.html をダブルクリックで開く（ボタンは使えない）
 //   オプション: --port <n> --host <addr>（既定 127.0.0.1。スマホから見るなら --host 0.0.0.0）--quiet
 //
-// ブラウザだけでは git / gh / bd を実行できないので、「更新」ボタンは配信モードのこのプロセス（POST /update）が受けて作り直す。
+// ブラウザだけでは git / gh を実行できないので、「更新」ボタンは配信モードのこのプロセス（POST /update）が受けて作り直す。
 //
-// 依存: Node 標準ライブラリだけ。git は必須。gh / bd / go は無ければその項目を「取得できず」にして続ける。
+// 人間待ちは TODO.md の「確認待ち（本人）」の未完だけを数える（2026-10-29 に Beads をやめた。以前は Beads と TODO を足していて、
+// 同じ頼みごとを二重に数えていた）。
+//
+// 依存: Node 標準ライブラリだけ。git は必須。gh / go は無ければその項目を「取得できず」にして続ける。
 
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
@@ -277,41 +280,6 @@ function readGithub() {
   return { available: true, error: prs.error ?? list.error ?? null, repo: repo.value, openPrs, runs }
 }
 
-/**
- * Beads（`bd`）：このプロジェクトの epic（題名がプロジェクト名で始まる）配下の付箋。
- * ラベル human のものが「人間の判断・作業待ち」。閉じたものは最近の分だけ残す
- */
-function readBeads(name) {
-  const r = runJson('bd', ['list', '--json', '--all', '-n', '0'])
-  if (!r.value) return { available: false, error: r.error, epic: null, human: [], others: [], recentlyClosed: [] }
-  const all = r.value
-  const epic = all.find((x) => x.issue_type === 'epic' && (x.title ?? '').startsWith(name)) ?? null
-  const prefix = `[${name}]`
-  const mine = all.filter((x) => (epic && x.parent === epic.id) || (x.title ?? '').startsWith(prefix))
-  const since = Date.now() - RECENT_DAYS * 86_400_000
-  const slim = (x) => ({
-    id: x.id,
-    title: x.title,
-    status: x.status,
-    priority: x.priority,
-    labels: x.labels ?? [],
-    updatedAt: x.updated_at,
-    closedAt: x.closed_at ?? null,
-    blockedBy: (x.dependencies ?? []).filter((d) => d.type === 'blocks').map((d) => d.depends_on_id),
-  })
-  const open = mine.filter((x) => x.status !== 'closed').map(slim).sort((a, b) => a.priority - b.priority)
-  return {
-    available: true,
-    error: null,
-    epic: epic ? { id: epic.id, title: epic.title, status: epic.status } : null,
-    human: open.filter((x) => x.labels.includes('human')),
-    others: open.filter((x) => !x.labels.includes('human')),
-    recentlyClosed: mine
-      .filter((x) => x.status === 'closed' && x.closed_at && Date.parse(x.closed_at) >= since)
-      .map(slim),
-  }
-}
-
 /** このプロジェクト固有の指標：ロードマップと判定・理解度の JSON、CLI の verify */
 function readProjectData() {
   const rm = readJson('data/roadmap.json')
@@ -382,7 +350,7 @@ function readProjectData() {
 }
 
 /** 上に出す注意。正本の状態から機械的に導く（人が書き足す欄ではない） */
-function buildAlerts({ git, github, handoff, data, todo, beads }) {
+function buildAlerts({ git, github, handoff, data, todo }) {
   const alerts = []
   const mainRun = github.runs.find((r) => r.branch === 'main')
   // 失敗は赤、中止は黄、成功・スキップは帯を出さない（画面のタイルと同じ区分）
@@ -407,12 +375,12 @@ function buildAlerts({ git, github, handoff, data, todo, beads }) {
   if (handoff?.commitsSince != null && handoff.commitsSince >= 3) {
     alerts.push({ level: 'warn', text: `HANDOFF.md が ${handoff.commitsSince} コミット前の状態（引き継ぎが遅れている）` })
   }
-  const human = beads.human.length + (todo?.askItems.length ?? 0)
+  // 人間待ちの正本は TODO.md の「確認待ち（本人）」だけ（2026-10-29 に Beads をやめた）
+  const human = todo?.askItems.length ?? 0
   if (human > 0) alerts.push({ level: 'info', text: `人間の判断・作業待ちが ${human} 件` })
   if (git.dirty.length > 0) alerts.push({ level: 'info', text: `未コミットの変更 ${git.dirty.length} ファイル（${git.branch}）` })
   if (git.ahead > 0) alerts.push({ level: 'info', text: `未 push のコミット ${git.ahead} 件（${git.branch}）` })
   if (!github.available) alerts.push({ level: 'warn', text: `GitHub の情報を取得できず（${github.error}）` })
-  if (!beads.available) alerts.push({ level: 'warn', text: `Beads の情報を取得できず（${beads.error}）` })
   return alerts
 }
 
@@ -423,18 +391,16 @@ export function collect() {
   const handoff = readHandoff()
   const git = readGit()
   const github = readGithub()
-  const beads = readBeads(name)
   const data = readProjectData()
   const decisions = readDecisions()
   return {
     generatedAt: new Date().toISOString(),
     project: { name, root: ROOT, repoUrl: github.repo?.url ?? null, visibility: github.repo?.visibility ?? null },
-    alerts: buildAlerts({ git, github, handoff, data, todo, beads }),
+    alerts: buildAlerts({ git, github, handoff, data, todo }),
     todo,
     handoff,
     git,
     github: { available: github.available, error: github.error, openPrs: github.openPrs, runs: github.runs },
-    beads,
     data,
     decisions,
   }
@@ -450,7 +416,7 @@ function writeData(quiet) {
     const t = d.todo?.total
     console.log(
       `${path.relative(ROOT, OUT)} を更新（${Date.now() - started} ms）: ` +
-        `進捗 ${t ? `${t.done}/${t.total}` : '-'}、人間待ち ${d.beads.human.length + (d.todo?.askItems.length ?? 0)} 件、` +
+        `進捗 ${t ? `${t.done}/${t.total}` : '-'}、人間待ち ${d.todo?.askItems.length ?? 0} 件、` +
         `注意 ${d.alerts.length} 件、ブランチ ${d.git.branch}`,
     )
   }

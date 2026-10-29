@@ -14,26 +14,26 @@ node dashboard/update.mjs                  # データ（dashboard/data.js）を
 node dashboard/update.mjs --serve --host 0.0.0.0 --port 8787   # 同じ LAN のスマートフォンから見るとき（認証は無いので LAN 内だけ）
 ```
 
-**ターミナルが要る理由**：表示する中身（git の状態・CI・Beads）はブラウザからは読めない。`--serve` で起動した Node のプロセスがブラウザの代わりに
-git / gh / bd を実行し、ページを開き直したとき（10 秒以上たっていれば）とハブからの `POST /update` で `data.js` を作り直す。
+**ターミナルが要る理由**：表示する中身（git の状態・CI）はブラウザからは読めない。`--serve` で起動した Node のプロセスがブラウザの代わりに
+git / gh を実行し、ページを開き直したとき（10 秒以上たっていれば）とハブからの `POST /update` で `data.js` を作り直す。
 起動は 1 回でよく、閉じるまで動き続ける（VS Code のターミナルで起動しておくのが楽）。
 
-依存は Node の標準ライブラリだけ（npm install 不要、ビルド不要）。`git` は必須。`gh`（GitHub CLI、ログイン済み）・`bd`（Beads）・`go` は
+依存は Node の標準ライブラリだけ（npm install 不要、ビルド不要）。`git` は必須。`gh`（GitHub CLI、ログイン済み）・`go` は
 無ければその項目が「取得できず」になるだけで、ほかは表示される。1 回の生成は数秒（`go run ... verify` と `gh` の呼び出し分）。
 
 ## 画面の並び（上ほど重要）と取得元
 
 説明の文・欄の名前・種類の札は出さず、並びと大きさで読ませる。文章は一覧用に短く縮めて 1 行で出す（括弧書き・記法・2 文目以降を落とす）。
-全文・付箋 ID・行番号はマウスを載せると出る。押すと全文に切り替わる（スマートフォン向け）。
+全文・行番号はマウスを載せると出る。押すと全文に切り替わる（スマートフォン向け）。
 
 | 表示 | 取得元（正本） |
 |---|---|
 | 異常の帯（CI 失敗・verify 失敗・未判定の学習ログを数えられない／警告あり・HANDOFF の遅れ・取得失敗）。異常が無ければ出ない | 下の各正本から機械的に導く |
-| あなた待ち（判断・確認・作業のタグつき。上位 6 件、残りは「ほか N 件」） | Beads `bd list --json`（このプロジェクトの epic 配下でラベル `human`）、`TODO.md`「確認待ち」節の未完、`data/state.json` の `deferred`（保留中の判定。1 件以上のときだけ）、`skillmatrix pending --count`（未判定の学習ログ。1 本以上のときだけ） |
+| あなた待ち（判断・確認・作業のタグつき。上位 6 件、残りは「ほか N 件」） | `TODO.md`「確認待ち（本人）」節の未完（W 番号を頭に付けて出す。2026-10-29 に Beads をやめ、人間待ちの正本はここだけ）、`data/state.json` の `deferred`（保留中の判定。1 件以上のときだけ）、`skillmatrix pending --count`（未判定の学習ログ。1 本以上のときだけ） |
 | 進捗の帯（済み／全体）・今のフェーズ・今のタスク（大きく）とこの後 4 件 | `TODO.md` の未完タスク（上から順） |
 | 開いている PR とその CI、最近のコミット 6 件（main の CI の結果は行の先頭の記号 ✓ ✕ ●） | `gh pr list` / `gh run list --workflow ci.yml`（GitHub Pages の公開の実行は含めない） / `gh run view --json jobs` / `git log` |
 | データ（このプロジェクト固有） | `data/roadmap.json` `data/state.json` `data/judgments/` の件数と分布、`skillmatrix verify` の結果、`skillmatrix pending --count` の未判定ログの本数（`sources.local.json` が無ければ「-」） |
-| 折りたたみ：引き継ぎメモ全文・最近の合意・Claude 側の付箋・未コミットのファイル（あるときだけ）。verify の出力は固有の指標のカードの中 | `HANDOFF.md`・`logs/decisions.md`・Beads・`git status` |
+| 折りたたみ：引き継ぎメモ全文・最近の合意・未コミットのファイル（あるときだけ）。verify の出力は固有の指標のカードの中 | `HANDOFF.md`・`logs/decisions.md`・`git status` |
 
 進捗の数え方は todo-progress（apps-workflow が依存する公開版）の `progress.sh` と同じ（`##` 見出し = フェーズ、「確認待ち」「保留」の節は合計から外す）。
 
@@ -57,5 +57,5 @@ dashboard/
 
 ## 直すとき
 
-`TODO.md` の見出しの使い方（`##` = フェーズ、「確認待ち」「保留」）、`HANDOFF.md` の節名、CI のジョブ名、Beads の題名規約（`[skill-matrix] ...`）を
+`TODO.md` の見出しの使い方（`##` = フェーズ、「確認待ち」「保留」）と確認待ちの行の書式（`W<番号>【判断】…`）、`HANDOFF.md` の節名、CI のジョブ名を
 変えたら `update.mjs` の該当する読み取り関数を直す。表示項目を足すときは `collect()` に読み取りを 1 つ足し、`index.html` の `render()` にカードを 1 つ足す。
