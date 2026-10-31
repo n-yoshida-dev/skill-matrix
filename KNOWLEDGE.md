@@ -1622,7 +1622,7 @@ viewBox の 22 にし、長い分野名を区切りで 2 行に折って図の�
 
 CLAUDE.md は会話の始めに毎回全部読まれる。`.claude/rules/` に先頭の `paths:` 付きで置いたファイルは、合うファイルを Read / Write / Edit したときだけ読まれる
 （公式の https://code.claude.com/docs/en/memory の「Organize rules with `.claude/rules/`」で 2026-10-31 に確認。書式は YAML のリストに `"` で囲んだ glob。基準のフォルダは `.claude` を含むフォルダ）。
-大きさ（`wc -c`）：CLAUDE.md は 11,347 → 10,153 バイト（-1,194）。移した先の `.claude/rules/dashboard.md` は 1,514 バイト（`paths:` の 4 行と見出しを含む）。本文 7 行は一字も変えていない（`diff` で一致を確認）。
+大きさ（`wc -c`）：CLAUDE.md は 11,347 → 10,153 バイト（-1,194）。移した先の `.claude/rules/dashboard.md` は 1,514 バイト（`---` で囲んだ先頭の 5 行と見出しを含む）。本文 7 行は一字も変えていない（`diff` で一致を確認）。
 効き目は 2 週間見る（TODO.md 保留 H4）。
 
 | 決めたこと | なぜ |
