@@ -1617,3 +1617,20 @@ viewBox の 22 にし、長い分野名を区切りで 2 行に折って図の�
 | 見本の注記も同じ `site.notice` にし、書いたときだけヘッダの下に出す | 本物の画面は何も変わらない。文はデータの側にあるので、見本の中身を変えたときに一緒に直せる |
 | CLI の `settings.go` は `site` の 2 つの欄を形だけ持ち、読まない | `settings.json` の未知のキーは CLI がエラーにする（打ち間違い対策）ので、足さないと見本の `verify` が落ちる |
 | 見本は `npm run build:demo`（`vite build --mode demo --outDir dist/demo`）で、本物のビルドの後に作る | 本物のビルドが `dist/` を空にするので、順を逆にすると見本が消える。`base: './'` の相対パスなので、`demo/` の下でもそのまま動く |
+
+### 2026-10-31：「開発ダッシュボード」の節を `.claude/rules/dashboard.md` へ移すときに Claude が選んだこと
+
+CLAUDE.md は会話の始めに毎回全部読まれる。`.claude/rules/` に先頭の `paths:` 付きで置いたファイルは、合うファイルを Read / Write / Edit したときだけ読まれる
+（公式の https://code.claude.com/docs/en/memory の「Organize rules with `.claude/rules/`」で 2026-10-31 に確認。書式は YAML のリストに `"` で囲んだ glob。基準のフォルダは `.claude` を含むフォルダ）。
+大きさ（`wc -c`）：CLAUDE.md は 11,347 → 10,153 バイト（-1,194）。移した先の `.claude/rules/dashboard.md` は 1,514 バイト（`---` で囲んだ先頭の 5 行と見出しを含む）。本文 7 行は一字も変えていない（`diff` で一致を確認）。
+効き目は 2 週間見る（TODO.md 保留 H4）。
+
+| 決めたこと | なぜ |
+|---|---|
+| `paths:` に `dashboard/**` のほか `.github/workflows/ci.yml` も入れた | 節の決まりのうち 2 つ（CI のジョブ名を変えたら `update.mjs` とブランチ保護も直す）は、`dashboard/` ではなく CI の定義を直すときに要る。`dashboard/**` だけだと、その場面で読まれない |
+| `TODO.md` と `HANDOFF.md` は `paths:` に入れず、CLAUDE.md に残す 1 行に「見出し・節名を変えるときも先に読む」と書いた | この 2 つは毎回の会話の始めに読むので、`paths:` に入れると毎回読まれ、移した意味が無くなる |
+| CLAUDE.md の見出し「## 開発ダッシュボード」は残し、その下を 1 行にした | TODO.md・KNOWLEDGE.md の過去の記録が「CLAUDE.md「開発ダッシュボード」」と節の名前で指しているので、たどれるようにした |
+
+ハマったこと：会話の途中で作った rules は、その会話では読み込まれなかった（作った後に `dashboard/README.md` を Read しても、rules の中身は届かなかった。
+公式は rules を起動時に見つけるとしか書いておらず、途中で足したものを拾うかは書いていない）。拡張に入っている `claude` を `-p` で起動して確かめる手も、
+ログインの期限切れ（`OAuth session expired`）で使えなかった。確かめるのは、次に `dashboard/` を触る会話でになる。
