@@ -1634,3 +1634,16 @@ CLAUDE.md は会話の始めに毎回全部読まれる。`.claude/rules/` に�
 ハマったこと：会話の途中で作った rules は、その会話では読み込まれなかった（作った後に `dashboard/README.md` を Read しても、rules の中身は届かなかった。
 公式は rules を起動時に見つけるとしか書いておらず、途中で足したものを拾うかは書いていない）。拡張に入っている `claude` を `-p` で起動して確かめる手も、
 ログインの期限切れ（`OAuth session expired`）で使えなかった。確かめるのは、次に `dashboard/` を触る会話でになる。
+
+### 2026-11-03：AI 向けの説明書 `docs/build-your-own.md` で Claude が選んだこと
+
+| 決めたこと | なぜ |
+|---|---|
+| `prompts/judge.md` は丸ごと写させ、作者専用の部分（移行・凍結・study の確認の省略・pr-flow・TODO の書式）を表で指して直させる | 判定の基準を説明書に書き写さない（CLAUDE.md「守ること」）。指示書の前半は汎用で、作者の環境に結び付いているのは手順 1・2・7・8 と例だけだった |
+| 見本のデータ `examples/demo/data/` を利用者の `data/` に写して、まず見本の画面を出させる | 動く状態を先に作ってから自分のロードマップに差し替えると、どこで壊れたかが分かる。見本は `verify` が通る状態で置いてある |
+| `frontend/` は丸ごと写す（棚上げの `Dashboard.tsx` なども残す） | 学習パスと項目詳細が `features/plan/` の `matrix.ts`・`next.ts` を使っていて、棚上げの部品だけを抜くと手直しが要る |
+| Go は CLI と `domain`・`judgment`・`roadmap` だけを写させ、モジュール名を変えて `go mod tidy` | `go list -deps ./cmd/skillmatrix` で CLI が使う自前のパッケージがこの 3 つだけと確かめた。サーバ・DB の依存（anthropic-sdk-go・chi・pgx）は tidy で全部落ちる |
+
+試しの結果：この会話の中身を知らない Claude Code（サブエージェント）に説明書だけを渡し、空のフォルダで手順 1〜4 を試させた。GitHub から clone → 写す → `go test`（4 パッケージ）・`verify`・`npm run build` が全部通り、
+ビルドした JS に見本の 5 分野の名前が入った。迷った 8 点（`build:demo` と `vite.config.ts` の demo 分岐が残る、CI の Postgres の外し方、`npm run dev` が終わらない、`go.sum` が空になる、ブラウザ無しでの確かめ方、など）は説明書に足した。
+Codex での試しはしていない（Codex のサンドボックスは既定でネットに出られず、`git clone` と `npm ci` が通らない見込みのため）。直したあとの版での再試行もしていない。
