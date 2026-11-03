@@ -2,7 +2,7 @@
 
 学習ログを AI に読ませて理解度を判定させ、ロードマップの「分野 × 項目」の理解度と学習パスを静的サイトで見る、作者が自分用に作ったツール。
 
-チェックボックスを自分で付けるのではなく、「今日やったこと・自分の言葉で説明できたこと」を学習ログに書き、AI が根拠付きで判定する。
+チェックボックスを自分で付けるのではなく「今日やったこと・自分の言葉で説明できたこと」を学習ログに書き、AI が根拠付きで判定する。
 判定はルールで機械的に検査してから履歴に残すので、自己申告だけでは理解度は上がらない。
 
 | 画面 | URL |
@@ -30,8 +30,8 @@ flowchart TD
 ```
 
 - 理解度は 0〜5 の段。判定は段に「印」を付け、1 から途切れずに印がある最上段をレベルとする。実装の根拠（3）は基礎の理解（1・2）を含まない
-- 判定の基準は `data/roadmap.json` の `levels`、根拠の種類ごとに付けられる段は `backend/internal/domain/types.go` の 1 か所にだけ書いてある
-- サーバ・DB・ログインは無い。データはリポジトリの JSON で、CI の `verify` が `state.json` と再計算の結果の一致を確かめる
+- 判定の基準は `data/roadmap.json` の `levels` に、根拠の種類ごとに付けられる段は `backend/internal/domain/types.go` に、それぞれ 1 か所にだけ書いてある
+- サーバ・DB・ログインは無い。データはリポジトリの JSON で、CI の `verify` が `state.json` と再計算の結果が一致するかを確かめる
 
 詳しくは [docs/spec-guide.md](docs/spec-guide.md)（仕様の解説）と [SPEC.md](SPEC.md)（仕様の正本）。
 
@@ -42,7 +42,7 @@ flowchart TD
 このリポジトリはそのまま使う形（Template など）では配っていません。AI 向けの説明書 [docs/build-your-own.md](docs/build-your-own.md) を自分の AI に読ませ、自分のフォルダに必要な部品を写して作らせます。
 空のフォルダで、まず見本のデータの画面が出るところまで進み、そこから自分のロードマップと学習ログに切り替えます。
 
-自分の AI に渡す頼み方の例：
+自分の AI に渡す頼み方の例です。
 
 ```
 https://github.com/n-yoshida-dev/skill-matrix の docs/build-your-own.md を読んで、
@@ -50,12 +50,12 @@ https://github.com/n-yoshida-dev/skill-matrix の docs/build-your-own.md を読�
 まず見本のデータで画面が出るところまで進めて、画面の URL を教えてください。
 ```
 
-約束は「参考にどうぞ」です。相手の環境で動くことの保証や、作者側の更新の取り込みはありません。
+約束は「参考にどうぞ」です。使う人の環境で動くことの保証や、作者側の更新の取り込みはありません。
 
 ## 必要なもの
 
 - Node.js 24（画面）
-- Go（`backend/go.mod` の `go` の行の版以上。判定の検査と `state.json` の再計算をする CLI）
+- Go（`backend/go.mod` の `go` の行のバージョン以上。判定の検査と `state.json` の再計算をする CLI）
 - 判定させる AI（上のとおり）
 
 ## 開発
@@ -77,7 +77,7 @@ go -C backend run ./cmd/skillmatrix verify --data ../data   # CI と同じ（書
 ```
 
 `main` に入ると `.github/workflows/pages.yml` が作者の画面と見本の画面をビルドし、GitHub Pages に上げる。
-`backend/` のサーバ・DB・非同期判定のコードは、他人にも使わせる版のために棚上げしてある（`SPEC.md` §10）。今は使わない。
+`backend/` のサーバ・DB・非同期判定のコードは、他人にも使わせるバージョンのために棚上げしてある（`SPEC.md` §10）。今は使わない。
 
 ## ドキュメント
 
