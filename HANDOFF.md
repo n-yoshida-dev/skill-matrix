@@ -43,7 +43,7 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
 回答待ち：3 件（回答済み 18 件） / Waiting: 3 open, 18 answered
 保留（合計に含めない）：23 件（済み 15 件） / On hold (not in total): 23 open, 15 done
 
-前回の区切り（2026-11-03）から：完了 +1 件、タスクの数 +0 件 / Since last checkpoint (2026-11-03): done +1, tasks +0
+前回の区切り（2026-11-03）から：完了 +0 件、タスクの数 +0 件 / Since last checkpoint (2026-11-03): done +0, tasks +0
 ```
 
 ## 1. 現在地
@@ -65,7 +65,7 @@ ChatGPT に渡す文章を求められたら、コードブロック 1 つでそ
   （10-11 は本人の依頼で 1 回通し、10-12 は TODO の完了条件に B を通すとあったので通した。これからも回すかは本人に聞いていない）。点検の経緯は KNOWLEDGE.md 2026-10-11。
   比較ページには本人が「OK」：直した 8 か所はこのまま、好みの問題 P1〜P7 は今は直さない（`logs/decisions.md` 2026-10-12）。
   10-11 の残り 12 行は PR #108 で片付けた（9 行を直し、3 行は直さない理由。KNOWLEDGE.md 2026-10-12。比較ページ https://claude.ai/artifact/F8L4WxQTb3AaaF3HVEEbNB は返事不要で見せただけ）
-- 判定：未判定は 0 本。最後は react-01 の記録から書き起こした study の `go-react/logs/2026-08-31.md`・`2026-09-01.md`（`feat/judge-react01-transcribed` の PR。このマージ後の状態で書いている。起動の流れと JSX の判定は verifyBy に届かずすべて保留。KNOWLEDGE.md 2026-11-03）。OrgFlow の基礎の確認（`/study-drill`）は本人のタスクとして後回し（TODO.md の保留 H3）
+- 判定：未判定は 0 本。最後は react-01 の記録から書き起こした study の `go-react/logs/2026-08-31.md`・`2026-09-01.md`・`2026-09-02.md`（`feat/judge-react01-transcribed` の PR。このマージ後の状態で書いている。JSX は L1、起動の流れは verifyBy のドリルをしておらず保留のまま。KNOWLEDGE.md 2026-11-03）。OrgFlow の基礎の確認（`/study-drill`）は本人のタスクとして後回し（TODO.md の保留 H3）
 - **補足のラベルを減らした**（本人の希望。12 か所とも採用。`feat/fewer-labels` の PR。このマージ後の状態で書いている）。
   これからの画面の決まり：前置きの語・数の言い直し・凡例の文を足す前に、並びと形で伝わらないかを先に考える（DESIGN.md Layout の先頭、`logs/decisions.md` 2026-10-24）。
   学習パスの説明の 1 行（10-24 に折れ方を直したもの）も、この決定で外した

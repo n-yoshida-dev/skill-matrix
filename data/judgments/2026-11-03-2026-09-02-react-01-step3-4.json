@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 2,
+  "loggedAt": "2026-11-03",
+  "source": "ai",
+  "judge": "claude-code",
+  "judgments": [
+    {
+      "itemKey": "react-jsx-ts-basics",
+      "evidenceType": "drill",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-02",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L8-L9",
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L14-L16"
+      ],
+      "rationale": "冒頭の想起で {0 && <p>} を何も出ないと誤答したあと、層を分けた確認 1 問（false と 0 の比較）で通過した。E0-④ で items.map から <li> を返す一覧を実装し、戻り値を問う問 1 に正答した。問 2 は <li> は文字列扱いで表示されると答え、一部の正答だった",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "react-jsx-ts-basics",
+      "evidenceType": "self_explanation",
+      "proposedLevel": 1,
+      "occurredAt": "2026-09-02",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L13",
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L32"
+      ],
+      "rationale": "map の動きを、要素の数だけアロー関数を呼び、{} が無いので return を省略した戻り値を map が集めて新しい配列にする、と自分の言葉で説明した",
+      "confidence": 0.6
+    },
+    {
+      "itemKey": "react-ts-integration",
+      "evidenceType": "learning_activity",
+      "proposedLevel": 0,
+      "occurredAt": "2026-09-05",
+      "evidenceRefs": [
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L21",
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L24"
+      ],
+      "rationale": "実験 E3（onClick={f} と onClick={f()}）で出た TS の赤線（void を MouseEventHandler に割り当て不可）を自力で読み解いた。何と何が合わないかを問いに答えた記述は無い",
+      "confidence": 0.6
+    }
+  ],
+  "unmatched": [
+    "冒頭の想起で === と == の違いに型・理由とも正答した（JavaScript の文法で、ロードマップの項目に当たらない）",
+    "一覧の key について、無いと Console に警告が出ることを確かめ、要素を消したときの画面の文字と書き直す行を問う確認 1 問に、量を減らした再確認で正答した",
+    "実験 E3 で onClick={f} と onClick={f()} を実装し、f が呼ばれる回数を、途中で仮説を直して予想して的中した。onClick={() => f()} の変更予測の確認 1 問に正答した"
+  ]
+}

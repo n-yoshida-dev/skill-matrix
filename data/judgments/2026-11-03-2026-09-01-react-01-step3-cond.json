@@ -9,7 +9,7 @@
       "evidenceType": "drill",
       "proposedLevel": 1,
       "occurredAt": "2026-09-01",
-      "evidenceRefs": ["repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-09-01.md#L9"],
+      "evidenceRefs": ["repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-01.md#L9"],
       "rationale": "冒頭の想起で、render の行が実行された時点では App はまだ呼ばれていないと正答した。verifyBy の index.html・main.tsx・App のそれぞれが無いと何が起きるかを予想するドリルはしていない",
       "confidence": 0.4
     },
@@ -18,7 +18,7 @@
       "evidenceType": "drill",
       "proposedLevel": 1,
       "occurredAt": "2026-09-01",
-      "evidenceRefs": ["repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-09-01.md#L11"],
+      "evidenceRefs": ["repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-01.md#L11"],
       "rationale": "冒頭の想起で親子関係を問われ、最初は App の中で呼び出されると答えたあと、呼ぶのは React で書かれているのは戻り値の中、と直して通過した",
       "confidence": 0.6
     },
@@ -28,8 +28,8 @@
       "proposedLevel": 1,
       "occurredAt": "2026-09-01",
       "evidenceRefs": [
-        "repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-09-01.md#L10",
-        "repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-09-01.md#L13-L14"
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-01.md#L10",
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-01.md#L13-L14"
       ],
       "rationale": "想起の {name} に正答し、三項（Badge・count=3）と && の 2 ケースの表示を予想して的中した。verifyBy のうちアロー関数の戻り値は問われていない",
       "confidence": 0.45
@@ -38,10 +38,10 @@
       "itemKey": "react-jsx-ts-basics",
       "evidenceType": "self_explanation",
       "proposedLevel": 1,
-      "occurredAt": "2026-09-01",
+      "occurredAt": "2026-09-02",
       "evidenceRefs": [
-        "repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-09-01.md#L15-L20",
-        "repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-09-01.md#L28-L29"
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-01.md#L15-L20",
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-01.md#L28-L29"
       ],
       "rationale": "{0 && <p>} は何も出ないと予想して外れたあと、切り分け実験を経て、0 が出る理由を && が 0 を返し React が数値を描く、の 2 段で説明した。&& と {} の描画ルールを言い換えた。verifyBy のうちアロー関数の戻り値は問われていない",
       "confidence": 0.45

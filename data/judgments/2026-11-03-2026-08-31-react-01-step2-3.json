@@ -10,10 +10,10 @@
       "proposedLevel": 1,
       "occurredAt": "2026-08-31",
       "evidenceRefs": [
-        "repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-08-31.md#L8",
-        "repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-08-31.md#L11"
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-08-31.md#L8",
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-08-31.md#L11"
       ],
-      "rationale": "冒頭の想起で、レシーバの行き先を v は (v Vertex) に入り Abs(v) と書いても同じ、と答えた（正誤の記録は無い）。verifyBy の値レシーバとポインタレシーバの違いは扱っていない",
+      "rationale": "冒頭の想起で、レシーバの行き先を v は (v Vertex) に入り Abs(v) と書いても同じ、と答えて正解した。verifyBy の値レシーバとポインタレシーバの違いは扱っていない",
       "confidence": 0.3
     },
     {
@@ -21,7 +21,7 @@
       "evidenceType": "drill",
       "proposedLevel": 1,
       "occurredAt": "2026-08-31",
-      "evidenceRefs": ["repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-08-31.md#L14"],
+      "evidenceRefs": ["repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-08-31.md#L14"],
       "rationale": "動作モデルで最初に App を呼ぶのは main.tsx と誤答し、main.tsx は渡すだけで呼ぶのは React という区別の説明のあと、確認 1 問で通過した。verifyBy の index.html・main.tsx・App のそれぞれが無いと何が起きるかを予想するドリルはしていない",
       "confidence": 0.4
     },
@@ -29,8 +29,8 @@
       "itemKey": "react-components-destructuring",
       "evidenceType": "drill",
       "proposedLevel": 1,
-      "occurredAt": "2026-08-31",
-      "evidenceRefs": ["repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-08-31.md#L16"],
+      "occurredAt": "2026-09-01",
+      "evidenceRefs": ["repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-08-31.md#L15-L16"],
       "rationale": "E0-① で Hello コンポーネントを実装して 2 回並べ、表示を予想して的中した",
       "confidence": 0.7
     },
@@ -38,10 +38,11 @@
       "itemKey": "react-jsx-ts-basics",
       "evidenceType": "drill",
       "proposedLevel": 1,
-      "occurredAt": "2026-08-31",
+      "occurredAt": "2026-09-01",
       "evidenceRefs": [
-        "repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-08-31.md#L17",
-        "repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-08-31.md#L26"
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-08-31.md#L15",
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-08-31.md#L17",
+        "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-08-31.md#L26"
       ],
       "rationale": "E0-② で JSX の {name} と {} なしの name の出力の違いを予想して的中した。verifyBy のうち && とアロー関数の戻り値はこのセッションでは問われていない",
       "confidence": 0.4
