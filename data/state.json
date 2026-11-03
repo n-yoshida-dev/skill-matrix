@@ -229,7 +229,7 @@
       ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-08-29",
+      "lastEvidenceAt": "2026-09-01",
       "events": [
         {
           "file": "2026-09-27-migration-react.json",
@@ -261,6 +261,40 @@
           ],
           "rationale": "オブジェクトの分割代入は名前で対応することを確認問題（{ b, a }）に正答して確認した。アロー関数の {} と return、&& の評価結果、スプレッドの後勝ちも確認済み",
           "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-11-03-2026-08-31-react-01-step2-3.json",
+          "index": 2,
+          "occurredAt": "2026-08-31",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-08-31.md#L16"
+          ],
+          "rationale": "E0-① で Hello コンポーネントを実装して 2 回並べ、表示を予想して的中した",
+          "confidence": 0.7,
+          "violations": []
+        },
+        {
+          "file": "2026-11-03-2026-09-01-react-01-step3-cond.json",
+          "index": 1,
+          "occurredAt": "2026-09-01",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@d0a5d42/go-react/logs/2026-09-01.md#L11"
+          ],
+          "rationale": "冒頭の想起で親子関係を問われ、最初は App の中で呼び出されると答えたあと、呼ぶのは React で書かれているのは戻り値の中、と直して通過した",
+          "confidence": 0.6,
           "violations": []
         }
       ]
@@ -2162,6 +2196,48 @@
       "file": "2026-10-24-2026-10-22-orgflow-u2-v10.json",
       "index": 6,
       "itemKey": "db-multitenant-schema",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.45 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-08-31-react-01-step2-3.json",
+      "index": 0,
+      "itemKey": "go-methods",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.30 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-08-31-react-01-step2-3.json",
+      "index": 1,
+      "itemKey": "react-render-flow",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-08-31-react-01-step2-3.json",
+      "index": 3,
+      "itemKey": "react-jsx-ts-basics",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-09-01-react-01-step3-cond.json",
+      "index": 0,
+      "itemKey": "react-render-flow",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-09-01-react-01-step3-cond.json",
+      "index": 2,
+      "itemKey": "react-jsx-ts-basics",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.45 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-09-01-react-01-step3-cond.json",
+      "index": 3,
+      "itemKey": "react-jsx-ts-basics",
       "code": "V7_low_confidence",
       "detail": "確信度 0.45 が閾値 0.50 未満のため保留"
     }
