@@ -181,11 +181,13 @@
     },
     {
       "itemKey": "react-jsx-ts-basics",
-      "verifiedLevel": 0,
-      "evidencedLevels": [],
-      "preState": "explained_only",
+      "verifiedLevel": 1,
+      "evidencedLevels": [
+        1
+      ],
+      "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": null,
+      "lastEvidenceAt": "2026-09-02",
       "events": [
         {
           "file": "2026-09-27-migration-react.json",
@@ -218,6 +220,42 @@
           "rationale": "token === \"\" || null が (token === \"\") || (null) と読まれること、アロー関数の引数は => の手前に書くこと、JSX の外では {} で囲まないことは、指摘と説明を受けて直したのみで、単独の確認はしていない",
           "confidence": 0.6,
           "violations": []
+        },
+        {
+          "file": "2026-11-03-2026-09-02-react-01-step3-4.json",
+          "index": 0,
+          "occurredAt": "2026-09-02",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L8-L9",
+            "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L14-L16"
+          ],
+          "rationale": "冒頭の想起で {0 && <p>} を何も出ないと誤答したあと、層を分けた確認 1 問（false と 0 の比較）で通過した。E0-④ で items.map から <li> を返す一覧を実装し、戻り値を問う問 1 に正答した。問 2 は <li> は文字列扱いで表示されると答え、一部の正答だった",
+          "confidence": 0.6,
+          "violations": []
+        },
+        {
+          "file": "2026-11-03-2026-09-02-react-01-step3-4.json",
+          "index": 1,
+          "occurredAt": "2026-09-02",
+          "source": "ai",
+          "evidenceType": "self_explanation",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L13",
+            "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L32"
+          ],
+          "rationale": "map の動きを、要素の数だけアロー関数を呼び、{} が無いので return を省略した戻り値を map が集めて新しい配列にする、と自分の言葉で説明した",
+          "confidence": 0.6,
+          "violations": []
         }
       ]
     },
@@ -229,7 +267,7 @@
       ],
       "preState": "none",
       "needsReview": false,
-      "lastEvidenceAt": "2026-08-29",
+      "lastEvidenceAt": "2026-09-01",
       "events": [
         {
           "file": "2026-09-27-migration-react.json",
@@ -261,6 +299,40 @@
           ],
           "rationale": "オブジェクトの分割代入は名前で対応することを確認問題（{ b, a }）に正答して確認した。アロー関数の {} と return、&& の評価結果、スプレッドの後勝ちも確認済み",
           "confidence": null,
+          "violations": []
+        },
+        {
+          "file": "2026-11-03-2026-08-31-react-01-step2-3.json",
+          "index": 2,
+          "occurredAt": "2026-09-01",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-08-31.md#L15-L16"
+          ],
+          "rationale": "E0-① で Hello コンポーネントを実装して 2 回並べ、表示を予想して的中した",
+          "confidence": 0.7,
+          "violations": []
+        },
+        {
+          "file": "2026-11-03-2026-09-01-react-01-step3-cond.json",
+          "index": 1,
+          "occurredAt": "2026-09-01",
+          "source": "ai",
+          "evidenceType": "drill",
+          "proposedLevel": 1,
+          "marked": [
+            1
+          ],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-01.md#L11"
+          ],
+          "rationale": "冒頭の想起で親子関係を問われ、最初は App の中で呼び出されると答えたあと、呼ぶのは React で書かれているのは戻り値の中、と直して通過した",
+          "confidence": 0.6,
           "violations": []
         }
       ]
@@ -677,6 +749,22 @@
             "repo:n-yoshida-dev/study@df86be2/orgflow-learning/logs/2026-10-06.md#L11"
           ],
           "rationale": "useState の型を 3 つの文字列に絞って出た型エラー 2 つについて、エラー文の読み方（渡したもの・受け取る側の決まり）の説明を受けたあと、初期値の空文字が選択肢に無いこと、onChange で入る文字列が選択肢の外になりうることを自分の言葉で言い当て、1 つ目は自分で直した",
+          "confidence": 0.6,
+          "violations": []
+        },
+        {
+          "file": "2026-11-03-2026-09-02-react-01-step3-4.json",
+          "index": 2,
+          "occurredAt": "2026-09-05",
+          "source": "ai",
+          "evidenceType": "learning_activity",
+          "proposedLevel": 0,
+          "marked": [],
+          "evidenceRefs": [
+            "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L21",
+            "repo:n-yoshida-dev/study@6899ab5/go-react/logs/2026-09-02.md#L24"
+          ],
+          "rationale": "実験 E3（onClick={f} と onClick={f()}）で出た TS の赤線（void を MouseEventHandler に割り当て不可）を自力で読み解いた。何と何が合わないかを問いに答えた記述は無い",
           "confidence": 0.6,
           "violations": []
         }
@@ -2162,6 +2250,48 @@
       "file": "2026-10-24-2026-10-22-orgflow-u2-v10.json",
       "index": 6,
       "itemKey": "db-multitenant-schema",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.45 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-08-31-react-01-step2-3.json",
+      "index": 0,
+      "itemKey": "go-methods",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.30 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-08-31-react-01-step2-3.json",
+      "index": 1,
+      "itemKey": "react-render-flow",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-08-31-react-01-step2-3.json",
+      "index": 3,
+      "itemKey": "react-jsx-ts-basics",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-09-01-react-01-step3-cond.json",
+      "index": 0,
+      "itemKey": "react-render-flow",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.40 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-09-01-react-01-step3-cond.json",
+      "index": 2,
+      "itemKey": "react-jsx-ts-basics",
+      "code": "V7_low_confidence",
+      "detail": "確信度 0.45 が閾値 0.50 未満のため保留"
+    },
+    {
+      "file": "2026-11-03-2026-09-01-react-01-step3-cond.json",
+      "index": 3,
+      "itemKey": "react-jsx-ts-basics",
       "code": "V7_low_confidence",
       "detail": "確信度 0.45 が閾値 0.50 未満のため保留"
     }
