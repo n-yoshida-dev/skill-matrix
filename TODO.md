@@ -326,7 +326,7 @@ v1 で要るのは「AI に渡す指示書」と、AI が返した JSON を検�
   完了条件：`docs/build-your-own.md` に、仕組み（データの形・判定の流れ・再計算・画面）、写すもの（`prompts/judge.md`・CLI・画面・見本のデータ）と
   写さないもの（`data/` の実データ・`sources.local.json`・開発用の文書・`.claude/` の設定・棚上げのコード）、相手が自分の AI に渡す最初の頼み方の例がある。
   判定基準を書き写していない（`prompts/judge.md` と `data/roadmap.json` へのリンクだけ）。**Claude Code か Codex に説明書だけを読ませて、空のフォルダに見本のデータで画面が出るところまで一度試す**
-- [ ] README を紹介向けに書き直し、`LICENSE`（MIT）を置く
+- [x] README を紹介向けに書き直し、`LICENSE`（MIT）を置く（2026-11-03 完了。同梱の 2 つのロードマップはどちらも `origin: "manual"` で外部の出典なし。スクリーンショットは見本の画面で撮り直した。KNOWLEDGE.md 2026-11-03）
   完了条件：README に「これは何か（スクリーンショット・作者の実物と見本の URL）／仕組みの 1 枚図／自分用に作るには（説明書へのリンク。AI 前提と冒頭で言い切る）／ライセンス」がある。
   `LICENSE` があり、README の「ライセンス」節が「未定」でない。`data/roadmap.json` の出典の利用条件を確かめてある
 - [x] 画面のフッターに「Built with skill-matrix」のリポジトリリンクを置く（2026-10-25 に確かめた：公開ビューのフッターに既にある。`frontend/src/features/public/PublicView.tsx` の `foot`）
