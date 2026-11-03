@@ -10,9 +10,11 @@
 | 作者の実物 | https://n-yoshida-dev.github.io/skill-matrix/ |
 | 見本（架空の学習者のデータ） | https://n-yoshida-dev.github.io/skill-matrix/demo/ |
 
-![理解度台帳：分野ごとのレベルと、項目のタイル（塗りの濃さが理解度）](docs/images/public-view.png)
+下の 2 枚は見本の画面。
 
-![学習パスのスキルツリー：前提が上、それを前提にする項目が下](docs/images/plan-tree.png)
+![見本の理解度台帳：分野ごとのレベルと、項目のタイル（塗りの濃さが理解度）](docs/images/public-view.png)
+
+![見本の学習パスのスキルツリー：前提が上、それを前提にする項目が下](docs/images/plan-tree.png)
 
 ## 仕組み
 
