@@ -170,7 +170,9 @@ function PathRow({ n, deepen, externals }: RowProps) {
         ) : (
           <p className="outcome unset">到達状態は未記入</p>
         )}
-        {status === 'current' && item.verifyBy ? <VerifyLine verifyBy={item.verifyBy} /> : null}
+        {status === 'current' && item.verifyBy ? (
+          <VerifyLine verifyBy={item.verifyBy} level={st.verifiedLevel} />
+        ) : null}
         {externals.length > 0 ? (
           <p className="ext">
             ほかの分野の前提：
@@ -211,8 +213,8 @@ function ProgressBar({ gauge }: { gauge: ProgressGauge }) {
 }
 
 /** 今ここの行の「〜になるには：やること」。上がる段を名前と数字で先に言う（2026-11-08 本人の案 A） */
-function VerifyLine({ verifyBy }: { verifyBy: string }) {
-  const { lead, text } = verifyStep(verifyBy)
+function VerifyLine({ verifyBy, level }: { verifyBy: string; level: Level }) {
+  const { lead, text } = verifyStep(verifyBy, level)
   return (
     <p className="verify">
       {lead}：{text}

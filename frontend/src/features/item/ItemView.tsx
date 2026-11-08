@@ -62,7 +62,7 @@ export function ItemView({ data, today }: Props) {
   const fresh = staleness(today, st.lastEvidenceAt, cfg)
   const missing = missingLevels(st)
   const pending = pendingLevels(st).length > 0 && missing.length > 0
-  const step = item.verifyBy ? verifyStep(item.verifyBy) : null
+  const step = item.verifyBy ? verifyStep(item.verifyBy, st.verifiedLevel) : null
   const allItems = new Map(data.roadmap.domains.flatMap((d) => d.items.map((it) => [it.key, it])))
   const dependents = data.roadmap.domains.flatMap((d) =>
     d.items.filter((it) => (it.dependsOn ?? []).includes(item.key)),

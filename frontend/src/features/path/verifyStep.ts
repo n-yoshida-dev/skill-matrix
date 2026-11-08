@@ -18,14 +18,17 @@ const FALLBACK_LEAD = '次のレベルに上がるには'
  * verifyBy から見出しと本文を作る。
  * 例：「確認問題に答える（L1）」→ 見出し「「基礎を確認した」（L1）になるには」、本文「確認問題に答える」。
  * 段が 2 つ書いてあれば（「（L1・L2）」）、上の段で言う（その確認で上の段まで届くため）。
+ * その段にもう届いている（verifyBy が判定で段が上がったあと書き換えられていない）ときは、
+ * 次の目標に見せず「〈段〉（Ln）の確認方法」と言う（PR #136 の受け入れレビュー。実データの react-jsx-ts-basics など）。
  */
-export function verifyStep(verifyBy: string): VerifyStep {
+export function verifyStep(verifyBy: string, verifiedLevel: Level): VerifyStep {
   const m = TRAILING_LEVELS.exec(verifyBy)
   if (!m) return { lead: FALLBACK_LEAD, text: verifyBy }
   const levels = m[1].split('・').map((s) => Number(s.slice(1)) as Level)
   const top = Math.max(...levels) as Level
+  const step = `「${LEVEL_NAMES[top]}」（L${top}）`
   return {
-    lead: `「${LEVEL_NAMES[top]}」（L${top}）になるには`,
+    lead: top > verifiedLevel ? `${step}になるには` : `${step}の確認方法`,
     text: verifyBy.slice(0, m.index).trimEnd(),
   }
 }
