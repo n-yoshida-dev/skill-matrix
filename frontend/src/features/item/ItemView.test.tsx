@@ -10,7 +10,7 @@ import { ItemView } from './ItemView'
 // - 見出しに Verified Level／付いている印／未確認の段の 3 行がある
 // - 印がいつ・どの根拠で付いたかが、履歴（marked・rationale・evidenceRefs）で読める。起きた日の新しい順
 // - 印を付けなかった判定は「印なし」、不合格の報告は違反の記号と説明が出る
-// - 実装の根拠だけがある項目は「既存の実装について L1 / L2 を…確認する」と次の確認方法を出す
+// - 実装の根拠だけがある項目は「既存の実装について L1 / L2 を…確認する」と、上がる段とやることを出す
 // - 保留（deferred）がこの項目の分だけ出る
 // - 前提と、この項目を前提にする項目へのリンクがある
 // - 編集の手段（入力欄・ボタン）を置かない
@@ -194,7 +194,9 @@ describe('項目詳細', () => {
       screen.getByText('次にやること：既存の実装について L1 / L2 を短いドリル・自己説明で確認する'),
     ).toBeInTheDocument()
     expect(
-      screen.getByText('確認方法：複合外部キーが何を防ぐかを答える（L1・L2）'),
+      screen.getByText(
+        '「自分の言葉で説明できる」（L2）になるには：複合外部キーが何を防ぐかを答える',
+      ),
     ).toBeInTheDocument()
     expect(screen.getByText('身につくと：混入を防ぐ制約を説明できる')).toBeInTheDocument()
   })

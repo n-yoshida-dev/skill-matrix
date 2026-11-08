@@ -18,10 +18,11 @@ import {
   stalenessConfig,
 } from '../plan/matrix'
 import { pendingCheckText, pendingLevels, stateOf } from '../plan/next'
+import { verifyStep } from '../path/verifyStep'
 import './item.css'
 
 // 項目詳細（SPEC.md §7・§7.4）。見出しに 3 行（Verified Level／付いている印／未確認の段）、
-// 到達状態と次の確認方法、印の履歴（いつ・どの根拠が・どの印を付けたか）、保留・棄却を出す。
+// 到達状態と次のレベルに上がる方法、印の履歴（いつ・どの根拠が・どの印を付けたか）、保留・棄却を出す。
 // **この画面から編集はしない**（2026-09-23 決定。更新は data/judgments/ にファイルを足して行う）
 
 interface Props {
@@ -61,6 +62,7 @@ export function ItemView({ data, today }: Props) {
   const fresh = staleness(today, st.lastEvidenceAt, cfg)
   const missing = missingLevels(st)
   const pending = pendingLevels(st).length > 0 && missing.length > 0
+  const step = item.verifyBy ? verifyStep(item.verifyBy, st.verifiedLevel) : null
   const allItems = new Map(data.roadmap.domains.flatMap((d) => d.items.map((it) => [it.key, it])))
   const dependents = data.roadmap.domains.flatMap((d) =>
     d.items.filter((it) => (it.dependsOn ?? []).includes(item.key)),
@@ -125,13 +127,19 @@ export function ItemView({ data, today }: Props) {
         {reasons.length > 0 ? <li className="warn">要再確認：{reasons.join('／')}</li> : null}
       </ul>
 
-      <h3>到達状態と次の確認方法</h3>
+      <h3>到達状態と次のレベル</h3>
       <p>身につくと：{item.outcome ? item.outcome : <span className="unset">未記入</span>}</p>
       {pending ? <p>次にやること：{pendingCheckText(missing)}</p> : null}
-      <p>
-        {pending ? '確認方法' : '次の確認方法'}：
-        {item.verifyBy ? item.verifyBy : <span className="unset">未記入</span>}
-      </p>
+      {step ? (
+        // 「次の確認方法」では何の次か分からない（2026-11-08 本人）ので、上がる段を名前と数字で言う
+        <p>
+          {step.lead}：{step.text}
+        </p>
+      ) : (
+        <p>
+          次のレベルに上がるには：<span className="unset">未記入</span>
+        </p>
+      )}
 
       <h3>前提と、この項目を前提にする項目</h3>
       <ItemLinks label="前提" keys={item.dependsOn ?? []} items={allItems} states={states} />
