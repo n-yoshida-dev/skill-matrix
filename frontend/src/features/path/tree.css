@@ -109,9 +109,11 @@
   border-radius: 3px;
 }
 
-/* 「実装の根拠あり・基礎は未確認」（上位の根拠ありのバッジの代わりに文字で出す。2026-10-03 本人了承の 5） */
+/* 「実装済み・基礎未確認」（上位の根拠ありのバッジの代わりに文字で出す。2026-10-03 本人了承の 5） */
 .tnode .note {
   white-space: normal;
+  /* 1 行を占める。文が短くなって（2026-11-08）鍵の「必要：○○」の横に並び、「必要：」を押しつぶしたため */
+  flex-basis: 100%;
 }
 
 /* 前提待ち：灰色・鍵マーク。透かしは使わない（字が地と混ざり、濃さの差が 4.5 に届かなかった。2026-10-11 の見た目の点検） */
@@ -166,20 +168,32 @@
   letter-spacing: 1px;
 }
 
-/* 他分野の前提（ゴーストノード）：節より小さい。押すとその分野へ移る。状態の見せ方は分野の項目と同じ */
-.tnode.ghost {
-  padding: 4px 8px;
-  font-size: 11px;
-}
-
+/* 他分野の前提（ゴーストノード）：四角にせず、行き先へのリンクの見た目にする（2026-11-08 本人の案 B）。
+   分野の項目と同じ四角では、別の分野だと気づけなかった。状態は地の色・枠を使わず、文字（●と Lv・挑戦できる・鍵）だけで見せる */
+.tnode.ghost,
+.tnode.ghost.open,
+.tnode.ghost.done,
 .tnode.ghost.locked {
+  padding: 2px 0;
+  font-size: 11px;
   background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--rule-strong);
+  box-shadow: none;
 }
 
-/* 項目名は 1 行（全体は分野のツリーへ移ると読める） */
+.tnode.ghost.open,
+.tnode.ghost.done {
+  color: var(--ink);
+}
+
+.tnode.ghost .tk {
+  color: var(--dim);
+}
+
+/* 項目名は 1 行（全体は分野のツリーへ移ると読める）。下線で押せることを示す */
 .tnode.ghost .tn {
   -webkit-line-clamp: 1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 @media (hover: hover) {

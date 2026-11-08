@@ -72,6 +72,6 @@ test('JSON を差し替えると、トップのタイルと学習パスが変わ
   await expect(treeNode(page, 'e2e-next')).toContainText('挑戦できる')
   // 上位の根拠（印 3）だけがある項目は、バッジではなく文字で出る
   await expect(treeNode(page, 'e2e-long-item-key-for-tile-overlap')).toContainText(
-    '実装の根拠あり・基礎は未確認',
+    '実装済み・基礎未確認',
   )
 })

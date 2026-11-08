@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import type { AppData, ItemState } from '../../data/types'
-import { shortName } from '../public/summary'
+import { IMPLEMENTED_BUT_UNVERIFIED, shortName } from '../public/summary'
 import { isReady, stateOf } from '../plan/next'
 import {
   basicsUnverified,
@@ -23,8 +23,9 @@ import './tree.css'
 // 節は HTML の四角（文字の折り返しとキーボード操作のため）、線と合流点だけを SVG で引く。
 // 節の状態は 3 つ（2026-10-03 本人了承の 1）：前提待ち（灰・鍵・「必要：」）／挑戦できる（太い枠と文字）／確認済み（塗り 1 色と●の数＝レベル）。
 // 要再確認の枠・上位の根拠の三角・レベルによる色の濃淡・点線・深掘り候補・今ここはツリーに出さない（同じ了承の 5・6）。
-// 「実装の根拠あり・基礎は未確認」だけは文字で出す（同じ了承の 5）。
-// 他分野の前提はゴーストノードで、合流点の横に小さく置き、押すとその分野のツリーへ移る。状態は分野の項目と同じ 3 つで見せる。
+// 「実装済み・基礎未確認」だけは文字で出す（同じ了承の 5）。
+// 他分野の前提はゴーストノードで、合流点の横に小さく置き、押すとその分野のツリーへ移る。四角にせずリンクの見た目（↗ 分野名と下線の項目名）にし、
+// 状態は地の色を使わず文字（●と Lv・挑戦できる・鍵）だけで見せる（2026-11-08 本人の案 B。同じ四角では別の分野だと気づけなかった）。
 // 解放の条件の見せ方（2026-10-03 本人了承の 2・3）：前提が確認済みの線に色を付け、合流点に「n つとも必要 x/n」、
 // 鍵の項目に確認済みでない直接の前提の名前（「必要：○○」）を出す。どれも unlock.ts の同じ判定から出す。
 
@@ -68,7 +69,8 @@ export function TreeView({ data, path }: Props) {
         title={`${it?.name ?? g.key}（${domainName} の学習パスへ移る）`}
         aria-label={`他分野：${domainName} ${it?.name ?? g.key}（${stateText(kind, st)}）`}
       >
-        <span className="tk">他分野：{domainName}</span>
+        {/* 行き先の分野名と ↗。四角にせずリンクの見た目にし、分野の項目と形で分ける（2026-11-08 本人の案 B） */}
+        <span className="tk">↗ {domainName}</span>
         <span className="tn">{nameOf(g.key)}</span>
         <span className="ts">
           <StateMark kind={kind} st={st} />
@@ -153,8 +155,8 @@ export function TreeView({ data, path }: Props) {
   )
 }
 
-/** 上位の根拠がある項目に添える文（SPEC.md §7.2。一列表示のバッジの代わり） */
-const BASICS_TEXT = '実装の根拠あり・基礎は未確認'
+/** 上位の根拠がある項目に添える文（SPEC.md §7.2。一列表示のバッジ・公開ビューと同じ言葉。2026-11-08 本人 OK） */
+const BASICS_TEXT = IMPLEMENTED_BUT_UNVERIFIED
 
 /** 状態を読み上げる文。確認済みはレベルも添える */
 function stateText(kind: NodeKind, st: ItemState): string {

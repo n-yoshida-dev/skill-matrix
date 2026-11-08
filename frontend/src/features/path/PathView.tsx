@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link, NavLink, useParams } from 'react-router'
 import type { AppData, ItemState, Level } from '../../data/types'
-import { stateByKey, topEvidenced } from '../public/summary'
+import { IMPLEMENTED_BUT_UNVERIFIED, stateByKey, topEvidenced } from '../public/summary'
 import { stalenessConfig } from '../plan/matrix'
 import { nextActions, nextLimitFrom, stateOf, weightsFrom } from '../plan/next'
 import { buildPath, progressGauge, type PathNode, type ProgressGauge } from './path'
 import { TreeView } from './TreeView'
 import { readViewMode, writeViewMode, type PathViewMode } from './viewMode'
+import { verifyStep } from './verifyStep'
 import './path.css'
 
 // 学習パス（SPEC.md §7.2）。分野を選ぶと、その分野の項目を一列表示かスキルツリー表示で見せる。
@@ -116,7 +117,7 @@ export function PathView({ data, today }: Props) {
             {
               '上が前提、下がそれを前提にする項目。●の数がレベル（5 段）。色の付いた線は、その前提が確認済み。'
             }
-            {'節を押すと項目詳細、「他分野」の四角を押すとその分野のツリーへ移る。'}
+            {'節を押すと項目詳細、↗ の付いた名前を押すとその分野のツリーへ移る。'}
           </p>
         </>
       )}
@@ -156,8 +157,9 @@ function PathRow({ n, deepen, externals }: RowProps) {
           ) : null}
           {status === 'current' ? <span className="badge now">今ここ</span> : null}
           {deepen ? <span className="badge">深掘り候補</span> : null}
+          {/* 上の段の印（実装した等）があり、下の段（基礎）が未確認。言葉は公開ビュー・ツリーと同じ（2026-11-08 本人 OK） */}
           {top > st.verifiedLevel ? (
-            <span className="badge">上位の根拠あり（印 {st.evidencedLevels.join(', ')}）</span>
+            <span className="badge">{IMPLEMENTED_BUT_UNVERIFIED}</span>
           ) : null}
           {/* 「まだ着手できない」ことを伝える札なので、済んだ項目には出さない */}
           {!n.ready && status !== 'done' ? <span className="badge dim">前提が未達</span> : null}
@@ -168,9 +170,7 @@ function PathRow({ n, deepen, externals }: RowProps) {
         ) : (
           <p className="outcome unset">到達状態は未記入</p>
         )}
-        {status === 'current' && item.verifyBy ? (
-          <p className="verify">次の確認方法：{item.verifyBy}</p>
-        ) : null}
+        {status === 'current' && item.verifyBy ? <VerifyLine verifyBy={item.verifyBy} /> : null}
         {externals.length > 0 ? (
           <p className="ext">
             ほかの分野の前提：
@@ -207,5 +207,15 @@ function ProgressBar({ gauge }: { gauge: ProgressGauge }) {
       </span>
       <span className="sr-only">基礎確認 {gauge.label} 項目</span>
     </div>
+  )
+}
+
+/** 今ここの行の「〜になるには：やること」。上がる段を名前と数字で先に言う（2026-11-08 本人の案 A） */
+function VerifyLine({ verifyBy }: { verifyBy: string }) {
+  const { lead, text } = verifyStep(verifyBy)
+  return (
+    <p className="verify">
+      {lead}：{text}
+    </p>
   )
 }

@@ -10,11 +10,11 @@ import { PathView } from './PathView'
 // 「何を保証しているか」：
 // - 分野を選ぶと、その分野の項目が依存順に縦一列で並ぶ（前提が先）
 // - 上部に分野の目標（「目標：」は付けない）と、1 コマ＝1 項目のゲージと「M/N」の進捗が出る（% は出ない。読み上げには「基礎確認 M/N 項目」）
-// - 済・今ここ・この先が記号と「今ここ」の札で分かる（記号の意味は読み上げに渡す）。今ここには次の確認方法が出る
+// - 済・今ここ・この先が記号と「今ここ」の札で分かる（記号の意味は読み上げに渡す）。今ここには「〈段の名前〉（Ln）になるには：」とやることが出る
 // - 行に項目キーとレベル 0 は出ない。レベル 1 以上は「L1」と出る
 // - どの行にも到達状態が出て（「身につくと：」は付けない）、空なら「到達状態は未記入」
 // - 済んだ項目のうち「次にやること」に入っているものに「深掘り候補」が付く
-// - 印が表示レベルより上にある項目に「上位の根拠あり」が付く
+// - 印が表示レベルより上にある項目に「実装済み・基礎未確認」が付く
 // - 分野の外の前提は、名前とレベルを添えて出る
 // - 分野のタブを押すと別の分野に切り替わる
 
@@ -133,14 +133,16 @@ describe('学習パス・一列表示', () => {
     expect(document.querySelector('.path-head')).not.toHaveTextContent('%')
   })
 
-  it('済・今ここ・この先が分かり、今ここには次の確認方法が出る', () => {
+  it('済・今ここ・この先が分かり、今ここには上がる段とやることが出る', () => {
     renderAt('/plan/path/go')
     // go-http は分野の外の前提（db-schema）がレベル 0 なので着手できず、今ここは go-errors
     expect(row('go-syntax').getByText('✓')).toBeInTheDocument()
     expect(row('go-http').getByText('前提が未達')).toBeInTheDocument()
     expect(row('go-errors').getByText('今ここ')).toBeInTheDocument()
-    expect(row('go-errors').getByText('次の確認方法：error を返すドリル（L1）')).toBeInTheDocument()
-    expect(row('go-syntax').queryByText(/次の確認方法/)).toBeNull()
+    expect(
+      row('go-errors').getByText('「基礎を確認した」（L1）になるには：error を返すドリル'),
+    ).toBeInTheDocument()
+    expect(row('go-syntax').queryByText(/になるには/)).toBeNull()
     // 記号の意味は凡例ではなく読み上げに渡す
     expect(row('go-syntax').getByText('済')).toHaveClass('sr-only')
     expect(row('go-http').getByText('この先')).toHaveClass('sr-only')
@@ -191,10 +193,10 @@ describe('学習パス・一列表示', () => {
     expect(screen.queryByText(/身につくと/)).toBeNull()
   })
 
-  it('済んだ項目のうち「次にやること」に入るものに深掘り候補、上位の印がある項目に上位の根拠ありが付く', () => {
+  it('済んだ項目のうち「次にやること」に入るものに深掘り候補、上位の印がある項目に実装済み・基礎未確認が付く', () => {
     renderAt('/plan/path/go')
     expect(row('go-syntax').getByText('深掘り候補')).toBeInTheDocument()
-    expect(row('go-syntax').getByText('上位の根拠あり（印 1, 3）')).toBeInTheDocument()
+    expect(row('go-syntax').getByText('実装済み・基礎未確認')).toBeInTheDocument()
     expect(row('go-errors').queryByText('深掘り候補')).toBeNull()
   })
 
@@ -213,7 +215,7 @@ describe('学習パス・一列表示', () => {
     expect(screen.getByRole('button', { name: 'ツリー' })).toHaveAttribute('aria-pressed', 'true')
     // ツリーでは縦一列の一覧が消え、節（項目詳細へのリンク）とゴーストノードが出る
     expect(screen.queryByRole('list')).toBeNull()
-    expect(screen.getByText('他分野：データベース')).toBeInTheDocument()
+    expect(screen.getByText('↗ データベース')).toBeInTheDocument()
     first.unmount()
     // 開き直してもツリーのまま
     renderAt('/plan/path/go')
