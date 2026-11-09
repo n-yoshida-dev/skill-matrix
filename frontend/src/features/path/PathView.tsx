@@ -51,6 +51,8 @@ export function PathView({ data, today }: Props) {
   )
   const deepen = new Set(top.map((a) => a.itemKey))
   const names = new Map(domains.flatMap((d) => d.items.map((it) => [it.key, it.name])))
+  // 項目キー → 分野。ほかの分野の前提を「↗ 分野名」でその分野へつなぐのに使う
+  const domainOf = new Map(domains.flatMap((d) => d.items.map((it) => [it.key, d])))
 
   /** 表示を切り替え、選択を記憶する */
   const choose = (m: PathViewMode) => {
@@ -103,6 +105,8 @@ export function PathView({ data, today }: Props) {
                   key: k,
                   name: names.get(k) ?? k,
                   st: stateOf(states, k),
+                  domainKey: domainOf.get(k)?.key ?? '',
+                  domainName: domainOf.get(k)?.name ?? '',
                 }))}
               />
             ))}
@@ -128,7 +132,7 @@ export function PathView({ data, today }: Props) {
 interface RowProps {
   n: PathNode
   deepen: boolean
-  externals: { key: string; name: string; st: ItemState }[]
+  externals: { key: string; name: string; st: ItemState; domainKey: string; domainName: string }[]
 }
 
 /** 学習パスの 1 行 */
@@ -174,12 +178,20 @@ function PathRow({ n, deepen, externals }: RowProps) {
           <VerifyLine verifyBy={item.verifyBy} level={st.verifiedLevel} />
         ) : null}
         {externals.length > 0 ? (
+          // ほかの分野の前提は、ツリーの他分野と同じ「↗ 分野名」のリンクで示す。前置きの語・項目キー・「レベル 0」は出さない（2026-11-08。W20）
           <p className="ext">
-            ほかの分野の前提：
+            <span className="sr-only">ほかの分野の前提：</span>
             {externals.map((e, i) => (
               <span key={e.key}>
                 {i > 0 ? '、' : null}
-                <span className="num">{e.key}</span> {e.name}（レベル {e.st.verifiedLevel}）
+                <Link to={`/plan/path/${e.domainKey}`}>↗ {e.domainName}</Link> {e.name}
+                {e.st.verifiedLevel >= 1 ? (
+                  <>
+                    {' '}
+                    <LevelSwatch level={e.st.verifiedLevel} />
+                    <span className="num">L{e.st.verifiedLevel}</span>
+                  </>
+                ) : null}
               </span>
             ))}
           </p>

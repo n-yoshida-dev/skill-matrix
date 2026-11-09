@@ -226,7 +226,7 @@ function Detail({ item, state, onClose }: DetailProps) {
   return (
     <>
       <div>
-        <div className="key num">{item.key}</div>
+        {/* 項目キーは出さない（タイルと同じく、初めて見る人に意味が無い。2026-11-08。W20） */}
         <h3>{item.name}</h3>
         <div className="level">
           <span className={`swatch${state.verifiedLevel >= 1 ? ` l${state.verifiedLevel}` : ''}`} />
@@ -239,11 +239,8 @@ function Detail({ item, state, onClose }: DetailProps) {
             実装の根拠（L{topEvidenced(state)} まで）はありますが、基礎の確認が未了です。
           </p>
         ) : null}
-        <div className="outcome">
-          <span>身につくと</span>
-          <br />
-          {item.outcome ? item.outcome : <span>（未記入）</span>}
-        </div>
+        {/* 到達状態は前置き「身につくと」を付けない（2026-11-08。W20） */}
+        <div className="outcome">{item.outcome ? item.outcome : <span>到達状態は未記入</span>}</div>
       </div>
       <div className="evidence">
         {marked.length > 0 ? (

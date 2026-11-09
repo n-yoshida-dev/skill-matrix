@@ -198,7 +198,7 @@ describe('項目詳細', () => {
         '「自分の言葉で説明できる」（L2）になるには：複合外部キーが何を防ぐかを答える',
       ),
     ).toBeInTheDocument()
-    expect(screen.getByText('身につくと：混入を防ぐ制約を説明できる')).toBeInTheDocument()
+    expect(screen.getByText('混入を防ぐ制約を説明できる')).toBeInTheDocument()
   })
 
   it('保留はこの項目の分だけ出る', () => {
