@@ -15,7 +15,7 @@ import { PathView } from './PathView'
 // - どの行にも到達状態が出て（「身につくと：」は付けない）、空なら「到達状態は未記入」
 // - 済んだ項目のうち「次にやること」に入っているものに「深掘り候補」が付く
 // - 印が表示レベルより上にある項目に「実装済み・基礎未確認」が付く
-// - 分野の外の前提は、名前とレベルを添えて出る
+// - 分野の外の前提は、その分野へのリンク「↗ 分野名」と項目名で出る（前置きの語・項目キー・レベル 0 は読み上げだけ・出さない）
 // - 分野のタブを押すと別の分野に切り替わる
 
 const item = (over: Partial<ItemState> & { itemKey: string }): ItemState => ({
@@ -200,11 +200,36 @@ describe('学習パス・一列表示', () => {
     expect(row('go-errors').queryByText('深掘り候補')).toBeNull()
   })
 
-  it('分野の外の前提を、名前とレベルを添えて出す', () => {
+  it('分野の外の前提を、その分野へのリンク「↗ 分野名」と項目名で出す（レベル 0 と項目キーは出さない）', () => {
     renderAt('/plan/path/go')
-    expect(row('go-http').getByText(/ほかの分野の前提：/).textContent).toBe(
-      'ほかの分野の前提：db-schema スキーマ設計（レベル 0）',
+    const ext = row('go-http').getByText(/ほかの分野の前提：/).parentElement
+    expect(ext?.textContent).toBe('ほかの分野の前提：↗ データベース スキーマ設計')
+    expect(row('go-http').getByRole('link', { name: '↗ データベース' })).toHaveAttribute(
+      'href',
+      '/plan/path/db',
     )
+  })
+
+  it('分野の外の前提がレベル 1 以上なら、見本と「L n」を添える', () => {
+    const leveled: AppData = {
+      ...data,
+      state: {
+        ...data.state,
+        items: [
+          ...data.state.items,
+          item({ itemKey: 'db-schema', verifiedLevel: 2, evidencedLevels: [1, 2] }),
+        ],
+      },
+    }
+    render(
+      <MemoryRouter initialEntries={['/plan/path/go']}>
+        <Routes>
+          <Route path="/plan/path/:domainKey" element={<PathView data={leveled} today={today} />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    const ext = row('go-http').getByText(/ほかの分野の前提：/).parentElement
+    expect(ext?.textContent).toBe('ほかの分野の前提：↗ データベース スキーマ設計 L2')
   })
 
   it('ツリーに切り替えると階層図になり、選択を記憶する（次に開いてもツリー）', async () => {

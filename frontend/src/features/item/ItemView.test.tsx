@@ -198,7 +198,7 @@ describe('項目詳細', () => {
         '「自分の言葉で説明できる」（L2）になるには：複合外部キーが何を防ぐかを答える',
       ),
     ).toBeInTheDocument()
-    expect(screen.getByText('身につくと：混入を防ぐ制約を説明できる')).toBeInTheDocument()
+    expect(screen.getByText('混入を防ぐ制約を説明できる')).toBeInTheDocument()
   })
 
   it('保留はこの項目の分だけ出る', () => {
@@ -213,6 +213,10 @@ describe('項目詳細', () => {
     expect(screen.getByRole('link', { name: 'テナントの選択' })).toHaveAttribute(
       'href',
       '/plan/item/java-tenant',
+    )
+    // レベル 0 の項目には「（レベル 0）」を添えない（2026-11-09。W20）
+    expect(screen.getByText(/^この項目を前提にする項目：/).textContent).toBe(
+      'この項目を前提にする項目：テナントの選択',
     )
   })
 

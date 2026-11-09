@@ -565,11 +565,6 @@
   line-height: 1.4;
 }
 
-.detail .key {
-  color: var(--dim);
-  font-size: 13px;
-}
-
 .detail .level {
   margin-top: 10px;
   display: flex;
