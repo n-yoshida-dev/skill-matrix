@@ -178,7 +178,7 @@ function PathRow({ n, deepen, externals }: RowProps) {
           <VerifyLine verifyBy={item.verifyBy} level={st.verifiedLevel} />
         ) : null}
         {externals.length > 0 ? (
-          // ほかの分野の前提は、ツリーの他分野と同じ「↗ 分野名」のリンクで示す。前置きの語・項目キー・「レベル 0」は出さない（2026-11-08。W20）
+          // ほかの分野の前提は、ツリーの他分野と同じ「↗ 分野名」のリンクで示す。前置きの語・項目キー・「レベル 0」は出さない（2026-11-09。W20）
           <p className="ext">
             <span className="sr-only">ほかの分野の前提：</span>
             {externals.map((e, i) => (

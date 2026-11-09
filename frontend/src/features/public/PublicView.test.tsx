@@ -9,7 +9,7 @@ import { PublicView } from './PublicView'
 // 「何を保証しているか」：
 // - 1 層目に分野ごとの要約（一番高い段・段の名前・根拠の数・資格）があり、押すとその分野の見出しへ移る
 // - 分野ごとの行と、項目名が常時見えるタイルがある（項目キーは出さない）
-// - タイルを押すと根拠（日付・根拠の種類・一文）が開く
+// - タイルを押すと根拠（日付・根拠の種類・一文）が開く。根拠の枠に項目キーと「身につくと」は出さない
 // - [3] だけの項目は「実装済み・基礎未確認」と出る
 // - 段階前の状態・鮮度・保留・優先度・検証ルールの記号・確信度・evidenceRefs の生の文字列は出ない
 // - フッターはリポジトリへのリンクだけ
@@ -213,6 +213,9 @@ describe('公開ビュー', () => {
     expect(detail.textContent).toContain('L1・2　自分の言葉で説明した')
     expect(detail.textContent).toContain('ゼロ値を自分の言葉で説明した')
     expect(within(detail).getByText('型の流れを追える')).toBeInTheDocument()
+    // 項目キーと「身につくと」は出さない（2026-11-09。W20）
+    expect(detail.textContent).not.toContain('身につくと')
+    expect(detail.textContent).not.toContain('go-syntax')
   })
 
   it('根拠の枠を「閉じる」で閉じると、開いていたタイルへフォーカスが戻る', async () => {

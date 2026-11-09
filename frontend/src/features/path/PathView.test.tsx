@@ -210,6 +210,28 @@ describe('学習パス・一列表示', () => {
     )
   })
 
+  it('分野の外の前提がレベル 1 以上なら、見本と「L n」を添える', () => {
+    const leveled: AppData = {
+      ...data,
+      state: {
+        ...data.state,
+        items: [
+          ...data.state.items,
+          item({ itemKey: 'db-schema', verifiedLevel: 2, evidencedLevels: [1, 2] }),
+        ],
+      },
+    }
+    render(
+      <MemoryRouter initialEntries={['/plan/path/go']}>
+        <Routes>
+          <Route path="/plan/path/:domainKey" element={<PathView data={leveled} today={today} />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    const ext = row('go-http').getByText(/ほかの分野の前提：/).parentElement
+    expect(ext?.textContent).toBe('ほかの分野の前提：↗ データベース スキーマ設計 L2')
+  })
+
   it('ツリーに切り替えると階層図になり、選択を記憶する（次に開いてもツリー）', async () => {
     localStorage.clear()
     const first = renderAt('/plan/path/go')

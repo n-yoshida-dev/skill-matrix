@@ -128,7 +128,7 @@ export function ItemView({ data, today }: Props) {
       </ul>
 
       <h3>到達状態と次のレベル</h3>
-      {/* 到達状態は前置き「身につくと：」を付けない（一列と同じ。2026-11-08。W20） */}
+      {/* 到達状態は前置き「身につくと：」を付けない（一列と同じ。2026-11-09。W20） */}
       <p>{item.outcome ? item.outcome : <span className="unset">到達状態は未記入</span>}</p>
       {pending ? <p>次にやること：{pendingCheckText(missing)}</p> : null}
       {step ? (
@@ -214,7 +214,7 @@ function ItemLinks({ label, keys, items, states }: LinksProps) {
             <span key={k}>
               {i > 0 ? '、' : null}
               <Link to={`/plan/item/${k}`}>{items.get(k)?.name ?? k}</Link>
-              {/* レベル 0 は出さず、1 以上は「L1」だけ（一列と同じ。2026-11-08。W20） */}
+              {/* レベル 0 は出さず、1 以上は「L1」だけ（一列と同じ。2026-11-09。W20） */}
               {stateOf(states, k).verifiedLevel >= 1 ? (
                 <span className="num"> L{stateOf(states, k).verifiedLevel}</span>
               ) : null}

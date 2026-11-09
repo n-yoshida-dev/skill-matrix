@@ -214,6 +214,10 @@ describe('項目詳細', () => {
       'href',
       '/plan/item/java-tenant',
     )
+    // レベル 0 の項目には「（レベル 0）」を添えない（2026-11-09。W20）
+    expect(screen.getByText(/^この項目を前提にする項目：/).textContent).toBe(
+      'この項目を前提にする項目：テナントの選択',
+    )
   })
 
   it('編集の手段を置かない', () => {
