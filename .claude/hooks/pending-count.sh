@@ -24,8 +24,8 @@ command -v go > /dev/null 2>&1 || cannot_count "このフックの環境に go �
 
 # pending が出す警告（読めない根拠があると多めに、logsGlob の無いリポジトリがあると少なめに数えられる）を拾うため、stderr は一時ファイルに受ける
 ERR_FILE=$(mktemp) || cannot_count "一時ファイルを作れない"
-# 起動を待たせすぎないよう 60 秒で打ち切る（初回は go のビルドで数秒かかる）
-COUNT=$(cd "$PROJECT_DIR" && timeout 60 go -C backend run ./cmd/skillmatrix pending --count 2> "$ERR_FILE")
+# 起動を待たせすぎないよう 80 秒で打ち切る（初回は go のビルドで数秒かかる。Windows では初回のビルドが 60 秒を超えることがある。フックの時間切れ 90 秒より短く保つ）
+COUNT=$(cd "$PROJECT_DIR" && timeout 80 go -C backend run ./cmd/skillmatrix pending --count 2> "$ERR_FILE")
 STATUS=$?
 WARNINGS=$(grep -c '^警告:' "$ERR_FILE")
 FIRST_WARN=$(grep '^警告:' "$ERR_FILE" | head -1)
