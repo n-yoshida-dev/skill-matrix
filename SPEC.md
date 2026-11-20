@@ -381,14 +381,17 @@ AI が学習ログを自分で読みに行くための設定。ローカルの�
 {
   "logs": { "path": "learning-logs" },        // 既定の置き場（リポジトリ内・.gitignore 済み。v1.5 のテンプレート利用者向け）
   "repos": {                                  // リポジトリ名 → ローカルパスと、学習ログとして読むファイルのパターン
-    "n-yoshida-dev/study": { "path": "/home/<user>/workspace/study", "logsGlob": "*/logs/*.md" }
+    "n-yoshida-dev/study": { "path": "/home/<user>/workspace/study", "logsGlob": "dev/*/logs/*.md" }
   }
 }
 ```
 
 `repos` のキーは `evidenceRefs` の `repo:<owner>/<repo>` と同じ名前にする。無ければ AI はユーザーに場所を聞く。
-`logsGlob` は git の glob（`*` は `/` をまたがない）。study では `*/logs/*.md` にして、直下の `logs/`（判断台帳・マイルストーン。学習ログではない）を拾わない。
+`logsGlob` は git の glob（`*` は `/` をまたがない）。study では `dev/*/logs/*.md` にして、直下の `logs/`（判断台帳・マイルストーン。学習ログではない）と、開発以外のテーマを拾わない
+（2026-11-20 に study の開発のテーマを `dev/` に入れた。それまでは `*/logs/*.md`）。
 判定済みかどうかは `data/judgments/` の `evidenceRefs` の一覧と **path 単位**で突き合わせる（追記型のログなら commit の違いは無視してよい）。
+**名前が変わったログ（`git mv` などで場所を移したもの）は、前の名前も同じログとして扱う。** `pending` は HEAD までの履歴の名前の変更（`git log -M --diff-filter=R`）をたどり、
+前の名前の判定でも判定済みとみなし、凍結の時点に前の名前で中身（blob）が同じなら「変更されていない」とみなす。過去の判定の `evidenceRefs` は前の名前のまま直さない（コミットを固定した形なので、今も引ける）。
 加えて、**移行判定（`source: "migration"`）の `evidenceRefs` の 1 件目が指すコミット（移行元の台帳を凍結したコミット）より後に一度も変更されていないログは、自動の探索では判定済みとみなす**
 （台帳を経由して写し済みで、古いログを自動で判定し直すと台帳が意図して上げなかった段を付け直してしまう。2026-09-27、`prompts/judge.md` を書く段で判明）。
 自動の探索では、凍結前からあって凍結後に追記されたログは、凍結コミットからの差分だけを判定する。

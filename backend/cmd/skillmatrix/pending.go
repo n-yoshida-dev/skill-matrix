@@ -24,6 +24,11 @@ type repoSnapshot struct {
 	Uncommitted []string
 	// Freeze はこのリポジトリが移行の凍結コミットを持つときだけ埋める。
 	Freeze *freezeSnapshot
+	// Renames は HEAD までの履歴で名前が変わったファイルの、変わった後の名前 → 変わる前の名前（新しい変更から順）。
+	// git mv などで場所を移したログを、前の名前の判定と結び付けるため。同じ名前に何度も戻ってきたログもあるので、前の名前は全部残す（formerNames がたどる）。
+	Renames map[string][]string
+	// Blobs は Files の中身の id（git の blob）。名前が変わったログが、凍結の時点から中身も変わったかを見るのに使う。
+	Blobs map[string]string
 }
 
 // freezeSnapshot は移行の凍結コミット（移行元の台帳を凍結したコミット）の時点の情報。
@@ -36,6 +41,8 @@ type freezeSnapshot struct {
 	Changed []string
 	// Existed は凍結コミットの時点にあったファイル。
 	Existed []string
+	// Blobs は凍結コミットの時点にあったファイルの中身の id（git の blob）。名前が変わったログだけ、今の中身と比べる。
+	Blobs map[string]string
 }
 
 // freezePoint は移行の判定が指す凍結コミット。
@@ -54,6 +61,8 @@ type pendingLog struct {
 	Commit string
 	// DiffBase は差分だけを判定するときの基準コミット（凍結コミット）。空なら全文を判定する。
 	DiffBase string
+	// DiffBasePath は、凍結コミットの時点の名前が今と違うときの、その名前（差分は `git diff <DiffBase>:<DiffBasePath> HEAD:<Path>` で取る）。同じなら ""。
+	DiffBasePath string
 	// Backfilled は、凍結コミットより前の日付なのに凍結のあとで作られたログ（前の記録から書き起こしたもの）。
 	// 全文を読むが、判定するのは台帳に写っていない出来事だけだと判定する AI に知らせる（prompts/judge.md 手順 1。logs/decisions.md 2026-10-10）。
 	Backfilled bool
@@ -143,6 +152,9 @@ func findFreeze(files []judgment.File) (freezePoint, bool, error) {
 //     ② より先に当てる。git add だけした新しいログは、凍結後の変更（コミットどうしの比較）に出てこないので、② を先にすると黙って消える
 //   - ② 移行で写し済み：凍結コミットのあと一度も変更されていない（台帳を経由して写し済み。古いログを判定し直すと、台帳が意図して上げなかった段を付け直してしまう）
 //
+// 名前が変わったログ（Renames。2026-11-20 に study の開発のテーマを dev/ に入れた）は、前の名前も同じログとして扱う。
+// ① は前の名前の判定でも判定済み、② は凍結の時点に前の名前であり、中身（blob）が同じなら変更されていないとみなす。
+//
 // 凍結前からあって凍結後に変わったログは、凍結コミットからの差分だけを判定する（DiffBase）。
 // 並びはファイル名の日付の古い順（新しいログを先に判定すると「要再確認」の付き方が変わる）。日付の無いものは最後。
 func findPending(snaps []repoSnapshot, localLogs []string, judged map[string]bool) ([]pendingLog, []skippedLog) {
@@ -156,20 +168,38 @@ func findPending(snaps []repoSnapshot, localLogs []string, judged map[string]boo
 			changed, existed = toSet(s.Freeze.Changed), toSet(s.Freeze.Existed)
 		}
 		for _, p := range s.Files {
-			if judged[s.Repo+":"+p] {
+			names := append([]string{p}, formerNames(s.Renames, p)...)
+			if anyJudged(judged, s.Repo, names) {
 				continue // ①
 			}
 			if uncommitted[p] {
 				skipped = append(skipped, skippedLog{Repo: s.Repo, Path: p, Reason: "コミットされていない変更がある"})
 				continue // ③
 			}
-			if s.Freeze != nil && !changed[p] {
-				continue // ②
-			}
 			pl := pendingLog{Repo: s.Repo, Path: p}
 			if s.Freeze != nil {
-				if existed[p] {
+				// 凍結の時点の名前。今の名前で無ければ、前の名前を新しい順に探す
+				base := ""
+				for _, n := range names {
+					if existed[n] {
+						base = n
+						break
+					}
+				}
+				isChanged := changed[p]
+				if base != "" && base != p {
+					// 名前が変わったログは、名前の違いを変更と数えない。中身を凍結の時点と比べる（id が分からなければ変わったとみなす）
+					before, after := s.Freeze.Blobs[base], s.Blobs[p]
+					isChanged = before == "" || after == "" || before != after
+				}
+				if !isChanged {
+					continue // ②
+				}
+				if base != "" {
 					pl.DiffBase = s.Freeze.Commit
+					if base != p {
+						pl.DiffBasePath = base
+					}
 				} else if d := logDate(p); d != "" && d < s.Freeze.Date {
 					pl.Backfilled = true
 				}
@@ -199,6 +229,37 @@ func findPending(snaps []repoSnapshot, localLogs []string, judged map[string]boo
 		return logLess(skipped[a].Repo, skipped[a].Path, skipped[b].Repo, skipped[b].Path)
 	})
 	return pending, skipped
+}
+
+// formerNames は p の前の名前を、近い順に全部返す（Renames を変わった後 → 変わる前とたどる）。名前が行き来していても止まる。
+// 同じ名前に戻ってきたログ（a → b → c → b）も、どの経路の前の名前も落とさない。
+func formerNames(renames map[string][]string, p string) []string {
+	var out []string
+	seen := map[string]bool{p: true}
+	queue := []string{p}
+	for len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		for _, prev := range renames[cur] {
+			if seen[prev] {
+				continue
+			}
+			seen[prev] = true
+			out = append(out, prev)
+			queue = append(queue, prev)
+		}
+	}
+	return out
+}
+
+// anyJudged は names のどれかが、repo の判定済みのログにあるかを返す。
+func anyJudged(judged map[string]bool, repo string, names []string) bool {
+	for _, n := range names {
+		if judged[repo+":"+n] {
+			return true
+		}
+	}
+	return false
 }
 
 // logLess はログの並び順。ファイル名の日付の古い順、日付の無いものは最後。同じならリポジトリ・パスの順。
