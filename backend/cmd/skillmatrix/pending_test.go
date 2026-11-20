@@ -118,13 +118,13 @@ func TestFindPending_名前が変わったログ(t *testing.T) {
 			"dev/go/logs/2026-10-02.md", // 名前が変わった後に作られた新しいログ → 全文
 			"dev/go/logs/2026-09-18.md", // 2 回名前が変わった（a/ → go/ → dev/go/）。最初の名前で判定済み → ① で外す
 		},
-		Renames: map[string]string{
-			"dev/go/logs/2026-10-01.md": "go/logs/2026-10-01.md",
-			"dev/go/logs/2026-09-20.md": "go/logs/2026-09-20.md",
-			"dev/go/logs/2026-09-25.md": "go/logs/2026-09-25.md",
-			"dev/go/logs/2026-09-18.md": "go/logs/2026-09-18.md",
-			"go/logs/2026-09-18.md":     "a/logs/2026-09-18.md",
-			"a/logs/2026-09-18.md":      "go/logs/2026-09-18.md", // 名前が行き来しても止まる
+		Renames: map[string][]string{
+			"dev/go/logs/2026-10-01.md": {"go/logs/2026-10-01.md"},
+			"dev/go/logs/2026-09-20.md": {"go/logs/2026-09-20.md"},
+			"dev/go/logs/2026-09-25.md": {"go/logs/2026-09-25.md"},
+			"dev/go/logs/2026-09-18.md": {"go/logs/2026-09-18.md"},
+			"go/logs/2026-09-18.md":     {"a/logs/2026-09-18.md"},
+			"a/logs/2026-09-18.md":      {"go/logs/2026-09-18.md"}, // 名前が行き来しても止まる
 		},
 		Blobs: map[string]string{
 			"dev/go/logs/2026-09-20.md": "b20",
@@ -157,8 +157,9 @@ func TestFindPending_名前が変わったログ(t *testing.T) {
 }
 
 func TestFormerNames(t *testing.T) {
-	renames := map[string]string{"c": "b", "b": "a", "x": "y", "y": "x"}
-	cases := map[string][]string{"c": {"b", "a"}, "a": nil, "x": {"y"}}
+	// d は go → dev → archive → dev と動いた（同じ名前 dev に 2 回変わった）。新しい変更から順に並ぶ
+	renames := map[string][]string{"c": {"b"}, "b": {"a"}, "x": {"y"}, "y": {"x"}, "dev": {"archive", "go"}, "archive": {"dev"}}
+	cases := map[string][]string{"c": {"b", "a"}, "a": nil, "x": {"y"}, "dev": {"archive", "go"}}
 	for p, want := range cases {
 		if got := formerNames(renames, p); !slices.Equal(got, want) {
 			t.Errorf("formerNames(%q) = %v, want %v", p, got, want)

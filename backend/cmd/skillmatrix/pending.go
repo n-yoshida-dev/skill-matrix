@@ -24,9 +24,9 @@ type repoSnapshot struct {
 	Uncommitted []string
 	// Freeze はこのリポジトリが移行の凍結コミットを持つときだけ埋める。
 	Freeze *freezeSnapshot
-	// Renames は HEAD までの履歴で名前が変わったファイルの、今の名前 → 1 つ前の名前（git mv などで場所を移したログを、前の名前の判定と結び付けるため）。
-	// 2 回以上変わったファイルは、前の名前をたどる（formerNames）。
-	Renames map[string]string
+	// Renames は HEAD までの履歴で名前が変わったファイルの、変わった後の名前 → 変わる前の名前（新しい変更から順）。
+	// git mv などで場所を移したログを、前の名前の判定と結び付けるため。同じ名前に何度も戻ってきたログもあるので、前の名前は全部残す（formerNames がたどる）。
+	Renames map[string][]string
 	// Blobs は Files の中身の id（git の blob）。名前が変わったログが、凍結の時点から中身も変わったかを見るのに使う。
 	Blobs map[string]string
 }
@@ -231,19 +231,25 @@ func findPending(snaps []repoSnapshot, localLogs []string, judged map[string]boo
 	return pending, skipped
 }
 
-// formerNames は p の前の名前を、新しい順に返す（Renames を今の名前 → 1 つ前の名前とたどる）。名前が行き来していても止まる。
-func formerNames(renames map[string]string, p string) []string {
+// formerNames は p の前の名前を、近い順に全部返す（Renames を変わった後 → 変わる前とたどる）。名前が行き来していても止まる。
+// 同じ名前に戻ってきたログ（a → b → c → b）も、どの経路の前の名前も落とさない。
+func formerNames(renames map[string][]string, p string) []string {
 	var out []string
 	seen := map[string]bool{p: true}
-	for cur := p; ; {
-		prev, ok := renames[cur]
-		if !ok || seen[prev] {
-			return out
+	queue := []string{p}
+	for len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		for _, prev := range renames[cur] {
+			if seen[prev] {
+				continue
+			}
+			seen[prev] = true
+			out = append(out, prev)
+			queue = append(queue, prev)
 		}
-		out = append(out, prev)
-		seen[prev] = true
-		cur = prev
 	}
+	return out
 }
 
 // anyJudged は names のどれかが、repo の判定済みのログにあるかを返す。

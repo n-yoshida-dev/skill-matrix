@@ -65,9 +65,9 @@ func snapshotRepo(repo, repoPath, logsGlob, freeze string) (repoSnapshot, error)
 	return s, nil
 }
 
-// gitRenames は HEAD までの履歴の名前の変更を、今の名前 → 1 つ前の名前で返す（`git log -M --diff-filter=R --name-status -z`）。
-// 新しいコミットから読み、同じ名前が何度も出てきたら一番新しい変更を使う。コミットがまだ無いリポジトリは空。
-func gitRenames(repoPath string) (map[string]string, error) {
+// gitRenames は HEAD までの履歴の名前の変更を、変わった後の名前 → 変わる前の名前（新しいコミットから順）で返す（`git log -M --diff-filter=R --name-status -z`）。
+// 同じ名前に何度も変わったときは全部残す（1 つにまとめると、戻ってきたログで一番古い名前までたどれなくなる）。コミットがまだ無いリポジトリは空。
+func gitRenames(repoPath string) (map[string][]string, error) {
 	if _, err := gitOutput(repoPath, "rev-parse", "--verify", "-q", "HEAD"); err != nil {
 		return nil, nil
 	}
@@ -75,7 +75,7 @@ func gitRenames(repoPath string) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	renames := make(map[string]string)
+	renames := make(map[string][]string)
 	tokens := strings.Split(string(out), "\x00")
 	for i := 0; i < len(tokens); i++ {
 		t := strings.TrimSpace(tokens[i])
@@ -83,8 +83,8 @@ func gitRenames(repoPath string) (map[string]string, error) {
 			continue
 		}
 		oldPath, newPath := tokens[i+1], tokens[i+2]
-		if _, seen := renames[newPath]; !seen && oldPath != "" && newPath != "" {
-			renames[newPath] = oldPath
+		if oldPath != "" && newPath != "" {
+			renames[newPath] = append(renames[newPath], oldPath)
 		}
 		i += 2
 	}
