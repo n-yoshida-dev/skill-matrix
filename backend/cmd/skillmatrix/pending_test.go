@@ -22,6 +22,9 @@ func pendingPaths(ps []pendingLog) []string {
 		if p.DiffBase != "" {
 			s += " 差分@" + p.DiffBase
 		}
+		if p.DiffBasePath != "" {
+			s += " 前の名前=" + p.DiffBasePath
+		}
 		if p.Backfilled {
 			s += " 書き起こし"
 		}
@@ -101,6 +104,65 @@ func TestFindPending(t *testing.T) {
 	}
 	if !slices.Equal(skipped, wantSkipped) {
 		t.Errorf("skipped = %+v, want %+v", skipped, wantSkipped)
+	}
+}
+
+func TestFindPending_名前が変わったログ(t *testing.T) {
+	// 2026-11-20 に study の go/ を dev/go/ に移した形。前の名前の判定・凍結の時点の名前と中身を引き継ぐ
+	study := repoSnapshot{
+		Repo: "o/study",
+		Files: []string{
+			"dev/go/logs/2026-10-01.md", // 前の名前で判定済み → ① で外す
+			"dev/go/logs/2026-09-20.md", // 凍結前からあり、名前だけ変わった（中身は同じ）→ ② で外す
+			"dev/go/logs/2026-09-25.md", // 凍結前からあり、名前が変わり、中身も追記された → 凍結の時点の名前からの差分
+			"dev/go/logs/2026-10-02.md", // 名前が変わった後に作られた新しいログ → 全文
+			"dev/go/logs/2026-09-18.md", // 2 回名前が変わった（a/ → go/ → dev/go/）。最初の名前で判定済み → ① で外す
+		},
+		Renames: map[string]string{
+			"dev/go/logs/2026-10-01.md": "go/logs/2026-10-01.md",
+			"dev/go/logs/2026-09-20.md": "go/logs/2026-09-20.md",
+			"dev/go/logs/2026-09-25.md": "go/logs/2026-09-25.md",
+			"dev/go/logs/2026-09-18.md": "go/logs/2026-09-18.md",
+			"go/logs/2026-09-18.md":     "a/logs/2026-09-18.md",
+			"a/logs/2026-09-18.md":      "go/logs/2026-09-18.md", // 名前が行き来しても止まる
+		},
+		Blobs: map[string]string{
+			"dev/go/logs/2026-09-20.md": "b20",
+			"dev/go/logs/2026-09-25.md": "b25-new",
+		},
+		Freeze: &freezeSnapshot{
+			Commit: "abc1234",
+			Date:   "2026-09-27",
+			// 新しい名前のファイルは、凍結の時点に無いので全部「変わった」に出る（git diff の名前だけの比較）
+			Changed: []string{"dev/go/logs/2026-10-01.md", "dev/go/logs/2026-09-20.md", "dev/go/logs/2026-09-25.md", "dev/go/logs/2026-10-02.md", "dev/go/logs/2026-09-18.md"},
+			Existed: []string{"go/logs/2026-09-20.md", "go/logs/2026-09-25.md"},
+			Blobs:   map[string]string{"go/logs/2026-09-20.md": "b20", "go/logs/2026-09-25.md": "b25-old"},
+		},
+	}
+	judged, _ := judgedLogs([]judgment.File{judgedFile(t, "2026-10-02-ai.json",
+		"repo:o/study@0001111/go/logs/2026-10-01.md#L3", "repo:o/study@0001111/a/logs/2026-09-18.md#L1")})
+
+	pending, skipped := findPending([]repoSnapshot{study}, nil, judged)
+
+	want := []string{
+		"o/study:dev/go/logs/2026-09-25.md 差分@abc1234 前の名前=go/logs/2026-09-25.md",
+		"o/study:dev/go/logs/2026-10-02.md",
+	}
+	if got := pendingPaths(pending); !slices.Equal(got, want) {
+		t.Errorf("pending =\n%v\nwant\n%v", got, want)
+	}
+	if len(skipped) != 0 {
+		t.Errorf("skipped = %+v", skipped)
+	}
+}
+
+func TestFormerNames(t *testing.T) {
+	renames := map[string]string{"c": "b", "b": "a", "x": "y", "y": "x"}
+	cases := map[string][]string{"c": {"b", "a"}, "a": nil, "x": {"y"}}
+	for p, want := range cases {
+		if got := formerNames(renames, p); !slices.Equal(got, want) {
+			t.Errorf("formerNames(%q) = %v, want %v", p, got, want)
+		}
 	}
 }
 
@@ -233,5 +295,73 @@ func TestRun_pending(t *testing.T) {
 	code, out, _ = runCLI("pending", "--data", dir, "--sources", sources, "--count")
 	if code != exitOK || out != "3\n" {
 		t.Errorf("--count: 終了コード = %d, stdout = %q", code, out)
+	}
+}
+
+func TestRun_pending_名前が変わったログ(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git が無い")
+	}
+	repo := t.TempDir()
+	git := func(args ...string) string {
+		t.Helper()
+		out, err := gitOutput(repo, append(testGitConfig(), args...)...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return strings.TrimSpace(string(out))
+	}
+	// 凍結前のログ 2 本 → 凍結 → 判定済みのログ → go/ を dev/go/ へ移す → 1 本に追記・新しいログ
+	git("init", "-q")
+	writeFile(t, filepath.Join(repo, "ledger.md"), "台帳\n")
+	if err := os.MkdirAll(filepath.Join(repo, "go", "logs"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(repo, "go", "logs", "2026-09-20.md"), "古い\n")
+	writeFile(t, filepath.Join(repo, "go", "logs", "2026-09-25.md"), "凍結前\n")
+	git("add", ".")
+	git("commit", "-q", "--date=2026-09-27T12:00:00", "-m", "凍結")
+	freeze := git("rev-parse", "--short", "HEAD")
+	writeFile(t, filepath.Join(repo, "go", "logs", "2026-10-01-判定済み.md"), "済み\n")
+	git("add", ".")
+	git("commit", "-q", "-m", "判定済み")
+	judgedAt := git("rev-parse", "--short", "HEAD")
+
+	if err := os.MkdirAll(filepath.Join(repo, "dev"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	git("mv", "go", "dev/go")
+	git("commit", "-q", "-m", "箱に入れる")
+	writeFile(t, filepath.Join(repo, "dev", "go", "logs", "2026-09-25.md"), "凍結前\n追記\n")
+	writeFile(t, filepath.Join(repo, "dev", "go", "logs", "2026-10-02.md"), "新しい\n")
+	git("add", ".")
+	git("commit", "-q", "-m", "続き")
+	head := git("rev-parse", "--short", "HEAD")
+
+	dir := newDataDir(t, map[string]string{
+		"2026-09-27-migration-go.json": `{"schemaVersion": 2, "loggedAt": "2026-09-27", "source": "migration", "judgments": [
+			{"itemKey": "go-01", "evidenceType": "implementation", "proposedLevel": 3, "evidenceRefs": ["repo:o/study@` + freeze + `/ledger.md#L1"], "rationale": "x"}]}`,
+		"2026-10-02-ai.json": `{"schemaVersion": 2, "loggedAt": "2026-10-02", "source": "ai", "judgments": [
+			{"itemKey": "go-01", "evidenceType": "drill", "proposedLevel": 1, "evidenceRefs": ["repo:o/study@` + judgedAt + `/go/logs/2026-10-01-判定済み.md#L1"], "rationale": "x", "confidence": 0.9}]}`,
+	})
+	sources := filepath.Join(dir, "sources.local.json")
+	writeFile(t, sources, `{"repos": {"o/study": {"path": "`+filepath.ToSlash(repo)+`", "logsGlob": "dev/*/logs/*.md"}}}`)
+
+	code, out, errOut := runCLI("pending", "--data", dir, "--sources", sources)
+	if code != exitOK {
+		t.Fatalf("終了コード = %d, stderr = %s", code, errOut)
+	}
+	wants := []string{
+		"未判定のログ 2 本",
+		"1. repo:o/study@" + head + "/dev/go/logs/2026-09-25.md（凍結コミット " + freeze + " からの差分だけ。凍結の時点の名前は go/logs/2026-09-25.md）",
+		"2. repo:o/study@" + head + "/dev/go/logs/2026-10-02.md（全文）",
+	}
+	for _, want := range wants {
+		if !strings.Contains(out, want) {
+			t.Errorf("%q が無い:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "2026-09-20.md") || strings.Contains(out, "判定済み.md") {
+		t.Errorf("外すはずのログが出ている（名前を変えただけのログ・前の名前で判定済みのログ）:\n%s", out)
 	}
 }

@@ -32,9 +32,18 @@ func snapshotRepo(repo, repoPath, logsGlob, freeze string) (repoSnapshot, error)
 	if s.Uncommitted, err = gitStatusPaths(repoPath, pathspec); err != nil {
 		return s, err
 	}
+	if s.Renames, err = gitRenames(repoPath); err != nil {
+		return s, err
+	}
 
 	if freeze == "" {
 		return s, nil
+	}
+	if len(s.Renames) > 0 {
+		// 名前が変わったログを凍結の時点と中身で比べるため、今の中身の id を集める（index の値。未コミットのログは ③ で先に外れる）
+		if s.Blobs, err = gitBlobs(repoPath, "ls-files", "-s", "-z", "--", pathspec); err != nil {
+			return s, err
+		}
 	}
 	fz := &freezeSnapshot{Commit: freeze}
 	date, err := gitOutput(repoPath, "show", "-s", "--format=%as", freeze)
@@ -45,11 +54,64 @@ func snapshotRepo(repo, repoPath, logsGlob, freeze string) (repoSnapshot, error)
 	if fz.Changed, err = gitLines(repoPath, "diff", "--name-only", "-z", freeze, "HEAD", "--", pathspec); err != nil {
 		return s, err
 	}
-	if fz.Existed, err = gitLines(repoPath, "ls-tree", "-r", "--name-only", "-z", freeze); err != nil {
+	if fz.Blobs, err = gitBlobs(repoPath, "ls-tree", "-r", "-z", freeze); err != nil {
 		return s, err
 	}
+	for p := range fz.Blobs {
+		fz.Existed = append(fz.Existed, p)
+	}
+	sort.Strings(fz.Existed)
 	s.Freeze = fz
 	return s, nil
+}
+
+// gitRenames は HEAD までの履歴の名前の変更を、今の名前 → 1 つ前の名前で返す（`git log -M --diff-filter=R --name-status -z`）。
+// 新しいコミットから読み、同じ名前が何度も出てきたら一番新しい変更を使う。コミットがまだ無いリポジトリは空。
+func gitRenames(repoPath string) (map[string]string, error) {
+	if _, err := gitOutput(repoPath, "rev-parse", "--verify", "-q", "HEAD"); err != nil {
+		return nil, nil
+	}
+	out, err := gitOutput(repoPath, "log", "-M", "--diff-filter=R", "--name-status", "-z", "--format=", "HEAD")
+	if err != nil {
+		return nil, err
+	}
+	renames := make(map[string]string)
+	tokens := strings.Split(string(out), "\x00")
+	for i := 0; i < len(tokens); i++ {
+		t := strings.TrimSpace(tokens[i])
+		if !strings.HasPrefix(t, "R") || i+2 >= len(tokens) {
+			continue
+		}
+		oldPath, newPath := tokens[i+1], tokens[i+2]
+		if _, seen := renames[newPath]; !seen && oldPath != "" && newPath != "" {
+			renames[newPath] = oldPath
+		}
+		i += 2
+	}
+	return renames, nil
+}
+
+// gitBlobs は `git ls-files -s -z` か `git ls-tree -r -z` の出力（"<mode> <...> <blob>[ <stage>]<タブ><path>"）を、パス → 中身の id にする。
+func gitBlobs(repoPath string, args ...string) (map[string]string, error) {
+	out, err := gitOutput(repoPath, args...)
+	if err != nil {
+		return nil, err
+	}
+	blobs := make(map[string]string)
+	for _, e := range strings.Split(string(out), "\x00") {
+		meta, path, ok := strings.Cut(e, "\t")
+		if !ok || path == "" {
+			continue
+		}
+		fields := strings.Fields(meta)
+		switch {
+		case len(fields) == 3 && fields[1] == "blob": // ls-tree：<mode> blob <id>
+			blobs[path] = fields[2]
+		case len(fields) == 3 && fields[1] != "tree" && fields[1] != "commit": // ls-files -s：<mode> <id> <stage>
+			blobs[path] = fields[1]
+		}
+	}
+	return blobs, nil
 }
 
 // gitLines は git の -z 付きの出力（NUL 区切り）をパスの並びにする。-z にするのは、日本語のパスが引用符と 8 進数に化けないようにするため。
@@ -251,6 +313,8 @@ func pendingLogLine(p pendingLog) string {
 	}
 	fmt.Fprintf(&b, "repo:%s@%s/%s", p.Repo, p.Commit, p.Path)
 	switch {
+	case p.DiffBase != "" && p.DiffBasePath != "":
+		fmt.Fprintf(&b, "（凍結コミット %s からの差分だけ。凍結の時点の名前は %s）", p.DiffBase, p.DiffBasePath)
 	case p.DiffBase != "":
 		fmt.Fprintf(&b, "（凍結コミット %s からの差分だけ）", p.DiffBase)
 	case p.Backfilled:
